@@ -1,7 +1,7 @@
 // include.js - Shared Loader
 
 const WARM_RIGHT_SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
-const WARM_RIGHT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ';
+const WARM_RIGHT_SUPABASE_KEY = 'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM';
 
 function loadScriptOnce(src) {
   if (document.querySelector(`script[src="${src}"]`)) return Promise.resolve();
