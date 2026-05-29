@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warm Right Ltd – Coverage Map</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    /* Header */
+    #header {
+      background: #003366;
+      color: white;
+      padding: 14px 22px;
+      font-size: 22px;
+      font-weight: bold;
+      border-bottom: 4px solid #ff6600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Map container */
+    #map {
+      height: calc(100% - 60px);
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Legend (Key) */
+    .legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 14px 18px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+      font-size: 14px;
+      line-height: 1.4;
+      z-index: 9999; /* FIXED */
+    }
+
+    .legend-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #003366;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    /* Remove map labels entirely */
+    .zone-label {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="header">Warm Right Ltd – Coverage Map</div>
+  <div id="map"></div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-title">Coverage Key</div>
+
+    <div class="legend-item">
+      <div class="legend-color" style="background:#9b59b6;"></div>
+      Usual Coverage
+    </div>
+
+    <div class="legend-item">
+      <div class="legend-color" style="background:#ff3b30;"></div>
+      Usual Coverage – Additional Mileage Charges May Apply
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const map = L.map("map");
+
+    /* Colourful basemap */
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      { maxZoom: 19 }
+    ).addTo(map);
+
+    const allLayers = L.featureGroup().addTo(map);
+
+    /* PURPLE ZONE */
+    fetch("coverage_purple.geojson")
+      .then(r => r.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: "#9b59b6",
+            weight: 2,
+            fillColor: "#9b59b6",
+            fillOpacity: 0.35
+          }
+        }).addTo(allLayers);
+      });
+
+    /* RED ZONE */
+    fetch("coverage_red.geojson")
+      .then(r => r.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: "#ff3b30",
+            weight: 2,
+            fillColor: "#ff3b30",
+            fillOpacity: 0.35
+          }
+        }).addTo(allLayers);
+      });
+
+    /* Fit map to all zones */
+    setTimeout(() => {
+      map.fitBounds(allLayers.getBounds());
+    }, 500);
+  </script>
+
+</body>
+</html>

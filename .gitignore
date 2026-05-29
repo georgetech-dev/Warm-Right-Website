@@ -1,0 +1,3 @@
+# Ignore local backup folders and large archives
+Warm Right Website BackUps/
+*.zip

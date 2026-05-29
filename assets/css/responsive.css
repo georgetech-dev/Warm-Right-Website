@@ -1,0 +1,23 @@
+/* KEEP: Hero and Content Adjustments */
+@media (min-width: 768px) {
+  .hero {
+    margin-top: -50px;
+  }
+}
+
+/* KEEP: Boiler fault code grid responsiveness */
+@media (max-width: 768px) {
+  .tile-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .info-tile h3 {
+    font-size: 1rem;
+  }
+}
+
+/* KEEP: Body lock for when nav is open */
+body.nav-open {
+  overflow: hidden;
+  height: 100%;
+}

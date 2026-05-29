@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WarmRight - Admin Console (Radius Checking)</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 20px; background: #f4f4f9; color: #333; }
+    #map { height: 500px; width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 15px; }
+    
+    .dashboard-header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      flex-wrap: wrap; gap: 15px;
+    }
+    .panel-left h2 { margin: 0 0 8px 0; font-size: 22px; }
+    .panel-left p { margin: 4px 0; color: #666; font-size: 14px; }
+    
+    .controls-group { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+    
+    .control-box {
+      background: #f1f5f9; padding: 12px 18px; border-radius: 6px; border: 1px solid #cbd5e1;
+    }
+    .control-box label {
+      display: block; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #475569; margin-bottom: 5px;
+    }
+    .control-box input { padding: 6px 10px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; }
+
+    .google-search-box { width: 320px; }
+    .google-search-box input { width: 90%; padding: 8px 12px; font-size: 14px; border: 2px solid #3b82f6; border-radius: 6px; }
+
+    .live-indicator { display: inline-block; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; margin-right: 6px; animation: blink 1.5s infinite; }
+    @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+
+    /* Address Form Output Panel */
+    .address-form-panel {
+      background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 20px;
+    }
+    .address-form-panel h3 { margin-top: 0; margin-bottom: 15px; font-size: 18px; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+    .form-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
+    }
+    .form-field { display: flex; flex-direction: column; }
+    .form-field label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+    .form-field input { padding: 10px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #0f172a; font-weight: 500; }
+    .form-field input:focus { outline: none; border-color: #3b82f6; background: white; }
+    
+    /* Radius Alert Banner Styles */
+    .radius-banner {
+      grid-column: 1 / -1; background: #f1f5f9; border: 1px solid #cbd5e1;
+      padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; text-align: center; color: #334155;
+    }
+    .within-radius { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+    .outside-radius { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+
+    .custom-menu {
+      display: none; position: absolute; background: white; border: 1px solid #ccc;
+      border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 1000; width: 160px;
+    }
+    .custom-menu ul { list-style: none; margin: 0; padding: 5px 0; }
+    .custom-menu li { padding: 8px 12px; cursor: pointer; font-size: 14px; }
+    .custom-menu li:hover { background: #3b82f6; color: white; }
+
+    .pac-container { z-index: 10000 !important; font-family: sans-serif; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none; }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-header">
+    <div class="panel-left">
+      <h2><span class="live-indicator"></span> Tracking Control Center</h2>
+      <p id="status-text">Streaming route logs from Supabase cloud database...</p>
+      <p><strong>Active Coordinates Traced:</strong> <span id="trail-count">0</span></p>
+    </div>
+    
+    <div class="controls-group">
+      <div class="control-box google-search-box">
+        <label for="google-search">Search Address or Postcode</label>
+        <input type="text" id="google-search" placeholder="Type destination...">
+      </div>
+
+      <div class="control-box">
+        <label for="tracking-date">Query Cloud By Date</label>
+        <input type="date" id="tracking-date">
+      </div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="address-form-panel">
+    <h3>📋 Selected Target Address Details</h3>
+    <div class="form-grid">
+      <div id="radius-alert" class="radius-banner">
+        Search a location above to calculate engineer proximity distance.
+      </div>
+
+      <div class="form-field">
+        <label>Address Line 1</label>
+        <input type="text" id="out-line1" placeholder="—">
+      </div>
+      <div class="form-field">
+        <label>Address Line 2</label>
+        <input type="text" id="out-line2" placeholder="—">
+      </div>
+      <div class="form-field">
+        <label>Town</label>
+        <input type="text" id="out-town" placeholder="—">
+      </div>
+      <div class="form-field">
+        <label>County</label>
+        <input type="text" id="out-county" placeholder="—">
+      </div>
+      <div class="form-field">
+        <label>Country</label>
+        <input type="text" id="out-country" placeholder="—">
+      </div>
+      <div class="form-field">
+        <label>Postcode</label>
+        <input type="text" id="out-postcode" placeholder="—">
+      </div>
+      
+      <div class="form-field">
+        <label>Searched Latitude</label>
+        <input type="text" id="out-lat" placeholder="—" readonly>
+      </div>
+      <div class="form-field">
+        <label>Searched Longitude</label>
+        <input type="text" id="out-lng" placeholder="—" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div id="context-menu" class="custom-menu">
+    <ul>
+      <li id="menu-drop-pin">📍 Drop Pin & Find Address</li>
+      <li id="menu-hide-trail">🙈 Hide Trail Line</li>
+      <li id="menu-load-trail">🔄 Show Trail Line</li>
+    </ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEpGUBjr6slBScj_2xNnTjoZ98WZSxuGM&libraries=places"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM'; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const map = L.map('map').setView([50.9536, 0.9617], 14); 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let searchMarker = null;
+    let lastSearchedLatLng = null; // Tracks current search location coordinates to prevent loop resets
+    let activeEngineerLatLng = null; // Tracks current tracking location points
+
+    // MATHEMATICAL FUNCTION: Calculates straight-line mile distances across the Earth's curvature
+    function calculateMilesDistance(lat1, lon1, lat2, lon2) {
+      const R = 3958.8; // Radius of the Earth in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c; 
+    }
+
+    // SERVICE: Updates the layout status banner if target falls within limits
+    function updateRadiusMetrics() {
+      if (!lastSearchedLatLng || !activeEngineerLatLng) return;
+
+      const miles = calculateMilesDistance(
+        lastSearchedLatLng[0], lastSearchedLatLng[1],
+        activeEngineerLatLng[0], activeEngineerLatLng[1]
+      );
+
+      const alertBanner = document.getElementById('radius-alert');
+      
+      if (miles <= 25) {
+        alertBanner.innerText = `✅ Engineer is within range! Distance: ${miles.toFixed(2)} miles away.`;
+        alertBanner.className = "radius-banner within-radius";
+      } else {
+        alertBanner.innerText = `❌ Outside service range. Distance: ${miles.toFixed(2)} miles away.`;
+        alertBanner.className = "radius-banner outside-radius";
+      }
+    }
+
+    // ==========================================
+    // GOOGLE PLACES AUTOCOMPLETE LOGIC BLOCK
+    // ==========================================
+    function initGoogleAutocomplete() {
+      const input = document.getElementById('google-search');
+      const options = {
+        componentRestrictions: { country: "gb" },
+        fields: ["address_components", "geometry", "formatted_address"]
+      };
+
+      const autocomplete = new google.maps.places.Autocomplete(input, options);
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        
+        if (!place.geometry || !place.geometry.location) return;
+
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        lastSearchedLatLng = [lat, lng];
+
+        map.setView(lastSearchedLatLng, 16);
+
+        if (searchMarker) map.removeLayer(searchMarker);
+        searchMarker = L.marker(lastSearchedLatLng).addTo(map)
+          .bindPopup(`<b>Google Target Destination:</b><br>${place.formatted_address}`)
+          .openPopup();
+
+        // Push values to raw input fields
+        document.getElementById('out-lat').value = lat.toFixed(6);
+        document.getElementById('out-lng').value = lng.toFixed(6);
+
+        // Clear textual outputs
+        document.getElementById('out-line1').value = "";
+        document.getElementById('out-line2').value = "";
+        document.getElementById('out-town').value = "";
+        document.getElementById('out-county').value = "";
+        document.getElementById('out-country').value = "";
+        document.getElementById('out-postcode').value = "";
+
+        let streetNumber = "";
+        let routeName = "";
+        let neighborhoodOrLocality = ""; 
+        let postalTown = "";  
+        let ukCounty = "";    
+
+        place.address_components.forEach(component => {
+          const types = component.types;
+          if (types.includes("street_number")) streetNumber = component.long_name;
+          else if (types.includes("route")) routeName = component.long_name;
+          else if (types.includes("neighborhood") || types.includes("sublocality")) neighborhoodOrLocality = component.long_name;
+          else if (types.includes("postal_town") || types.includes("locality")) postalTown = component.long_name;
+          else if (types.includes("administrative_area_level_2")) ukCounty = component.long_name;
+          else if (types.includes("country")) document.getElementById('out-country').value = component.long_name;
+          else if (types.includes("postal_code")) document.getElementById('out-postcode').value = component.long_name;
+        });
+
+        document.getElementById('out-line1').value = streetNumber ? `${streetNumber} ${routeName}` : routeName;
+        document.getElementById('out-line2').value = neighborhoodOrLocality;
+        document.getElementById('out-town').value = postalTown;
+        document.getElementById('out-county').value = ukCounty;
+
+        if (!postalTown && neighborhoodOrLocality) {
+          document.getElementById('out-town').value = neighborhoodOrLocality;
+          document.getElementById('out-line2').value = "";
+        }
+
+        // Trigger the live calculations comparison check loop
+        updateRadiusMetrics();
+      });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initGoogleAutocomplete);
+
+    let deviceMarker = null;
+    let travelTrail = null;
+    let coordinateHistory = [];
+    let customPins = [];
+    let rightClickLocation = null;
+
+    const dateInput = document.getElementById('tracking-date');
+    dateInput.value = new Date().toISOString().split('T')[0];
+
+    async function getStreetAddress(lat, lng) {
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+          headers: { 'Accept-Language': 'en', 'User-Agent': 'WarmRightPortalAdmin/1.0' }
+        });
+        const data = await response.json();
+        if(data.address) {
+          const addr = data.address;
+          document.getElementById('out-line1').value = addr.house_number ? `${addr.house_number} ${addr.road}` : (addr.road || "");
+          document.getElementById('out-line2').value = addr.suburb || addr.neighbourhood || "";
+          document.getElementById('out-town').value = addr.town || addr.city || "";
+          document.getElementById('out-county').value = addr.county || "";
+          document.getElementById('out-country').value = addr.country || "";
+          document.getElementById('out-postcode').value = addr.postcode || "";
+        }
+        return data.display_name || "Unknown Point";
+      } catch (err) { return `Coordinates: ${lat}, ${lng}`; }
+    }
+
+    async function fetchTrackingForDate() {
+      const selectedDate = dateInput.value;
+      const startOfDay = `${selectedDate}T00:00:00.000Z`;
+      const endOfDay = `${selectedDate}T23:59:59.999Z`;
+
+      const { data, error } = await supabaseClient
+        .from('device_tracking')
+        .select('*')
+        .gte('created_at', startOfDay)
+        .lte('created_at', endOfDay)
+        .order('created_at', { ascending: true });
+
+      if (error) return;
+
+      if (data && data.length > 0) {
+        coordinateHistory = data.map(item => [item.latitude, item.longitude]);
+        updateMapPath(coordinateHistory, `Live Device Tracking Loop`);
+      } else {
+        document.getElementById('status-text').innerText = `No positional traces found on ${selectedDate}.`;
+        clearActiveLayers();
+      }
+    }
+
+    async function updateMapPath(coords, contextString) {
+      document.getElementById('trail-count').innerText = coords.length;
+      document.getElementById('status-text').innerText = `${contextString} running smoothly.`;
+
+      const terminalPoint = coords[coords.length - 1];
+      activeEngineerLatLng = terminalPoint; // Capture engineer's most recent position marker coordinates
+
+      // Continually update radius comparisons as new tracking entries tick over live
+      updateRadiusMetrics();
+
+      if (!deviceMarker) {
+        deviceMarker = L.marker(terminalPoint).addTo(map);
+        deviceMarker.on('click', async () => {
+          deviceMarker.bindPopup("<i>Fetching address...</i>").openPopup();
+          const address = await getStreetAddress(terminalPoint[0], terminalPoint[1]);
+          deviceMarker.setPopupContent(`<b>Current Location:</b><br>${address}`).openPopup();
+        });
+      } else {
+        const oldPos = deviceMarker.getLatLng();
+        if (oldPos.lat !== terminalPoint[0] || oldPos.lng !== terminalPoint[1]) {
+          deviceMarker.setLatLng(terminalPoint);
+        }
+      }
+
+      if (travelTrail && map.hasLayer(travelTrail)) {
+        travelTrail.setLatLngs(coords);
+      } else {
+        if (travelTrail) map.removeLayer(travelTrail);
+        travelTrail = L.polyline(coords, { color: '#2563eb', weight: 5, opacity: 0.8 }).addTo(map);
+        map.fitBounds(travelTrail.getBounds(), { padding: [30, 30] });
+      }
+    }
+
+    function clearActiveLayers() {
+      document.getElementById('trail-count').innerText = "0";
+      if (travelTrail) { map.removeLayer(travelTrail); travelTrail = null; }
+      if (deviceMarker) { map.removeLayer(deviceMarker); deviceMarker = null; }
+      activeEngineerLatLng = null;
+    }
+
+    dateInput.addEventListener('change', () => {
+      clearActiveLayers();
+      fetchTrackingForDate();
+    });
+
+    const menuEl = document.getElementById('context-menu');
+    map.on('contextmenu', (e) => {
+      rightClickLocation = e.latlng;
+      menuEl.style.top = e.originalEvent.pageY + 'px';
+      menuEl.style.left = e.originalEvent.pageX + 'px';
+      menuEl.style.display = 'block';
+    });
+    map.on('click', () => menuEl.style.display = 'none');
+
+    document.getElementById('menu-drop-pin').addEventListener('click', async () => {
+      if (rightClickLocation) {
+        const lat = rightClickLocation.lat;
+        const lng = rightClickLocation.lng;
+        
+        lastSearchedLatLng = [lat, lng];
+        document.getElementById('out-lat').value = lat.toFixed(6);
+        document.getElementById('out-lng').value = lng.toFixed(6);
+
+        const tempMarker = L.marker([lat, lng]).addTo(map)
+          .bindPopup("🔍 <i>Querying OpenStreetMap address servers...</i>")
+          .openPopup();
+        
+        customPins.push(tempMarker);
+        const physicalAddress = await getStreetAddress(lat, lng);
+        tempMarker.setPopupContent(`<b>📍 Custom Marker Drop:</b><br>${physicalAddress}`).openPopup();
+        
+        updateRadiusMetrics();
+      }
+      menuEl.style.display = 'none';
+    });
+
+    document.getElementById('menu-hide-trail').addEventListener('click', () => {
+      if (travelTrail && map.hasLayer(travelTrail)) map.removeLayer(travelTrail);
+      menuEl.style.display = 'none';
+    });
+
+    document.getElementById('menu-load-trail').addEventListener('click', () => {
+      if (travelTrail && !map.hasLayer(travelTrail)) travelTrail.addTo(map);
+      menuEl.style.display = 'none';
+    });
+
+    fetchTrackingForDate();
+    setInterval(fetchTrackingForDate, 5000);
+  </script>
+</body>
+</html>

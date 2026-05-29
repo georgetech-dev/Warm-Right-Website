@@ -1,0 +1,259 @@
+/* --- MOBILE BAR CONTAINER --- */
+#mobile-nav-bar {
+  display: none; /* Hidden on Desktop */
+  position: relative ;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--nav-background);
+  z-index: 1500;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-left: auto;
+}
+
+@media (max-width: 1024px) {
+  #mobile-nav-bar { display: block; }
+}
+
+/* --- TOP BAR CONTENTS (Flex Layout) --- */
+#mobile-nav-bar .mobile-bar-contents {
+  display: flex;
+  justify-content: space-between; /* Hamburger Left, Brand Right */
+  align-items: center;
+  padding: 10px 15px;
+  height: 60px;
+}
+
+
+/* --- BRANDING (Logo Right, Text Left) --- */
+#mobile-nav-bar .mobile-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+ 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    /* This pushes the logo and text to the far right */
+    margin-left: auto; 
+    
+    /* Ensures it doesn't slide under the fixed hamburger if the screen is tiny */
+    padding-left: 70px; 
+}
+
+#mobile-nav-bar .mobile-brand-wrapper span {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+#mobile-nav-bar .mobile-brand-wrapper img {
+  height: 35px;
+  width: auto;
+}
+
+/* --- MOBILE DRAWER (Slide from Left) --- */
+#mobile-nav-bar .mobile-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: var(--nav-background);
+  transform: translateX(-100%); /* Start off-screen LEFT */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2100;
+  padding: 25px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  padding-top: 80px;
+  overflow-y: auto;                 
+  -webkit-overflow-scrolling: touch; /* Makes scrolling smooth on iOS */
+  padding-bottom: 60px;             /* Space at the bottom so the last link isn't cut off */
+}
+
+
+#mobile-nav-bar .mobile-nav.open {
+  transform: translateX(0); /* Slide in */
+}
+
+/* --- DRAWER ITEMS --- */
+#mobile-nav-bar .mobile-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#mobile-nav-bar .mobile-item a, 
+#mobile-nav-bar .mobile-dropdown-button {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.05rem;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+}
+
+#mobile-nav-bar .mobile-dropdown-button {
+  border-left: 2px solid #ffd166;
+  padding-left: 12px;
+}
+#mobile-nav-bar .mobile-dropdown-menu{
+	padding-top: 10px;
+	max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 1.3s ease;
+  
+}
+
+#mobile-nav-bar .mobile-dropdown-menu.open {
+  /* Set this to a value larger than your longest list (e.g., Services) */
+  max-height: 600px; 
+  opacity: 1;
+  padding-bottom: 15px; /* Adds a nice finish at the end of the slide */
+}
+/* 3. Smooth out the sub-links appearance */
+#mobile-nav-bar .mobile-dropdown-menu a {
+  padding: 10px 16px 10px 40px; /* Indents the sub-items */
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+#mobile-nav-bar .mobile-dropdown-menu a {
+  padding-left: 25px;
+  padding-top: 10px;    /* Adds space above */
+  padding-bottom: 10px; /* Adds space below */
+  display: block;       /* Ensures the padding pushes the next item down */
+  line-height: 1.4;     /* Better readability for longer titles */
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+#mobile-nav-bar .menu-toggle.open {
+  transform: translateX(210px); /* Adjust this number so the X sits where you want it on the drawer */
+  transition-delay: 0.2s;
+  
+}
+
+/* --- OVERLAY --- */
+#mobile-nav-bar .nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 1400;
+}
+
+#mobile-nav-bar .nav-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- HAMBURGER & ANIMATIONS --- */
+#mobile-nav-bar .menu-toggle {
+    display: flex;
+    position: fixed; /* Keeps it on screen during scroll */
+    top: 0;
+    left: 0;
+    width: 60px; 
+    height: 60px;
+	border-radius:100%;
+    border: none;
+    cursor: pointer;
+    z-index: 3000; /* Stays on top of everything */
+    justify-content: center;
+    align-items: center;
+	background: transparent; 
+    transition: background 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#mobile-nav-bar .menu-toggle.scrolled,
+#mobile-nav-bar .menu-toggle.open {
+  background: var(--nav-background) !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: adds a tiny bit of depth */
+}
+
+#mobile-nav-bar .hamburger-icon {
+  position: relative;
+  width: 24px;
+  height: 2px;
+  background: #fff;
+  display: block;
+}
+
+#mobile-nav-bar .hamburger-icon::before,
+#mobile-nav-bar .hamburger-icon::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background: #fff;
+  left: 0;
+  transition: all 0.3s ease;
+}
+
+#mobile-nav-bar .hamburger-icon::before { top: -8px; }
+#mobile-nav-bar .hamburger-icon::after { bottom: -8px; }
+
+/* Morph into X */
+#mobile-nav-bar .menu-toggle.open .hamburger-icon { background: transparent; }
+#mobile-nav-bar .menu-toggle.open .hamburger-icon::before { transform: rotate(45deg); top: 0; }
+#mobile-nav-bar .menu-toggle.open .hamburger-icon::after { transform: rotate(-45deg); bottom: 0; }
+
+/* --- THE SPIN ANIMATION --- */
+@keyframes spinToggle {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* --- APPLY THE SPIN --- */
+#mobile-nav-bar .hamburger-wrapper.spin {
+  animation: spinToggle 1.0s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* --- CALL BUTTON (Bottom of Drawer) --- */
+#mobile-nav-bar .call-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  width: 100%;
+  margin-top: 30px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* --- FLOATING BOOKING BUTTON --- */
+.floating-book-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background-color: var(--highlight-amber) !important; 
+  color: #fff !important;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: 700;
+  z-index: 2000;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 800px) {
+  .floating-book-btn.at-bottom {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    width: 90%;
+    text-align: center;
+  }
+}
