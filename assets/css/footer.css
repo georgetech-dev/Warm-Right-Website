@@ -299,8 +299,15 @@ body.modal-open {
 
 
 @media (max-width: 768px) {
-    .footer-content { flex-direction: column; align-items: center; gap: 30px; }
-    .footer-section { width: 100%; max-width: 350px; }
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+        gap: 20px;
+        text-align: center;
+    }
+    .footer-section { width: 100%; min-width: 0; max-width: none; }
+    .footer-section.gas-safe { grid-column: 1 / -1; }
     .footer-logo { height: 60px; }
     .modal-title-single { font-size: 1.3rem; white-space: normal; }
     

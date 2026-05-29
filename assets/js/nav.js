@@ -213,29 +213,37 @@ window.initWarmRight = async function() {
   }
 
 
-// --- NEW HIGHLIGHT LOGIC IN NAV.JS ---
 function applyHighlights() {
-    const currentPath = window.location.pathname.toLowerCase();
-    const segments = currentPath.split('/').filter(Boolean);
-    
-    // Check if we are on GitHub or local (GitHub usually has the repo name as segment[0])
     const isGitHub = window.location.hostname.includes("github.io");
-    const currentFolder = isGitHub ? segments[1] : segments[0];
+    const normalisePath = (path) => {
+        let parts = String(path || '').toLowerCase().split('/').filter(Boolean);
+        if (isGitHub && parts.length > 1) parts = parts.slice(1);
+        let normalised = '/' + parts.join('/');
+        if (normalised === '/' || normalised === '/index.html') return '/index.html';
+        return normalised.replace(/\/index\.html$/, '/').replace(/\/$/, '');
+    };
+    const currentPath = normalisePath(window.location.pathname);
+    const currentFolder = currentPath.split('/').filter(Boolean)[0] || '';
 
-    document.querySelectorAll('#header a, .mobile-dropdown-button').forEach(el => {
+    document.querySelectorAll('#header a, #header .mobile-dropdown-button').forEach(el => {
         el.classList.remove('active');
 
-        // 1. Highlight the specific page link
-        if (el.tagName === 'A' && el.pathname.toLowerCase() === currentPath && el.getAttribute('href') !== '#') {
+        const href = el.getAttribute('href');
+        if (el.tagName === 'A' && href && href !== '#' && normalisePath(el.pathname) === currentPath) {
             el.classList.add('active');
         }
 
-        // 2. Highlight the Parent Folder (Services/Support)
-        // This relies on your HTML having data-section="services" or "support"
         if (currentFolder === 'services' || currentFolder === 'support') {
             if (el.dataset.section === currentFolder) {
                 el.classList.add('active');
             }
+        }
+    });
+
+    document.querySelectorAll('#header .mobile-dropdown-button.active').forEach(btn => {
+        const menu = btn.nextElementSibling;
+        if (menu && menu.classList.contains('mobile-dropdown-menu')) {
+            menu.classList.add('open');
         }
     });
 }

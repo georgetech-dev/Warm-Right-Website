@@ -30,6 +30,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  text-decoration: none;
  
     display: flex;
     align-items: center;
@@ -256,4 +257,19 @@
     width: 90%;
     text-align: center;
   }
+}
+
+#mobile-nav-bar .mobile-item a.active,
+#mobile-nav-bar .mobile-dropdown-button.active,
+#mobile-nav-bar .mobile-dropdown-menu a.active {
+  color: #ffd166;
+}
+
+#mobile-nav-bar .mobile-dropdown-button.active {
+  border-left-color: #ffd166;
+}
+
+#mobile-nav-bar .mobile-dropdown-menu a.active {
+  opacity: 1;
+  font-weight: 700;
 }

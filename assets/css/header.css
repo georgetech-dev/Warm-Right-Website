@@ -111,6 +111,12 @@ html, body {
   color: #ffd166 !important;
 }
 
+#main-nav-bar .dropdown-menu a.active {
+  background: rgba(255, 209, 102, 0.14);
+  color: #ffd166 !important;
+  border-bottom-color: #ffd166 !important;
+}
+
 /* HIDE ON MOBILE */
 @media (max-width: 1024px) {
   #main-nav-bar { display: none !important; }

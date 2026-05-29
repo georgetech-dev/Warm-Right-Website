@@ -50,6 +50,9 @@
     }
 
     .form-left label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; margin-top: 15px; }
+    .form-left input, .form-left textarea, .form-left select, button, .html-editor {
+      font-family: 'Segoe UI', sans-serif;
+    }
     .form-left input, .form-left textarea, .form-left select {
       width: 100%; padding: 12px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px;
     }
@@ -102,6 +105,9 @@
     .badge-hidden { background: #666; }
 
     .price-tag { font-weight: bold; color: var(--primary-blue); }
+    .editor-toolbar { display:flex; gap:6px; flex-wrap:wrap; background:#f6f8fb; border:1px solid #ddd; border-bottom:0; border-radius:6px 6px 0 0; padding:8px; }
+    .editor-toolbar button { padding:7px 10px; background:white; border:1px solid #ddd; color:#333; }
+    .html-editor { min-height:170px; padding:14px; border:1px solid #ddd; border-radius:0 0 6px 6px; background:white; font-size:16px; line-height:1.55; outline:none; box-sizing:border-box; }
   </style>
 </head>
 <body>
@@ -186,7 +192,14 @@
           
           <div id="content_field">
             <label>Additional Info (HTML allowed)</label>
-            <textarea id="read_more_content" rows="6" placeholder="Detailed specs, terms, or process..."></textarea>
+            <div class="editor-toolbar">
+              <button type="button" onclick="editorCommand('bold')"><strong>B</strong></button>
+              <button type="button" onclick="editorCommand('italic')"><em>I</em></button>
+              <button type="button" onclick="editorCommand('insertUnorderedList')">List</button>
+              <button type="button" onclick="editorCommand('createLink')">Link</button>
+            </div>
+            <div id="read_more_editor" class="html-editor" contenteditable="true"></div>
+            <textarea id="read_more_content" class="hidden"></textarea>
           </div>
 
           <button id="saveBtn" class="btn-primary" style="width:100%; padding:15px; margin-top:20px;">Save Rate Information</button>
@@ -194,8 +207,9 @@
 
         <div class="form-right">
           <img id="imagePreview" src="../assets/images/no-image.jpg" alt="Preview">
-          <p style="color:#666; font-size: 14px;">Resolution looks best at 4:3 or 16:9 ratio</p>
+          <p style="color:#666; font-size: 14px;">Images are uploaded to GitHub assets/images.</p>
           <input type="file" id="image" accept="image/*" style="display:none;">
+          <input id="image_url" placeholder="assets/images/example.jpg" style="margin-bottom:12px;">
           <button class="btn-accent" onclick="document.getElementById('image').click()">Change Picture</button>
         </div>
       </div>
@@ -205,6 +219,35 @@
 
   <script>
     let editingId = null;
+    let currentSession = null;
+
+    function editorCommand(command) {
+      if (command === 'createLink') {
+        const url = prompt('Enter the link URL');
+        if (!url) return;
+        document.execCommand(command, false, url);
+      } else {
+        document.execCommand(command, false, null);
+      }
+      document.getElementById('read_more_editor').focus();
+    }
+
+    function setEditorHtml(html) {
+      document.getElementById('read_more_editor').innerHTML = html || '';
+      document.getElementById('read_more_content').value = html || '';
+    }
+
+    function getEditorHtml() {
+      const html = document.getElementById('read_more_editor').innerHTML.trim();
+      document.getElementById('read_more_content').value = html;
+      return html;
+    }
+
+    function imageSrcForAdmin(path) {
+      if (!path) return '../assets/images/no-image.jpg';
+      if (/^(https?:|data:|blob:)/i.test(path)) return path;
+      return path.startsWith('../') ? path : `../${path.replace(/^\/+/, '')}`;
+    }
 
     async function checkSecurity() {
       const lib = window.supabase || window.Supabase;
@@ -219,6 +262,7 @@
       if (!session) { 
         window.location.href = 'login.html'; 
       } else { 
+        currentSession = session;
         await window.loadAdminHeader(session);
         document.body.style.visibility = 'visible'; 
         loadRates(); 
@@ -271,7 +315,9 @@
       document.getElementById('is_suspended').checked = false;
       document.getElementById('is_hidden').checked = false;
       document.getElementById('read_more_type').value = 'modal';
+      document.getElementById('image_url').value = '';
       document.getElementById('imagePreview').src = '../assets/images/no-image.jpg';
+      setEditorHtml('');
       toggleReadMoreFields();
     };
 
@@ -293,7 +339,7 @@
       tbody.innerHTML = rates.map(rate => `
         <tr data-id="${rate.id}">
           <td class="drag-handle">☰</td>
-          <td><img src="${rate.image_url || '../assets/images/no-image.jpg'}" class="table-img" onerror="this.onerror=null;this.src='../assets/images/no-image.jpg';"></td>
+          <td><img src="${imageSrcForAdmin(rate.image_url)}" class="table-img" onerror="this.onerror=null;this.src='../assets/images/no-image.jpg';"></td>
           <td><strong>${rate.title}</strong></td>
           <td>
             ${rate.is_hidden ? '<span class="badge badge-hidden">Hidden</span>' : ''}
@@ -325,8 +371,9 @@
       document.getElementById('is_hidden').checked = data.is_hidden || false;
       document.getElementById('read_more_type').value = data.read_more_type || 'modal';
       document.getElementById('read_more_url').value = data.read_more_url || '';
-      document.getElementById('read_more_content').value = data.read_more_content || '';
-      document.getElementById('imagePreview').src = data.image_url || '../assets/images/no-image.jpg';
+      setEditorHtml(data.read_more_content || '');
+      document.getElementById('image_url').value = data.image_url || '';
+      document.getElementById('imagePreview').src = imageSrcForAdmin(data.image_url);
       toggleReadMoreFields();
     };
 
@@ -336,17 +383,39 @@
       loadRates();
     };
 
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function safeFileName(file) {
+      const ext = file.name.split('.').pop();
+      const base = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      return `${Date.now()}-${base || 'rate'}.${ext}`;
+    }
+
+    async function uploadImage(file) {
+      const path = safeFileName(file);
+      const { data, error } = await window.db.functions.invoke('github-images', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentSession.access_token}` },
+        body: { name: path, contentBase64: await fileToBase64(file), message: `Upload rate image ${path}` }
+      });
+      if (error) throw error;
+      return data?.file?.path || `assets/images/${path}`;
+    }
+
     async function saveRate() {
       const title = document.getElementById('title').value.trim();
       const file = document.getElementById('image').files[0];
       if (!title) return alert("Title is required");
 
-      let image_url = null;
-      if (file) {
-        const fileName = `${Date.now()}-${file.name}`;
-        await window.db.storage.from('rates-images').upload(fileName, file);
-        image_url = window.db.storage.from('rates-images').getPublicUrl(fileName).data.publicUrl;
-      }
+      let image_url = document.getElementById('image_url').value.trim();
+      if (file) image_url = await uploadImage(file);
 
       const payload = { 
         title, 
@@ -358,7 +427,7 @@
         is_hidden: document.getElementById('is_hidden').checked,
         read_more_type: document.getElementById('read_more_type').value,
         read_more_url: document.getElementById('read_more_url').value,
-        read_more_content: document.getElementById('read_more_content').value
+        read_more_content: getEditorHtml()
       };
       
       if (image_url) payload.image_url = image_url;

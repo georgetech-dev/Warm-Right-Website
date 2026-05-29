@@ -137,8 +137,11 @@
 }
 
 .feature-tile img {
-    flex: 1 1 45%;
+    flex: 0 0 45%;
+    width: 45%;
     max-width: 45%;
+    min-height: 350px;
+    align-self: stretch;
     object-fit: cover;
 }
 
@@ -259,6 +262,18 @@
     justify-content: center;
 }
 
+.rate-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.rate-modal-actions .btn-read-more {
+    flex: 1 1 0;
+    text-align: center;
+    margin-top: 0;
+}
+
 /* --- RESPONSIVE ADJUSTMENTS --- */
 @media (max-width: 992px) {
     .feature-tile {
@@ -268,7 +283,9 @@
     }
     
     .feature-tile img {
+        width: 100%;
         max-width: 100%;
+        min-height: 0;
         height: 220px;
     }
     
@@ -281,6 +298,7 @@
     .tile-text h2 { font-size: 1.4rem; }
     .price-inc-bold { font-size: 1.4rem; }
     .btn-read-more { width: 100%; text-align: center; }
+    .rate-modal-actions { flex-direction: column; }
 }
   </style>
 </head>
@@ -317,7 +335,10 @@
       <h2 id="rate-modal-title" style="margin-top:0; color:var(--primary-blue);">Service Details</h2>
       <div id="rate-modal-body" style="margin: 20px 0; line-height: 1.7; color: #444; font-size: 1.05rem;">
         </div>
-      <button class="btn-read-more" onclick="closeRateModal()" style="width:100%; margin-top:10px;">Close Window</button>
+      <div class="rate-modal-actions">
+        <button class="btn-read-more" onclick="closeRateModal()">Close Window</button>
+        <a class="btn-read-more" href="book-a-visit.html">Book Now</a>
+      </div>
     </div>
   </div>
 

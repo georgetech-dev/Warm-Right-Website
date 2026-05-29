@@ -2,120 +2,222 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Warm Right Ltd — Home</title>
+  <title>Warm Right Ltd - Offers</title>
   <link rel="icon" href="assets/images/favicon.png">
   <link rel="stylesheet" href="assets/css/variables.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/base.css">
-
-<link rel="stylesheet" href="assets/css/mobile-nav.css">
-
-<link rel="stylesheet" href="assets/css/tiles.css">
-<link rel="stylesheet" href="assets/css/forms.css">
-<link rel="stylesheet" href="assets/css/footer.css">
-<link rel="stylesheet" href="assets/css/header.css">
-<link rel="stylesheet" href="assets/css/hero.css">
-<link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/mobile-nav.css">
+  <link rel="stylesheet" href="assets/css/tiles.css">
+  <link rel="stylesheet" href="assets/css/forms.css">
+  <link rel="stylesheet" href="assets/css/footer.css">
+  <link rel="stylesheet" href="assets/css/header.css">
+  <link rel="stylesheet" href="assets/css/hero.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    .offers-grid { display: grid; gap: 40px; margin-top: 30px; }
+    .offers-grid .feature-tile {
+      display: flex;
+      min-height: 350px;
+      overflow: hidden;
+      border-radius: 20pt;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .offers-grid .feature-tile img {
+      flex: 0 0 45%;
+      width: 45%;
+      max-width: 45%;
+      min-height: 350px;
+      align-self: stretch;
+      object-fit: cover;
+    }
+    .offers-grid .tile-text {
+      flex: 1 1 55%;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .offers-grid .tile-text h2 {
+      font-size: 1.8rem;
+      color: var(--primary-blue);
+      margin-bottom: 15px;
+    }
+    .offers-grid .tile-text p {
+      color: var(--text-secondary, #555);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .offers-grid .offer-button-wrap {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    .btn-read-more {
+      display: inline-block;
+      margin-top: 0;
+      padding: 12px 28px;
+      background: var(--primary-blue);
+      color: #fff !important;
+      text-decoration: none !important;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-read-more:hover { background: var(--accent-orange); transform: scale(1.03); }
+    .offer-modal { display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; background:rgba(12,22,40,0.75); backdrop-filter:blur(6px); }
+    .offer-modal-content { background:#fff; width:min(90vw, 650px); max-height:86vh; overflow:auto; border-radius:20px; padding:36px; position:relative; box-shadow:0 24px 70px rgba(0,0,0,0.35); }
+    .offer-modal-close { position:absolute; top:18px; right:18px; width:36px; height:36px; border:0; border-radius:50%; cursor:pointer; font-size:1.2rem; }
+    .offer-actions { display:flex; gap:12px; margin-top:20px; }
+    .offer-actions .btn-read-more { flex:1; text-align:center; }
+    @media (max-width: 992px) {
+      .offers-grid .feature-tile { flex-direction: column !important; max-width: 500px; margin: 0 auto; }
+      .offers-grid .feature-tile img { width: 100%; max-width: 100%; min-height: 0; height: 220px; }
+      .offers-grid .tile-text { padding: 30px; }
+    }
+    @media (max-width: 480px) {
+      .offers-grid .tile-text h2 { font-size: 1.4rem; }
+      .btn-read-more { width: 100%; text-align: center; }
+      .offer-actions { flex-direction: column; }
+    }
+  </style>
 </head>
 <header id="header"></header>
 <body>
 
-<!-- SLIDE SHOW -->
   <section class="hero">
-  <!-- Slide 1: Family & Friends Offer -->
-  <div class="slide active" style="background-image:url('assets/images/family-offer.jpg');">
-    <a class="slide-content" href="#family-offer">
-      <h1>- Share the Warmth, Split the Cost
-</h1>
-      <p>Book with friends or neighbours nearby and unlock up to 100% off your boiler service.</p>
-    </a>
-  </div>
-
-  <!-- Slide 2: Landlord Bundle -->
-  <div class="slide" style="background-image:url('assets/images/landlord-deal.jpg');">
-    <a class="slide-content" href="#landlord-offer">
-      <h1>Landlord Bundle — All In</h1>
-      <p>Unlimited callouts, CP12, boiler service & more — all for just £120 (inc. VAT).</p>
-    </a>
-  </div>
-
-  <!-- Slide 3: OAP & Free Resources -->
-  <div class="slide" style="background-image:url('assets/images/oap-discount.jpg');">
-    <a class="slide-content" href="#oap-offer">
-      <h1>Warm Right Loyalty for Seniors</h1>
-      <p>We support our community with helpful resources and discounted rates.</p>
-    </a>
-  </div>
-</section>
-
+    <div class="slide active" style="background-image:url('assets/images/family-offer.jpg');">
+      <a class="slide-content" href="#offers-container">
+        <h1>Share the Warmth, Split the Cost</h1>
+        <p>Book with friends or neighbours nearby and unlock up to 100% off your boiler service.</p>
+      </a>
+    </div>
+    <div class="slide" style="background-image:url('assets/images/landlord-deal.jpg');">
+      <a class="slide-content" href="#offers-container">
+        <h1>Landlord Bundle - All In</h1>
+        <p>Unlimited callouts, CP12, boiler service and more for one simple price.</p>
+      </a>
+    </div>
+    <div class="slide" style="background-image:url('assets/images/oap-discount.jpg');">
+      <a class="slide-content" href="#offers-container">
+        <h1>Warm Right Loyalty for Seniors</h1>
+        <p>We support our community with helpful resources and discounted rates.</p>
+      </a>
+    </div>
+  </section>
 
   <main class="container section">
-   
-     <section class="section-heading">
-  <h2 class="section-heading card">Special Offers</h2>
-  <p class="article-gap card">
-    At Warm Right, we believe in rewarding loyalty, supporting landlords, and helping our community stay warm without breaking the bank. Take a look at our current offers below — and don’t forget to check our <a href="/manuals.html">Manuals & Info page</a> for free downloads and helpful guides.
-  </p>
+    <section class="section-heading">
+      <h2 class="section-heading card">Special Offers</h2>
+      <p class="article-gap card">
+        At Warm Right, we believe in rewarding loyalty, supporting landlords, and helping our community stay warm without breaking the bank. Take a look at our current offers below.
+      </p>
 
-  <!-- Family & Friends Offer -->
-  <div class="feature-tile split-left card">
-    <img src="assets/images/family-offer.jpg" alt="Family and Friends Offer">
-    <div class="tile-text">
-      <h2>Family & Friends Offer</h2>
-      <p>Know someone nearby who needs a boiler service or Gas Safety Check? Book together on the same day (within a 2-mile radius) and unlock generous discounts:</p>
-      <ul class="indent">
-        <li>2 households: <strong>10% off</strong> each</li>
-        <li>3 households: <strong>30% off</strong> each</li>
-        <li>4 households: <strong>50% off</strong> each</li>
-        <li>5+ households: <strong>Yours is FREE!</strong></li>
-      </ul>
-      <p><em>To qualify, your boiler must be the final one serviced on the day. Offer excludes the cost of any parts. Boilers must have been serviced within the last 13 months. Terms apply.</em></p>
-    </div>
-  </div>
-
-  <!-- Landlord Deal -->
-  <div class="feature-tile split-right card">
-    <img src="assets/images/landlord-deal.jpg" alt="Landlord Deal">
-    <div class="tile-text">
-      <h2>Landlord Bundle</h2>
-      <p>Our all-in-one landlord package includes everything you need to stay compliant and keep your tenants safe — all for one simple price:</p>
-      <ul class="indent">
-        <li>Unlimited same-day* callouts to your property</li>
-        <li>Annual boiler service</li>
-        <li>CP12 Gas Safety Certificate</li>
-        <li>FREE Energy Efficiency & System Condition Report with remedial advice</li>
-      </ul>
-      <p><strong>Only £120 (£100 exc. VAT) one-off</strong> or <strong>£12/month (£10 exc. VAT)</strong></p>
-      <p><em>Note: Offer excludes timer/programmer adjustments, standard system repressurising, and tenant-related delays. Any required parts will be quoted before fitting.</em></p>
-    </div>
-  </div>
-
-  <!-- Additional Offers -->
-  <div class="feature-tile split-left card">
-    <img src="assets/images/oap-discount.jpg" alt="OAP Discounts">
-    <div class="tile-text">
-      <h2>OAP Discounts</h2>
-      <p>We’re proud to support our older customers with discounted rates on select services. Just let us know when booking and we’ll apply the savings automatically.</p>
-    </div>
-  </div>
-
-  <div class="feature-tile split-right card">
-    <img src="assets/images/manuals.jpg" alt="Free Manuals and Info">
-    <div class="tile-text">
-      <h2>Free Manuals & Guides</h2>
-      <p>Need help identifying a fault or understanding your boiler? Visit our <a href="/support/manuals.html">Manuals & Information page</a> for free downloads, safety tips, and troubleshooting advice.</p>
-    </div>
-  </div>
-</section>
-
-
-
-</section>
-      
+      <div id="offers-container" class="offers-grid">
+        <p class="loading-text">Loading current offers...</p>
+      </div>
+    </section>
   </main>
 
   <footer id="footer"></footer>
-<!-- <button id="theme-toggle">Toggle Dark Mode</button>           TO BE ADDED LATER   -->
+
+  <div id="offer-modal" class="offer-modal" onclick="if(event.target === this) closeOfferModal()">
+    <div class="offer-modal-content">
+      <button class="offer-modal-close" onclick="closeOfferModal()">&times;</button>
+      <h2 id="offer-modal-title" style="margin-top:0; color:var(--primary-blue);">Offer Details</h2>
+      <div id="offer-modal-body" style="line-height:1.7;"></div>
+      <div class="offer-actions">
+        <button class="btn-read-more" onclick="closeOfferModal()">Close Window</button>
+        <a class="btn-read-more" href="book-a-visit.html">Book Now</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const fallbackOffers = [
+      {
+        title: 'Family & Friends Offer',
+        image_url: 'assets/images/family-offer.jpg',
+        summary: 'Book together on the same day within a 2-mile radius and unlock generous boiler service discounts.',
+        content_html: '<p>Know someone nearby who needs a boiler service or Gas Safety Check? Book together on the same day and save.</p><ul class="indent"><li>2 households: <strong>10% off</strong> each</li><li>3 households: <strong>30% off</strong> each</li><li>4 households: <strong>50% off</strong> each</li><li>5+ households: <strong>Yours is FREE!</strong></li></ul><p><em>Offer excludes parts. Boilers must have been serviced within the last 13 months. Terms apply.</em></p>'
+      },
+      {
+        title: 'Landlord Bundle',
+        image_url: 'assets/images/landlord-deal.jpg',
+        summary: 'An all-in-one landlord package for compliance, servicing and tenant support.',
+        content_html: '<p>Our landlord package includes what you need to stay compliant and keep tenants safe.</p><ul class="indent"><li>Unlimited same-day callouts to your property</li><li>Annual boiler service</li><li>CP12 Gas Safety Certificate</li><li>Free Energy Efficiency and System Condition Report</li></ul><p><strong>Only GBP 120 inc. VAT one-off</strong> or <strong>GBP 12/month inc. VAT</strong></p>'
+      },
+      {
+        title: 'OAP Discounts',
+        image_url: 'assets/images/oap-discount.jpg',
+        summary: 'Discounted rates on selected services for older customers.',
+        content_html: '<p>We are proud to support older customers with discounted rates on selected services. Let us know when booking and we will apply the saving automatically.</p>'
+      },
+      {
+        title: 'Free Manuals & Guides',
+        image_url: 'assets/images/manuals.jpg',
+        summary: 'Free downloads, safety tips and troubleshooting information.',
+        content_html: '<p>Need help identifying a fault or understanding your boiler? Visit our <a href="/support/manuals.html">Manuals & Information page</a> for free downloads, safety tips and troubleshooting advice.</p>'
+      }
+    ];
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function renderOffers(offers) {
+      window.currentOffers = offers;
+      document.getElementById('offers-container').innerHTML = offers.map((offer, index) => `
+        <div class="feature-tile ${index % 2 === 0 ? 'split-left' : 'split-right'} card visible">
+          <img src="${escapeHtml(offer.image_url || 'assets/images/placeholder.jpg')}" alt="${escapeHtml(offer.title)}">
+          <div class="tile-text">
+            <h2>${escapeHtml(offer.title)}</h2>
+            <p>${escapeHtml(offer.summary)}</p>
+            <div class="offer-button-wrap">
+              <a class="btn-read-more" href="javascript:void(0)" onclick="openOfferModal(${index})">Read More</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openOfferModal(index) {
+      const offer = window.currentOffers?.[index];
+      if (!offer) return;
+      showOfferModal(offer.title, offer.content_html || offer.summary || '');
+    }
+
+    function showOfferModal(title, html) {
+      document.getElementById('offer-modal-title').textContent = title;
+      document.getElementById('offer-modal-body').innerHTML = html || 'More details will be available soon.';
+      document.getElementById('offer-modal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    window.closeOfferModal = () => {
+      document.getElementById('offer-modal').style.display = 'none';
+      document.body.style.overflow = '';
+    };
+
+    async function loadManagedOffers() {
+      renderOffers(fallbackOffers);
+      const lib = window.supabase || window.Supabase;
+      if (!lib) { setTimeout(loadManagedOffers, 100); return; }
+      const db = lib.createClient(
+        'https://axampuprcnauxbbijmmt.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
+      );
+      const { data, error } = await db.from('site_offers').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+      if (!error && data && data.length) renderOffers(data);
+    }
+
+    loadManagedOffers();
+  </script>
   <script src="assets/js/include.js"></script>
   <script src="assets/js/nav.js"></script>
   <script src="assets/js/main.js"></script>

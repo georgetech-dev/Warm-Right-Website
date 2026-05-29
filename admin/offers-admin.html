@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WarmHub - Manage Offers | Warm Right Ltd</title>
+  <link rel="icon" href="../assets/images/favicon.png">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>window.adminPageTitle = "WarmHub - Manage Offers";</script>
+  <script src="../assets/js/admin-include.js"></script>
+  <style>
+    body { font-family:'Segoe UI', sans-serif; background:#f4f7f6; margin:0; padding:40px; visibility:hidden; }
+    #admin-header-container { margin:-40px -40px 30px -40px; }
+    .container { max-width:1100px; margin:0 auto; padding:0 20px; }
+    #table-view, #form-view { background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05); }
+    .hidden { display:none !important; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
+    label { display:block; font-weight:600; margin:15px 0 5px; font-size:14px; }
+    input, textarea, select, button, .html-editor { font-family:'Segoe UI', sans-serif; }
+    input, textarea, select { width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; font-size:16px; }
+    .form-right { display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fafafa; border:2px dashed #ddd; border-radius:12px; padding:20px; text-align:center; }
+    .form-right img { max-width:100%; max-height:300px; border-radius:8px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    button { padding:10px 18px; border-radius:6px; border:none; font-weight:600; cursor:pointer; transition:.2s; }
+    .btn-primary { background:#004a99; color:white; }
+    .btn-accent { background:#ff8c00; color:white; }
+    .btn-outline { background:transparent; border:1px solid #ccc; color:#666; }
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    th { text-align:left; background:#f9f9f9; padding:15px; color:#004a99; border-bottom:2px solid #eee; }
+    td { padding:15px; border-bottom:1px solid #eee; }
+    .drag-handle { cursor:grab; color:#aaa; font-size:20px; width:30px; }
+    .table-img { width:60px; height:60px; object-fit:cover; border-radius:4px; }
+    .badge { padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; text-transform:uppercase; color:white; }
+    .badge-active { background:#22c55e; }
+    .badge-hidden { background:#666; }
+    .editor-toolbar { display:flex; gap:6px; flex-wrap:wrap; background:#f6f8fb; border:1px solid #ddd; border-bottom:0; border-radius:6px 6px 0 0; padding:8px; }
+    .editor-toolbar button { padding:7px 10px; background:white; border:1px solid #ddd; }
+    .html-editor { min-height:190px; padding:14px; border:1px solid #ddd; border-radius:0 0 6px 6px; background:white; font-size:16px; line-height:1.55; outline:none; }
+    .image-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+    .image-browser-modal { display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; background:rgba(12,22,40,.72); }
+    .image-browser-panel { width:min(1000px, 92vw); max-height:86vh; overflow:auto; background:#fff; border-radius:12px; padding:24px; box-shadow:0 24px 70px rgba(0,0,0,.3); }
+    .image-browser-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+    .image-browser-head input { max-width:320px; }
+    .image-browser-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:14px; }
+    .image-choice { border:1px solid #e5e7eb; border-radius:8px; background:#fff; padding:8px; text-align:left; cursor:pointer; }
+    .image-choice:hover { border-color:#004a99; box-shadow:0 6px 18px rgba(0,74,153,.12); }
+    .image-choice img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f3f4f6; }
+    .image-choice span { display:block; margin-top:6px; font-size:12px; color:#444; word-break:break-word; }
+    .image-browser-status { color:#666; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <div id="admin-header-container"></div>
+  <div class="container">
+    <div id="table-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0">Current Offers</h2>
+        <button class="btn-accent" onclick="showFormMode()">+ Add New Offer</button>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Image</th><th>Title</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+        <tbody id="offersBody"></tbody>
+      </table>
+    </div>
+
+    <div id="form-view" class="hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 id="formTitle" style="margin:0">Add New Offer</h2>
+        <button class="btn-outline" onclick="showTableMode()">Cancel & Close</button>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label><input type="checkbox" id="is_active" style="width:auto; margin-right:8px;" checked> Visible on website</label>
+          <label>Title</label>
+          <input id="title" placeholder="Offer title">
+          <label>Tile Summary</label>
+          <textarea id="summary" rows="3" placeholder="Short tile text..."></textarea>
+          <label>Read More Content</label>
+          <div class="editor-toolbar">
+            <button type="button" onclick="editorCommand('bold')"><strong>B</strong></button>
+            <button type="button" onclick="editorCommand('italic')"><em>I</em></button>
+            <button type="button" onclick="editorCommand('insertUnorderedList')">List</button>
+            <button type="button" onclick="editorCommand('createLink')">Link</button>
+          </div>
+          <div id="content_editor" class="html-editor" contenteditable="true"></div>
+          <button id="saveBtn" class="btn-primary" style="width:100%; padding:15px; margin-top:20px;">Save Offer</button>
+        </div>
+        <div class="form-right">
+          <img id="imagePreview" src="../assets/images/no-image.jpg" alt="Preview">
+          <p style="color:#666; font-size:14px;">Images are uploaded to GitHub assets/images.</p>
+          <input type="file" id="image" accept="image/*" style="display:none;">
+          <input id="image_url" placeholder="assets/images/example.jpg" style="margin-bottom:12px;">
+          <div class="image-actions">
+            <button class="btn-accent" onclick="document.getElementById('image').click()">Upload Picture</button>
+            <button class="btn-outline" onclick="openImageBrowser()">Choose From Files</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="image-browser-modal" class="image-browser-modal" onclick="if(event.target === this) closeImageBrowser()">
+    <div class="image-browser-panel">
+      <div class="image-browser-head">
+        <h2 style="margin:0">Choose Website Image</h2>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input id="image-search" type="search" placeholder="Search images..." oninput="renderImageBrowser()">
+          <button class="btn-outline" onclick="closeImageBrowser()">Close</button>
+        </div>
+      </div>
+      <div id="image-browser-status" class="image-browser-status">Loading GitHub images...</div>
+      <div id="image-browser-grid" class="image-browser-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const GITHUB_IMAGES_FUNCTION = 'https://axampuprcnauxbbijmmt.supabase.co/functions/v1/github-images';
+    let editingId = null;
+    let currentSession = null;
+    let imageFiles = [];
+
+    function editorCommand(command) {
+      if (command === 'createLink') {
+        const url = prompt('Enter the link URL');
+        if (!url) return;
+        document.execCommand(command, false, url);
+        return;
+      }
+      document.execCommand(command, false, null);
+      document.getElementById('content_editor').focus();
+    }
+
+    function setEditorHtml(html) { document.getElementById('content_editor').innerHTML = html || ''; }
+    function getEditorHtml() { return document.getElementById('content_editor').innerHTML.trim(); }
+    function imageSrcForAdmin(path) {
+      if (!path) return '../assets/images/no-image.jpg';
+      if (/^(https?:|data:|blob:)/i.test(path)) return path;
+      return path.startsWith('../') ? path : `../${path.replace(/^\/+/, '')}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    async function checkSecurity() {
+      const lib = window.supabase || window.Supabase;
+      if (!lib) { setTimeout(checkSecurity, 50); return; }
+      window.db = lib.createClient('https://axampuprcnauxbbijmmt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ');
+      const { data: { session } } = await window.db.auth.getSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      currentSession = session;
+      await window.loadAdminHeader(session);
+      document.body.style.visibility = 'visible';
+      loadOffers();
+    }
+
+    function showFormMode() { document.getElementById('table-view').classList.add('hidden'); document.getElementById('form-view').classList.remove('hidden'); }
+    function showTableMode() { document.getElementById('form-view').classList.add('hidden'); document.getElementById('table-view').classList.remove('hidden'); resetForm(); }
+    function resetForm() {
+      editingId = null;
+      document.getElementById('formTitle').textContent = 'Add New Offer';
+      document.getElementById('title').value = '';
+      document.getElementById('summary').value = '';
+      document.getElementById('image_url').value = '';
+      document.getElementById('is_active').checked = true;
+      document.getElementById('image').value = '';
+      document.getElementById('imagePreview').src = '../assets/images/no-image.jpg';
+      setEditorHtml('');
+    }
+
+    function initSortable() {
+      const el = document.getElementById('offersBody');
+      if (!window.Sortable || !el) return;
+      Sortable.create(el, {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: async () => {
+          for (const [index, row] of Array.from(el.querySelectorAll('tr')).entries()) {
+            await window.db.from('site_offers').update({ sort_order: index }).eq('id', row.dataset.id);
+          }
+        }
+      });
+    }
+
+    async function loadOffers() {
+      const { data, error } = await window.db.from('site_offers').select('*').order('sort_order', { ascending:true });
+      const tbody = document.getElementById('offersBody');
+      if (error) { tbody.innerHTML = `<tr><td colspan="5" style="color:#ef4444;">Unable to load offers: ${error.message}</td></tr>`; return; }
+      if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#666;">No offers have been added yet.</td></tr>'; return; }
+      tbody.innerHTML = data.map(offer => `
+        <tr data-id="${offer.id}">
+          <td class="drag-handle">☰</td>
+          <td><img src="${imageSrcForAdmin(offer.image_url)}" class="table-img" onerror="this.onerror=null;this.src='../assets/images/no-image.jpg';"></td>
+          <td><strong>${offer.title}</strong><br><small>${offer.summary || ''}</small></td>
+          <td>${offer.is_active ? '<span class="badge badge-active">Visible</span>' : '<span class="badge badge-hidden">Hidden</span>'}</td>
+          <td style="text-align:right;"><button class="btn-outline" onclick="editOffer('${offer.id}')">Edit</button><button class="btn-outline" style="color:red; margin-left:5px;" onclick="deleteOffer('${offer.id}')">Delete</button></td>
+        </tr>
+      `).join('');
+      initSortable();
+    }
+
+    window.editOffer = async (id) => {
+      const { data } = await window.db.from('site_offers').select('*').eq('id', id).single();
+      if (!data) return;
+      editingId = id;
+      showFormMode();
+      document.getElementById('formTitle').textContent = 'Editing: ' + data.title;
+      document.getElementById('title').value = data.title || '';
+      document.getElementById('summary').value = data.summary || '';
+      document.getElementById('image_url').value = data.image_url || '';
+      document.getElementById('imagePreview').src = imageSrcForAdmin(data.image_url);
+      document.getElementById('is_active').checked = data.is_active !== false;
+      setEditorHtml(data.content_html || '');
+    };
+
+    window.deleteOffer = async (id) => {
+      if (!confirm('Permanently delete this offer?')) return;
+      await window.db.from('site_offers').delete().eq('id', id);
+      loadOffers();
+    };
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function safeFileName(file) {
+      const ext = file.name.split('.').pop();
+      const base = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      return `${Date.now()}-${base || 'offer'}.${ext}`;
+    }
+
+    async function uploadImage(file) {
+      const path = safeFileName(file);
+      const { data, error } = await window.db.functions.invoke('github-images', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentSession.access_token}` },
+        body: { name: path, contentBase64: await fileToBase64(file), message: `Upload offer image ${path}` }
+      });
+      if (error) throw error;
+      return data?.file?.path || `assets/images/${path}`;
+    }
+
+    async function callImageFunction(action, body = null, method = 'GET') {
+      if (!currentSession?.access_token) throw new Error('Your admin session has expired. Please sign in again.');
+      const response = await fetch(`${GITHUB_IMAGES_FUNCTION}?action=${encodeURIComponent(action)}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`,
+          ...(body ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || `Request failed with ${response.status}`);
+      return data;
+    }
+
+    async function openImageBrowser() {
+      document.getElementById('image-browser-modal').style.display = 'flex';
+      document.getElementById('image-browser-status').textContent = 'Loading GitHub images...';
+      document.getElementById('image-browser-grid').innerHTML = '';
+      try {
+        const data = await callImageFunction('list');
+        imageFiles = (data.files || []).sort((a, b) => a.name.localeCompare(b.name));
+        renderImageBrowser();
+      } catch (err) {
+        imageFiles = [];
+        document.getElementById('image-browser-status').textContent = `Unable to load GitHub images: ${err.message}`;
+      }
+    }
+
+    function closeImageBrowser() {
+      document.getElementById('image-browser-modal').style.display = 'none';
+    }
+
+    function renderImageBrowser() {
+      const query = document.getElementById('image-search').value.trim().toLowerCase();
+      const files = imageFiles.filter(file => file.name.toLowerCase().includes(query));
+      document.getElementById('image-browser-status').textContent = `${files.length} image file${files.length === 1 ? '' : 's'} available.`;
+      document.getElementById('image-browser-grid').innerHTML = files.map(file => `
+        <button type="button" class="image-choice" onclick="chooseImage('${encodeURIComponent(file.webPath || `assets/images/${file.name}`)}')">
+          <img src="${escapeHtml(file.downloadUrl || imageSrcForAdmin(file.webPath))}" alt="${escapeHtml(file.name)}">
+          <span>${escapeHtml(file.name)}</span>
+        </button>
+      `).join('');
+    }
+
+    function chooseImage(encodedPath) {
+      const path = decodeURIComponent(encodedPath);
+      document.getElementById('image_url').value = path;
+      document.getElementById('imagePreview').src = imageSrcForAdmin(path);
+      document.getElementById('image').value = '';
+      closeImageBrowser();
+    }
+
+    async function saveOffer() {
+      const title = document.getElementById('title').value.trim();
+      if (!title) return alert('Title is required');
+      let imageUrl = document.getElementById('image_url').value.trim();
+      const file = document.getElementById('image').files[0];
+      if (file) imageUrl = await uploadImage(file);
+      const payload = {
+        title,
+        summary: document.getElementById('summary').value.trim(),
+        content_html: getEditorHtml(),
+        image_url: imageUrl,
+        is_active: document.getElementById('is_active').checked
+      };
+      const { error } = editingId ? await window.db.from('site_offers').update(payload).eq('id', editingId) : await window.db.from('site_offers').insert([payload]);
+      if (error) alert(error.message);
+      else { showTableMode(); loadOffers(); }
+    }
+
+    document.getElementById('image').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) document.getElementById('imagePreview').src = URL.createObjectURL(file);
+    });
+    document.getElementById('saveBtn').addEventListener('click', saveOffer);
+    checkSecurity();
+  </script>
+</body>
+</html>

@@ -487,6 +487,14 @@
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
+    padding: 0 !important;
+  }
+
+  .info-tile img {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
   }
 
 /* Targeted fix: Only affects the Call Us tile on desktop */
@@ -525,7 +533,7 @@
 /* 4. Mobile specific: just ensure the gap stays tight */
 @media (max-width: 768px) {
     .info-tile {
-        padding: 15px; /* Slight reduction for better fit on small screens */
+        padding: 0 !important;
     }
     
     #call-to-book-text {
