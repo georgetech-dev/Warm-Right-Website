@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | Warm Right Ltd</title>
+      <link rel="icon" href="../assets/images/favicon.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary-blue: #004a99;
+      --accent-orange: #ff8c00;
+      --bg-gray: #f4f7f6;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-gray);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-card {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .logo img {
+      height: 60px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: var(--primary-blue);
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    p.subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .input-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #444;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary-blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #003a7a;
+    }
+
+    #msg {
+      margin-top: 20px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .btn-secondary {
+        background-color: transparent;
+        color: var(--primary-blue);
+        border: 1px solid var(--primary-blue);
+        margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="logo">
+      <img src="../assets/images/logo.png" alt="Warm Right Ltd">
+    </div>
+
+    <div id="login-fields">
+        <h2>Admin Access</h2>
+        <p class="subtitle">This area is for administrators only.<br><br>If you are not an administrator, please click <a href="../index.html">here</a></p>
+
+        <div class="input-group">
+          <label for="email">Username</label>
+          <input id="email" type="email" placeholder="Please enter your username" value="stephanvgeorge@gmail.com">
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="••••••••">
+        </div>
+
+        <div style="text-align: right; margin-top: -10px; margin-bottom: 20px;">
+            <a href="#" id="forgot-password" style="color: var(--primary-blue); font-size: 12px; text-decoration: none;">Forgot Password?</a>
+        </div>
+        <button id="loginBtn">Secure Log In</button>
+    </div>
+
+    <div id="mfa-section" style="display: none;">
+        <h2>Security Verification</h2>
+        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+            Enter the 6-digit code from your authenticator app to continue.
+        </p>
+        <div class="input-group">
+            <input type="text" id="mfa-otp" placeholder="000 000" maxlength="6" 
+               style="text-align: center; letter-spacing: 4px; font-size: 20px; font-weight: bold;">
+        </div>
+        <button id="mfaBtn" onclick="verifyLoginMFA()">Verify & Login</button>
+        <button class="btn-secondary" onclick="window.location.reload()">Back to Login</button>
+    </div>
+
+    <p id="msg"></p>
+  </div>
+
+  <script>
+
+    
+   
+    
+
+
+
+    let db;
+
+    function initSupabase() {
+      const lib = window.supabase || window.Supabase;
+      if (!lib) {
+        setTimeout(initSupabase, 100);
+        return;
+      }
+      db = lib.createClient(
+        'https://axampuprcnauxbbijmmt.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
+      );
+      window.db = db;
+    }
+
+    initSupabase();
+
+    // --- STEP 1: INITIAL LOGIN ---
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      if (!db) return;
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const msg = document.getElementById('msg');
+
+      msg.style.color = "var(--primary-blue)";
+      msg.textContent = "Authenticating...";
+
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        msg.style.color = "#ef4444";
+        msg.textContent = error.message;
+      } else {
+        // --- CHECK IF MFA IS REQUIRED ---
+        const { data: { nextLevel, currentLevel } } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+
+        if (nextLevel === 'aal2' && nextLevel !== currentLevel) {
+            // MFA is enabled for this user
+            document.getElementById('login-fields').style.display = 'none';
+            document.getElementById('mfa-section').style.display = 'block';
+            msg.textContent = "";
+            document.getElementById('mfa-otp').focus();
+        } else {
+            // No MFA, proceed normally
+            msg.style.color = "#10b981";
+            msg.textContent = "Access Granted. Redirecting...";
+            setTimeout(() => { window.location.href = 'admin-landed.html'; }, 800);
+        }
+      }
+    });
+
+    // --- STEP 2: VERIFY MFA ---
+    async function verifyLoginMFA() {
+        const otp = document.getElementById('mfa-otp').value.trim();
+        const msg = document.getElementById('msg');
+
+        if (otp.length < 6) {
+            msg.style.color = "#ef4444";
+            msg.textContent = "Please enter the 6-digit code.";
+            return;
+        }
+
+        msg.style.color = "var(--primary-blue)";
+        msg.textContent = "Verifying code...";
+
+        // 1. Get the enrolled factor
+        const { data: factors } = await db.auth.mfa.listFactors();
+        const factor = factors.totp[0];
+
+        // 2. Create Challenge
+        const { data: challengeData, error: challengeError } = await db.auth.mfa.challenge({ factorId: factor.id });
+        if (challengeError) {
+            msg.style.color = "#ef4444";
+            msg.textContent = challengeError.message;
+            return;
+        }
+
+        // 3. Verify Challenge
+        const { error: verifyError } = await db.auth.mfa.verify({
+            factorId: factor.id,
+            challengeId: challengeData.id,
+            code: otp
+        });
+
+        if (verifyError) {
+            msg.style.color = "#ef4444";
+            msg.textContent = "Invalid code. Please try again.";
+        } else {
+            msg.style.color = "#10b981";
+            msg.textContent = "Verification Successful. Redirecting...";
+            setTimeout(() => { window.location.href = 'admin-landed.html'; }, 800);
+        }
+    }
+
+    // Smart "Enter" Key Support
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+          // If MFA is visible, verify MFA. Otherwise, do standard login.
+          if (document.getElementById('mfa-section').style.display === 'block') {
+              verifyLoginMFA();
+          } else {
+              document.getElementById('loginBtn').click();
+          }
+      }
+    });
+	
+	// Reset password
+	document.getElementById('forgot-password').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const msg = document.getElementById('msg');
+
+        if (!email) {
+            msg.style.color = "#ef4444";
+            msg.textContent = "Please enter your email address first.";
+            return;
+        }
+
+        const { error } = await db.auth.resetPasswordForEmail(email, {
+            redirectTo: new URL('reset-password.html', window.location.href).href,
+        });
+
+        if (error) {
+            msg.style.color = "#ef4444";
+            msg.textContent = error.message;
+        } else {
+            msg.style.color = "var(--primary-blue)";
+            msg.textContent = "Password reset email sent! Check your inbox.";
+        }
+    });
+
+    async function debugAuth() {
+        console.log("--- Debugging Login Redirect ---");
+        
+        // 1. Check if window.db exists
+        if (typeof window.db === 'undefined') {
+            console.error("FAIL: window.db is not defined! Are your script tags in the right order?");
+            return;
+        }
+
+        // 2. Try to get the session
+        const { data, error } = await window.db.auth.getSession();
+        
+        if (error) {
+            console.error("FAIL: Supabase error:", error);
+            return;
+        }
+
+        if (!data.session) {
+            console.log("SUCCESS: No user logged in. Allowing access to login page.");
+            return;
+        }
+
+        // 3. Decode the JWT
+        try {
+            const token = data.session.access_token;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            console.log("Logged in as:", payload.email, "with role:", payload.user_role);
+
+            // 4. Check Roles
+            const forbiddenRoles = ['customer', 'site-viewer', 'site-viewer-engineer'];
+            if (forbiddenRoles.includes(payload.user_role)) {
+                console.log("FORBIDDEN: Redirecting to /index.html...");
+                window.location.replace('/index.html');
+            } else {
+                console.log("ALLOWED: This user is an Admin/Engineer.");
+            }
+        } catch (e) {
+            console.error("FAIL: Could not decode token:", e);
+        }
+    }
+    
+    // Run it
+    debugAuth();
+  </script>
+</body>
+</html>

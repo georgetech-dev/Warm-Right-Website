@@ -34,9 +34,21 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 10px 15px;
+  
 }
 
 /* --- DESKTOP BRANDING --- */
+#main-nav-bar #headbrand {
+  color: inherit;
+  text-decoration: none;
+}
+
+#main-nav-bar #headbrand:hover,
+#main-nav-bar #headbrand:focus,
+#main-nav-bar #headbrand:visited {
+  text-decoration: none;
+}
+
 #main-nav-bar .brand {
   display: flex;
   align-items: center;
@@ -44,11 +56,10 @@ html, body {
   background: #fff;
   padding: 5px 12px;
   border-radius: 8px;
-  text-decoration: none;
 }
 
 #main-nav-bar .brand img { height: 35px; width: auto; }
-#main-nav-bar .brand .title { font-weight: 700; color: var(--nav-background); font-size: 1rem; white-space: nowrap; }
+#main-nav-bar .brand .title { font-weight: 700; color: var(--nav-background); font-size: 1rem; white-space: nowrap;  }
 #main-nav-bar .brand .sub { font-size: 0.85rem; color: var(--nav-background); }
 #main-nav-bar .brand-separator { width: 1px; height: 20px; background: #eee; margin-left: 10px; }
 

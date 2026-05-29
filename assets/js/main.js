@@ -1,4 +1,4 @@
-console.log("MAIN JS VERSION", 3);
+console.log("MAIN JS VERSION", 4);
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ================================
-       CAROUSEL AUTO-SCROLL - FIXED
+       CAROUSEL AUTO-SCROLL
   ================================== */
   document.querySelectorAll('.carousel-container').forEach(container => {
     const track = container.querySelector('.carousel-track');
@@ -80,20 +80,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const prevBtn = container.querySelector('.carousel-btn.left');
     const nextBtn = container.querySelector('.carousel-btn.right');
 
-    let scrollSpeed = 0.6;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let scrollSpeed = 70;
     let isPaused = false;
-    let isUserScrolling = false;
-    let lastScrollLeft = 0;
-    let scrollTimeout;
+    let isVisible = true;
     let scrollDirection = 1;
+    let lastFrameTime;
+    let resumeTimeout;
 
-    function animateScroll() {
-      if (isPaused || isUserScrolling || !track) {
+    function pauseBriefly(delay = 1200) {
+      isPaused = true;
+      clearTimeout(resumeTimeout);
+      resumeTimeout = setTimeout(() => {
+        isPaused = false;
+        lastFrameTime = undefined;
+      }, delay);
+    }
+
+    if ('IntersectionObserver' in window) {
+      const carouselObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          isVisible = entry.isIntersecting;
+          if (isVisible) lastFrameTime = undefined;
+        });
+      }, { threshold: 0.15 });
+
+      carouselObserver.observe(container);
+    }
+
+    function animateScroll(timestamp) {
+      if (prefersReducedMotion || isPaused || !isVisible || !track) {
+        lastFrameTime = timestamp;
         requestAnimationFrame(animateScroll);
         return;
       }
 
-      track.scrollLeft += scrollSpeed * scrollDirection;
+      if (lastFrameTime === undefined) lastFrameTime = timestamp;
+      const elapsedSeconds = Math.min((timestamp - lastFrameTime) / 1000, 0.05);
+      lastFrameTime = timestamp;
+
+      track.scrollLeft += scrollSpeed * elapsedSeconds * scrollDirection;
 
       const maxScroll = track.scrollWidth - track.clientWidth;
 
@@ -110,21 +136,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // User interaction handling
     if (track) {
-      track.addEventListener('scroll', () => {
-        if (Math.abs(track.scrollLeft - lastScrollLeft) > 2) {
-          isUserScrolling = true;
-          clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(() => { isUserScrolling = false; }, 1500);
-        }
-        lastScrollLeft = track.scrollLeft;
-      });
+      track.addEventListener('wheel', () => pauseBriefly(), { passive: true });
+      track.addEventListener('touchstart', () => {
+        isPaused = true;
+        clearTimeout(resumeTimeout);
+      }, { passive: true });
+      track.addEventListener('touchend', () => pauseBriefly(900), { passive: true });
 
       // Hover + Touch pause
       container.addEventListener('mouseenter', () => isPaused = true);
-      container.addEventListener('mouseleave', () => isPaused = false);
-
-      track.addEventListener('touchstart', () => isPaused = true);
-      track.addEventListener('touchend', () => isPaused = false);
+      container.addEventListener('mouseleave', () => {
+        isPaused = false;
+        lastFrameTime = undefined;
+      });
     }
 
     // Buttons
@@ -133,8 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
       track.scrollBy({ left: dir * tileWidth, behavior: 'smooth' });
     }
 
-    if (nextBtn) nextBtn.addEventListener('click', () => { scrollByTile(1); isPaused=true; setTimeout(()=>isPaused=false,1400); });
-    if (prevBtn) prevBtn.addEventListener('click', () => { scrollByTile(-1); isPaused=true; setTimeout(()=>isPaused=false,1400); });
+    if (nextBtn) nextBtn.addEventListener('click', () => { scrollByTile(1); pauseBriefly(1400); });
+    if (prevBtn) prevBtn.addEventListener('click', () => { scrollByTile(-1); pauseBriefly(1400); });
 
     // Start animation
     requestAnimationFrame(animateScroll);

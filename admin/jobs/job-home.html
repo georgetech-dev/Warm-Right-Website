@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Management | Warm Right Ltd</title>
+    <link rel="icon" href="../../assets/images/favicon.png">
+    <link rel="stylesheet" href="../../assets/css/variables.css">  
+    <link rel="stylesheet" href="../../assets/css/admin.css">
+  
+    
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="../../assets/js/offline-engine.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+
+    <script>window.adminPageTitle = "Job Management";</script>
+    <script src="../../assets/js/admin-include.js"></script>
+
+</head>
+<body style="visibility: hidden;">
+    
+    <div id="admin-header-container"></div>
+
+    <main style="padding: 24px;">
+        <h1 style="margin: 0 0 8px; color: #004a99;">Job Home Access Test</h1>
+        <p style="margin: 0; color: #475569;">If you can see this text, the admin-only `user_roles` gate on this page has passed.</p>
+    </main>
+
+    <script>
+
+        async function checkSecurity() {
+            const lib = window.supabase || window.Supabase;
+            if (!lib) { setTimeout(checkSecurity, 50); return; }
+            window.db = lib.createClient(
+                'https://axampuprcnauxbbijmmt.supabase.co', 
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
+            );
+            const { data: { session } } = await window.db.auth.getSession();
+            if (!session) { window.location.replace(window.getAdminUrl('login.html')); return; }
+            if (!(await window.requireRole(['admin']))) return;
+            await window.loadAdminHeader(session);
+            await window.loadAdminFooter();
+            document.body.style.visibility = 'visible';
+            if (typeof window.initInventory === 'function') window.initInventory();
+            if (typeof window.updateMobileFabs === 'function') window.updateMobileFabs();
+        }
+        checkSecurity();
+    </script>
+    <div id="admin-footer-container"></div>
+</body>
+</html>

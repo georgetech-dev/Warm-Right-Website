@@ -165,7 +165,7 @@
 .carousel-track {
   display: flex;
   overflow-x: auto;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   gap: 20px;
   padding: 10px;
   scrollbar-width: none;
