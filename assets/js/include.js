@@ -36,7 +36,7 @@ function loadHTML(id, file) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const isGitHub = window.location.hostname.includes("github.io");
-  const siteRoot = isGitHub ? "/warm/" : "/";
+  const siteRoot = isGitHub ? "/Warm-Right-Website/" : "/";
   const partialsPath = siteRoot + "partials/";
 
   Promise.all([
