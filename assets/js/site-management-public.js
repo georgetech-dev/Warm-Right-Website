@@ -37,10 +37,11 @@
       const page = pageMap.get(normalizePath(href));
       if (!page || page.is_active) return;
 
+      const mobileDropdownLink = el.closest('.mobile-dropdown-menu a');
       const mobileItem = el.closest('.mobile-item');
       const dropdownLink = el.closest('.dropdown-menu a');
       const navLink = el.closest('.nav > a');
-      const target = mobileItem || dropdownLink || navLink || el;
+      const target = mobileDropdownLink || dropdownLink || navLink || mobileItem || el;
       target.style.display = 'none';
     });
 

@@ -22,9 +22,11 @@
   }
 
   function deviceType() {
-    const width = Math.max(window.innerWidth || 0, screen.width || 0);
-    if (/tablet|ipad/i.test(navigator.userAgent) || (width >= 600 && width < 1024)) return 'tablet';
-    if (/mobile|android|iphone/i.test(navigator.userAgent) || width < 600) return 'mobile';
+    const userAgent = navigator.userAgent || '';
+    const width = window.visualViewport?.width || window.innerWidth || screen.width || 0;
+    const reportsMobile = navigator.userAgentData?.mobile === true;
+    if (reportsMobile || /mobile|iphone|ipod/i.test(userAgent) || width < 600) return 'mobile';
+    if (/tablet|ipad/i.test(userAgent) || (navigator.maxTouchPoints > 1 && width < 1100)) return 'tablet';
     return 'desktop';
   }
 
@@ -63,7 +65,15 @@
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(basePayload(eventName)),
-    }).catch(() => {});
+    }).then(response => {
+      if (!response.ok && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
+        console.warn(`Warm Right analytics returned ${response.status}.`);
+      }
+    }).catch(error => {
+      if (/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
+        console.warn('Warm Right analytics could not send this event.', error);
+      }
+    });
   }
 
   function eventForLink(link) {

@@ -41,10 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   Promise.all([
     initPublicDatabase(),
-    loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=5"),
+    loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=6"),
     loadScriptOnce(siteRoot + "assets/js/hero-management-public.js?v=8"),
     loadScriptOnce(siteRoot + "assets/js/content-cards.js?v=8"),
-    loadScriptOnce(siteRoot + "assets/js/site-analytics.js?v=1"),
+    loadScriptOnce(siteRoot + "assets/js/site-analytics.js?v=3"),
     loadHTML("header", partialsPath + "header.html"),
     loadHTML("footer", partialsPath + "footer.html")
   ]).then(() => {
