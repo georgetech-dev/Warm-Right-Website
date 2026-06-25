@@ -8,6 +8,7 @@ const steps = [
 ];
 
 let currentStep = 0;
+let addressTimer = null;
 
 const form = document.getElementById('feedback-form');
 const backBtn = document.getElementById('backBtn');
@@ -56,27 +57,93 @@ function applyQueryParams() {
 }
 
 function bindAddressFinder() {
-  if (!window.google?.maps?.places && window.WARMRIGHT_GOOGLE_MAPS_API_KEY) {
-    window.initFeedbackAddressFinder = bindAddressFinder;
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(window.WARMRIGHT_GOOGLE_MAPS_API_KEY)}&libraries=places&callback=initFeedbackAddressFinder`;
-    script.async = true;
-    document.head.appendChild(script);
+  const input = document.getElementById('customer_address');
+  const suggestions = document.getElementById('feedback-address-suggestions');
+  if (!input || !suggestions) return;
+
+  input.addEventListener('input', () => requestAddressPredictions(input.value));
+  input.addEventListener('focus', () => requestAddressPredictions(input.value));
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAddressSuggestions();
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.address-finder-wrap')) closeAddressSuggestions();
+  });
+}
+
+function requestAddressPredictions(value) {
+  const input = document.getElementById('customer_address');
+  const suggestions = document.getElementById('feedback-address-suggestions');
+  if (!input || !suggestions) return;
+
+  clearTimeout(addressTimer);
+  const query = String(value || '').trim();
+  if (query.length < 3) {
+    closeAddressSuggestions();
     return;
   }
 
-  const input = document.getElementById('customer_address');
-  if (!window.google?.maps?.places || !input) return;
+  addressTimer = setTimeout(async () => {
+    try {
+      const { data, error } = await window.db.functions.invoke('google-places', {
+        body: { action: 'autocomplete', input: query },
+      });
+      if (error) throw error;
+      if (!data?.predictions?.length) {
+        closeAddressSuggestions();
+        return;
+      }
+      renderAddressSuggestions(data.predictions);
+    } catch (err) {
+      console.warn('Address lookup failed', err);
+      closeAddressSuggestions();
+    }
+  }, 180);
+}
 
-  const autocomplete = new google.maps.places.Autocomplete(input, {
-    componentRestrictions: { country: 'gb' },
-    fields: ['formatted_address', 'name'],
-    types: ['address'],
+function renderAddressSuggestions(predictions) {
+  const input = document.getElementById('customer_address');
+  const suggestions = document.getElementById('feedback-address-suggestions');
+  suggestions.innerHTML = '';
+  predictions.forEach((prediction) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'address-suggestion';
+    button.setAttribute('role', 'option');
+    const main = prediction.main_text || prediction.description;
+    const secondary = prediction.secondary_text || '';
+    button.innerHTML = `<strong>${escapeHtml(main)}</strong>${secondary ? `<span>${escapeHtml(secondary)}</span>` : ''}`;
+    button.addEventListener('click', () => chooseAddressPrediction(prediction));
+    suggestions.appendChild(button);
   });
-  autocomplete.addListener('place_changed', () => {
-    const place = autocomplete.getPlace();
-    input.value = place.formatted_address || place.name || input.value;
-  });
+  suggestions.classList.add('active');
+  input.setAttribute('aria-expanded', 'true');
+}
+
+async function chooseAddressPrediction(prediction) {
+  const input = document.getElementById('customer_address');
+  input.value = prediction.description;
+  closeAddressSuggestions();
+
+  if (!prediction.place_id) return;
+  try {
+    const { data, error } = await window.db.functions.invoke('google-places', {
+      body: { action: 'details', place_id: prediction.place_id },
+    });
+    if (error) throw error;
+    if (data?.place?.formatted_address) input.value = data.place.formatted_address;
+  } catch (err) {
+    console.warn('Address details lookup failed', err);
+  }
+}
+
+function closeAddressSuggestions() {
+  const input = document.getElementById('customer_address');
+  const suggestions = document.getElementById('feedback-address-suggestions');
+  if (!suggestions) return;
+  suggestions.classList.remove('active');
+  suggestions.innerHTML = '';
+  if (input) input.setAttribute('aria-expanded', 'false');
 }
 
 function showStep(index) {

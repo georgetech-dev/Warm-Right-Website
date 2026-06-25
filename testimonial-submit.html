@@ -438,7 +438,6 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/site-config.js?v=1"></script>
   <script>
     window.db = window.db || window.supabase.createClient(
       'https://axampuprcnauxbbijmmt.supabase.co',
@@ -447,8 +446,6 @@
     let selectedRating = 5;
     let selectedPhotos = [];
     let lastSubmittedTestimonial = null;
-    let testimonialAutocompleteService = null;
-    let testimonialPlacesService = null;
     let testimonialAddressTimer = null;
 
     document.querySelectorAll('#rating-picker input[name="rating"]').forEach((input) => {
@@ -468,27 +465,8 @@
     function bindTestimonialAddressFinder() {
       const input = document.getElementById('customer_address');
       const suggestions = document.getElementById('address-suggestions');
-      const key = window.WARMRIGHT_GOOGLE_MAPS_API_KEY;
 
       if (!input || !suggestions) return;
-
-      if (!window.google?.maps?.places && key) {
-        window.initTestimonialAddressFinder = bindTestimonialAddressFinder;
-        if (document.getElementById('google-maps-places-script')) return;
-        const script = document.createElement('script');
-        script.id = 'google-maps-places-script';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=initTestimonialAddressFinder`;
-        script.async = true;
-        document.head.appendChild(script);
-        return;
-      }
-
-      if (!window.google?.maps?.places) {
-        return;
-      }
-
-      testimonialAutocompleteService = testimonialAutocompleteService || new google.maps.places.AutocompleteService();
-      testimonialPlacesService = testimonialPlacesService || new google.maps.places.PlacesService(document.createElement('div'));
 
       input.addEventListener('input', () => requestAddressPredictions(input.value));
       input.addEventListener('focus', () => requestAddressPredictions(input.value));
@@ -503,7 +481,7 @@
     function requestAddressPredictions(value) {
       const input = document.getElementById('customer_address');
       const suggestions = document.getElementById('address-suggestions');
-      if (!testimonialAutocompleteService || !input || !suggestions) return;
+      if (!input || !suggestions) return;
 
       clearTimeout(testimonialAddressTimer);
       const query = String(value || '').trim();
@@ -512,18 +490,21 @@
         return;
       }
 
-      testimonialAddressTimer = setTimeout(() => {
-        testimonialAutocompleteService.getPlacePredictions({
-          input: query,
-          componentRestrictions: { country: 'gb' },
-          types: ['address'],
-        }, (predictions, status) => {
-          if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions?.length) {
+      testimonialAddressTimer = setTimeout(async () => {
+        try {
+          const { data, error } = await window.db.functions.invoke('google-places', {
+            body: { action: 'autocomplete', input: query },
+          });
+          if (error) throw error;
+          if (!data?.predictions?.length) {
             closeAddressSuggestions();
             return;
           }
-          renderAddressSuggestions(predictions.slice(0, 6));
-        });
+          renderAddressSuggestions(data.predictions);
+        } catch (err) {
+          console.warn('Address lookup failed', err);
+          closeAddressSuggestions();
+        }
       }, 180);
     }
 
@@ -532,8 +513,8 @@
       const suggestions = document.getElementById('address-suggestions');
       suggestions.innerHTML = '';
       predictions.forEach((prediction) => {
-        const main = prediction.structured_formatting?.main_text || prediction.description;
-        const secondary = prediction.structured_formatting?.secondary_text || '';
+        const main = prediction.main_text || prediction.description;
+        const secondary = prediction.secondary_text || '';
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'address-suggestion';
@@ -546,20 +527,21 @@
       input.setAttribute('aria-expanded', 'true');
     }
 
-    function chooseAddressPrediction(prediction) {
+    async function chooseAddressPrediction(prediction) {
       const input = document.getElementById('customer_address');
       input.value = prediction.description;
       closeAddressSuggestions();
 
-      if (!testimonialPlacesService || !prediction.place_id) return;
-      testimonialPlacesService.getDetails({
-        placeId: prediction.place_id,
-        fields: ['formatted_address'],
-      }, (place, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && place?.formatted_address) {
-          input.value = place.formatted_address;
-        }
-      });
+      if (!prediction.place_id) return;
+      try {
+        const { data, error } = await window.db.functions.invoke('google-places', {
+          body: { action: 'details', place_id: prediction.place_id },
+        });
+        if (error) throw error;
+        if (data?.place?.formatted_address) input.value = data.place.formatted_address;
+      } catch (err) {
+        console.warn('Address details lookup failed', err);
+      }
     }
 
     function closeAddressSuggestions() {

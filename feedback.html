@@ -56,9 +56,11 @@
             <label>Job number <span>(if applicable)</span><input id="job_number" name="job_number" autocomplete="off"></label>
           </div>
           <label class="full-width">Address
-            <input id="customer_address" name="customer_address" required autocomplete="street-address" placeholder="Start typing your address">
+            <span class="address-finder-wrap">
+              <input id="customer_address" name="customer_address" required autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="Start typing and choose your address from the suggestions" aria-controls="feedback-address-suggestions" aria-expanded="false">
+              <span id="feedback-address-suggestions" class="address-suggestions" role="listbox"></span>
+            </span>
           </label>
-          <p id="address-help" class="field-note">Google address finder can be enabled with a browser-restricted Google Maps API key. Manual entry works until then.</p>
         </section>
 
         <section class="survey-step" data-step="1">
@@ -142,7 +144,6 @@
       'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM'
     );
   </script>
-  <script src="assets/js/site-config.js?v=1"></script>
   <script src="assets/js/feedback.js?v=2"></script>
 </body>
 </html>

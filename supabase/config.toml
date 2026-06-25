@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.site-analytics]
 verify_jwt = false
+
+[functions.google-places]
+verify_jwt = false

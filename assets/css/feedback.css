@@ -211,6 +211,66 @@ input[type="range"] {
   display: block;
 }
 
+.address-finder-wrap {
+  position: relative;
+  display: block;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.address-suggestions {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #d8e2ee;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+}
+
+.address-suggestions.active {
+  display: block;
+}
+
+.address-suggestion {
+  display: block;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-bottom: 1px solid #eef2f7;
+  background: #fff;
+  color: #10233f;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.address-suggestion:hover,
+.address-suggestion:focus {
+  background: #f3f7fb;
+  outline: none;
+}
+
+.address-suggestion strong {
+  display: block;
+  color: #123b75;
+  font-weight: 800;
+}
+
+.address-suggestion span {
+  display: block;
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 .contact-choice {
   margin: 18px 0;
   padding: 18px;

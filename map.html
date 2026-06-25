@@ -144,8 +144,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEpGUBjr6slBScj_2xNnTjoZ98WZSxuGM&libraries=places"></script>
-
   <script>
     const SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM'; 
@@ -195,29 +193,47 @@
     // ==========================================
     // GOOGLE PLACES AUTOCOMPLETE LOGIC BLOCK
     // ==========================================
-    function initGoogleAutocomplete() {
+    function initAddressSearch() {
       const input = document.getElementById('google-search');
-      const options = {
-        componentRestrictions: { country: "gb" },
-        fields: ["address_components", "geometry", "formatted_address"]
-      };
+      let timer = null;
+      if (!input) return;
 
-      const autocomplete = new google.maps.places.Autocomplete(input, options);
+      input.addEventListener('change', () => searchAddress(input.value));
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          searchAddress(input.value);
+        }
+      });
+      input.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => searchAddress(input.value), 650);
+      });
+    }
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        
-        if (!place.geometry || !place.geometry.location) return;
+    async function searchAddress(query) {
+      query = String(query || '').trim();
+      if (query.length < 3) return;
+      const { data: predictionData, error: predictionError } = await supabaseClient.functions.invoke('google-places', {
+        body: { action: 'autocomplete', input: query },
+      });
+      if (predictionError || !predictionData?.predictions?.length) return;
 
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
+      const { data: detailData, error: detailError } = await supabaseClient.functions.invoke('google-places', {
+        body: { action: 'details', place_id: predictionData.predictions[0].place_id },
+      });
+      if (detailError || !detailData?.place?.lat || !detailData?.place?.lng) return;
+
+      const place = detailData.place;
+      const lat = place.lat;
+      const lng = place.lng;
         lastSearchedLatLng = [lat, lng];
 
         map.setView(lastSearchedLatLng, 16);
 
         if (searchMarker) map.removeLayer(searchMarker);
         searchMarker = L.marker(lastSearchedLatLng).addTo(map)
-          .bindPopup(`<b>Google Target Destination:</b><br>${place.formatted_address}`)
+          .bindPopup(`<b>Target Destination:</b><br>${place.formatted_address}`)
           .openPopup();
 
         // Push values to raw input fields
@@ -261,10 +277,9 @@
 
         // Trigger the live calculations comparison check loop
         updateRadiusMetrics();
-      });
     }
 
-    google.maps.event.addDomListener(window, 'load', initGoogleAutocomplete);
+    initAddressSearch();
 
     let deviceMarker = null;
     let travelTrail = null;
