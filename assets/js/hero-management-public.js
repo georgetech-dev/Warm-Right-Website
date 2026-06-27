@@ -15,6 +15,9 @@
   function resolveUrl(url) {
     if (!url) return '';
     if (/^(https?:|data:|blob:|\/|#)/i.test(url)) return url;
+    if (String(url).replace(/^(\.\/|\.\.\/|\/)+/, '').startsWith('assets/images/')) {
+      return window.WarmRightImages?.backgroundImageUrl(url) || url;
+    }
     const isGitHub = window.location.hostname.includes('github.io');
     const siteRoot = isGitHub ? '/Warm-Right-Website/' : '/';
     return siteRoot + url.replace(/^(\.\/|\.\.\/|\/)+/, '');

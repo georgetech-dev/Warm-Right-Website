@@ -216,12 +216,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nextBtn) {
       nextBtn.addEventListener('mouseenter', () => startSeek(2));
       nextBtn.addEventListener('mouseleave', stopSeek);
-      nextBtn.addEventListener('click', () => { scrollByTile(6); pauseBriefly(1400); });
+      nextBtn.addEventListener('click', () => { scrollByTile(1); pauseBriefly(1400); });
     }
     if (prevBtn) {
       prevBtn.addEventListener('mouseenter', () => startSeek(-2));
       prevBtn.addEventListener('mouseleave', stopSeek);
-      prevBtn.addEventListener('click', () => { scrollByTile(-6); pauseBriefly(1400); });
+      prevBtn.addEventListener('click', () => { scrollByTile(-1); pauseBriefly(1400); });
     }
 
     // Start animation

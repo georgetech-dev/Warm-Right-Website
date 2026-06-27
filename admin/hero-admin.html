@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WarmHub - Hero Pictures | Warm Right Ltd</title>
   <link rel="icon" href="../assets/images/favicon.png">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20260614c">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
   <link rel="stylesheet" href="../assets/css/variables.css">
   <link rel="stylesheet" href="../assets/css/hero.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.adminPageTitle = "WarmHub - Hero Pictures";</script>
-  <script src="../assets/js/admin-include.js?v=20260614c"></script>
+  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260625b"></script>
   <style>
     body { font-family:'Segoe UI', sans-serif; background:#f4f7f6; margin:0; padding:40px; visibility:hidden; color:#263238; }
     #admin-header-container { margin:-40px -40px 30px -40px; }
@@ -79,13 +80,6 @@
     .crop-popover[hidden] { display:none; }
     .crop-popover-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; color:#004a99; font-weight:800; }
     .crop-popover .btn-outline { padding:6px 10px; }
-    .image-browser { display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; background:rgba(12,22,40,.72); }
-    .image-browser.open { display:flex; }
-    .image-panel { width:min(1000px,92vw); max-height:86vh; overflow:auto; background:#fff; border-radius:12px; padding:24px; }
-    .image-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; margin-top:14px; }
-    .image-choice { border:1px solid #e5e7eb; border-radius:8px; background:#fff; padding:8px; text-align:left; }
-    .image-choice img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f3f4f6; }
-    .image-choice span { display:block; margin-top:6px; font-size:12px; word-break:break-word; color:#444; }
     @media (max-width:1000px) { body{padding:75px 14px 20px!important;} #admin-header-container{margin:0 -14px 20px!important;} .layout{grid-template-columns:1fr;} }
   </style>
 </head>
@@ -187,26 +181,9 @@
     </section>
   </main>
 
-  <div id="image-browser" class="image-browser" onclick="if(event.target === this) closeImageBrowser()">
-    <div class="image-panel">
-      <div class="toolbar">
-        <h2>Choose Image</h2>
-        <div style="display:flex; gap:10px;">
-          <input id="image-search" type="search" placeholder="Search images..." oninput="renderImageBrowser()">
-          <label class="btn-accent" for="image-browser-upload">Upload Image</label>
-          <input id="image-browser-upload" type="file" accept="image/*" hidden onchange="uploadImageFromBrowser(this.files[0])">
-          <button class="btn-outline" onclick="closeImageBrowser()">Close</button>
-        </div>
-      </div>
-      <div id="image-status" class="status">Loading images...</div>
-      <div id="image-grid" class="image-grid"></div>
-    </div>
-  </div>
-
   <script>
     const SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
     const SUPABASE_PUBLIC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ';
-    const GITHUB_IMAGES_FUNCTION = `${SUPABASE_URL}/functions/v1/github-images`;
     const DEPLOYED_PAGES = [
       { key:'home', title:'Home', url:'../index.html' },
       { key:'about', title:'About Us', url:'../about.html' },
@@ -233,7 +210,6 @@
     let currentSession = null;
     let editingId = null;
     let heroes = [];
-    let imageFiles = [];
 
     async function checkSecurity() {
       const lib = window.supabase || window.Supabase;
@@ -511,99 +487,28 @@
     });
 
     async function openImageBrowser() {
-      document.getElementById('image-browser').classList.add('open');
-      document.getElementById('image-status').textContent = 'Loading images...';
-      try {
-        const data = await callImageFunction('list');
-        imageFiles = (data.files || []).sort((a, b) => a.name.localeCompare(b.name));
-        renderImageBrowser();
-      } catch (err) {
-        document.getElementById('image-status').textContent = err.message;
-      }
-    }
-    function closeImageBrowser() { document.getElementById('image-browser').classList.remove('open'); }
-    function renderImageBrowser() {
-      const query = document.getElementById('image-search').value.trim().toLowerCase();
-      const files = imageFiles.filter(file => file.name.toLowerCase().includes(query));
-      document.getElementById('image-status').textContent = `${files.length} image${files.length === 1 ? '' : 's'} found.`;
-      document.getElementById('image-grid').innerHTML = files.map(file => `
-        <button class="image-choice" onclick="chooseImage('${encodeURIComponent(file.webPath || `assets/images/${file.name}`)}')">
-          <img src="${escapeHtml(file.downloadUrl || imageSrcForAdmin(file.webPath))}" alt="${escapeHtml(file.name)}">
-          <span>${escapeHtml(file.name)}</span>
-        </button>
-      `).join('');
-    }
-    function chooseImage(path) {
-      document.getElementById('image_url').value = decodeURIComponent(path);
-      closeImageBrowser();
-      updatePreview();
-    }
-    async function uploadImageFromBrowser(file) {
-      if (!file) return;
-      const input = document.getElementById('image-browser-upload');
-      const status = document.getElementById('image-status');
-      status.textContent = `Uploading ${file.name}...`;
-      try {
-        const data = await callImageFunction('upload', {
-          name: file.name,
-          contentBase64: await fileToBase64(file),
-          message: `Upload hero image ${file.name}`
-        }, 'POST');
-        const path = data.file?.path || `assets/images/${file.name}`;
-        document.getElementById('image_url').value = path;
-        await openImageBrowser();
-        closeImageBrowser();
-        updatePreview();
-        setStatus(`${file.name} uploaded and selected.`);
-      } catch (err) {
-        status.textContent = `Upload failed: ${err.message}`;
-      } finally {
-        input.value = '';
-      }
-    }
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result).split(',')[1]);
-        reader.onerror = () => reject(new Error('Could not read the selected image.'));
-        reader.readAsDataURL(file);
+      window.adminImageLibrary.open({
+        session: currentSession,
+        onSelect: path => {
+          document.getElementById('image_url').value = path;
+          updatePreview();
+        }
       });
-    }
-    async function callImageFunction(action, body = null, method = 'GET') {
-      const response = await fetch(`${GITHUB_IMAGES_FUNCTION}?action=${encodeURIComponent(action)}`, {
-        method,
-        headers: {
-          Authorization: `Bearer ${currentSession.access_token}`,
-          ...(body ? { 'Content-Type': 'application/json' } : {})
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || `Request failed with ${response.status}`);
-      return data;
     }
     function pageTitle(key) { return DEPLOYED_PAGES.find(page => page.key === key)?.title || key; }
     function imageSrcForAdmin(path) {
       if (!path) return '../assets/images/no-image.jpg';
       if (/^(https?:|data:|blob:)/i.test(path)) return path;
-      const githubUrl = githubImageUrl(path);
+      const githubUrl = window.adminImageLibrary?.imageSrcForAdmin(path);
       if (githubUrl) return githubUrl;
       return path.startsWith('../') ? path : `../${path.replace(/^\/+/, '')}`;
     }
     function imageUrlForCss(path) {
       if (!path) return '/assets/images/home-hero.jpg';
       if (/^(https?:|data:|blob:)/i.test(path)) return path;
-      const githubUrl = githubImageUrl(path);
+      const githubUrl = window.adminImageLibrary?.imageSrcForAdmin(path);
       if (githubUrl) return githubUrl;
       return '/' + path.replace(/^(\.\/|\.\.\/|\/)+/, '');
-    }
-    function githubImageUrl(path) {
-      const cleanPath = String(path || '').replace(/^(\.\/|\.\.\/|\/)+/, '');
-      const file = imageFiles.find(item => (item.webPath || `assets/images/${item.name}`) === cleanPath);
-      if (file?.downloadUrl) return file.downloadUrl;
-      return cleanPath.startsWith('assets/images/')
-        ? `https://raw.githubusercontent.com/s-george-dev/Warm-Right-Website/master/${cleanPath.split('/').map(encodeURIComponent).join('/')}`
-        : '';
     }
     function setStatus(message) { document.getElementById('status').textContent = message; }
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }

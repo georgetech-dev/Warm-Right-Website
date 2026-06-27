@@ -9,6 +9,7 @@ function loadScriptOnce(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = src;
+    script.async = false;
     script.onload = resolve;
     script.onerror = reject;
     document.head.appendChild(script);
@@ -41,9 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   Promise.all([
     initPublicDatabase(),
-    loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=6"),
-    loadScriptOnce(siteRoot + "assets/js/hero-management-public.js?v=8"),
-    loadScriptOnce(siteRoot + "assets/js/content-cards.js?v=8"),
+    loadScriptOnce(siteRoot + "assets/js/public-image-resolver.js?v=1"),
+    loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=8"),
+    loadScriptOnce(siteRoot + "assets/js/hero-management-public.js?v=9"),
+    loadScriptOnce(siteRoot + "assets/js/content-cards.js?v=9"),
+    loadScriptOnce(siteRoot + "assets/js/feature-lists.js?v=1"),
     loadScriptOnce(siteRoot + "assets/js/site-analytics.js?v=3"),
     loadHTML("header", partialsPath + "header.html"),
     loadHTML("footer", partialsPath + "footer.html")

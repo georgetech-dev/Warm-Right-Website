@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WarmHub - Website File Explorer | Warm Right Ltd</title>
   <link rel="icon" href="../assets/images/favicon.png">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20260614c">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.adminPageTitle = "WarmHub - File Explorer";</script>
-  <script src="../assets/js/admin-include.js?v=20260614c"></script>
+  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260625b"></script>
   <style>
     :root {
       --primary-blue: #004a99;
@@ -34,6 +35,7 @@
     .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     h2 { color: var(--primary-blue); margin: 0; }
     p { color: var(--muted); }
+    label { font-weight: 600; color: var(--primary-blue); }
     button { padding: 10px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
     .btn-accent { background: var(--accent-orange); color: white; }
     .btn-outline { background: #fff; color: var(--primary-blue); border: 1px solid var(--border); }
@@ -49,7 +51,6 @@
     .file-path { background: #f9fafb; border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-family: Consolas, monospace; font-size: 12px; word-break: break-all; }
     .card-actions { display: flex; gap: 8px; margin-top: auto; }
     .card-actions button { flex: 1; padding: 8px; }
-    input[type="file"] { display: none; }
     input[type="search"] { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; min-width: 260px; font: inherit; }
 
     @media (max-width: 768px) {
@@ -72,8 +73,7 @@
           <p>Manage image files in the GitHub repo path <strong>assets/images</strong>. Uploads and deletes create GitHub commits.</p>
         </div>
         <div class="actions">
-          <label class="btn-accent" for="upload-input">Add Images</label>
-          <input id="upload-input" type="file" accept="image/*" multiple onchange="addImages(this.files)">
+          <button class="btn-accent" type="button" onclick="openUploadModal()">Add Images</button>
           <button class="btn-outline" onclick="refreshFiles()">Refresh</button>
         </div>
       </div>
@@ -134,25 +134,15 @@
       }
     }
 
-    async function addImages(fileList) {
-      const files = Array.from(fileList || []).filter(file => file.type.startsWith('image/'));
-      if (!files.length) return;
-
-      try {
-        setStatus(`Uploading ${files.length} image file${files.length === 1 ? '' : 's'} to GitHub...`);
-        for (const file of files) {
-          await callImageFunction('upload', {
-            name: makeSafeFileName(file.name),
-            contentBase64: await fileToBase64(file),
-          }, 'POST');
+    async function openUploadModal() {
+      window.adminImageLibrary.open({
+        session: currentSession,
+        onRefresh: latestFiles => {
+          imageFiles = latestFiles || [];
+          renderFiles();
+          setStatus(`${imageFiles.length} image file${imageFiles.length === 1 ? '' : 's'} loaded from GitHub.`);
         }
-
-        document.getElementById('upload-input').value = '';
-        setStatus(`${files.length} image file${files.length === 1 ? '' : 's'} committed to GitHub.`);
-        await refreshFiles();
-      } catch (err) {
-        setStatus(`Upload failed: ${err.message}`);
-      }
+      });
     }
 
     async function deleteImage(name) {
@@ -215,20 +205,6 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || `Request failed with ${response.status}`);
       return data;
-    }
-
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result).split(',')[1]);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function makeSafeFileName(name) {
-      const cleaned = name.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-');
-      return cleaned.replace(/(^-|-$)/g, '') || `image-${Date.now()}.png`;
     }
 
     function formatBytes(bytes) {

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WarmHub - Manage Offers | Warm Right Ltd</title>
   <link rel="icon" href="../assets/images/favicon.png">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20260614c">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>window.adminPageTitle = "WarmHub - Manage Offers";</script>
-  <script src="../assets/js/admin-include.js?v=20260614c"></script>
+  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260625b"></script>
   <style>
     body { font-family:'Segoe UI', sans-serif; background:#f4f7f6; margin:0; padding:40px; visibility:hidden; }
     #admin-header-container { margin:-40px -40px 30px -40px; }
@@ -38,16 +39,6 @@
     .editor-toolbar button { padding:7px 10px; background:white; border:1px solid #ddd; }
     .html-editor { min-height:190px; padding:14px; border:1px solid #ddd; border-radius:0 0 6px 6px; background:white; font-size:16px; line-height:1.55; outline:none; }
     .image-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-    .image-browser-modal { display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; background:rgba(12,22,40,.72); }
-    .image-browser-panel { width:min(1000px, 92vw); max-height:86vh; overflow:auto; background:#fff; border-radius:12px; padding:24px; box-shadow:0 24px 70px rgba(0,0,0,.3); }
-    .image-browser-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
-    .image-browser-head input { max-width:320px; }
-    .image-browser-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:14px; }
-    .image-choice { border:1px solid #e5e7eb; border-radius:8px; background:#fff; padding:8px; text-align:left; cursor:pointer; }
-    .image-choice:hover { border-color:#004a99; box-shadow:0 6px 18px rgba(0,74,153,.12); }
-    .image-choice img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f3f4f6; }
-    .image-choice span { display:block; margin-top:6px; font-size:12px; color:#444; word-break:break-word; }
-    .image-browser-status { color:#666; margin-bottom:12px; }
   </style>
 </head>
 <body>
@@ -89,10 +80,8 @@
         <div class="form-right">
           <img id="imagePreview" src="../assets/images/no-image.jpg" alt="Preview">
           <p style="color:#666; font-size:14px;">Images are uploaded to GitHub assets/images.</p>
-          <input type="file" id="image" accept="image/*" style="display:none;">
           <input id="image_url" placeholder="assets/images/example.jpg" style="margin-bottom:12px;">
           <div class="image-actions">
-            <button class="btn-accent" onclick="document.getElementById('image').click()">Upload Picture</button>
             <button class="btn-outline" onclick="openImageBrowser()">Choose From Files</button>
           </div>
         </div>
@@ -100,27 +89,9 @@
     </div>
   </div>
 
-  <div id="image-browser-modal" class="image-browser-modal" onclick="if(event.target === this) closeImageBrowser()">
-    <div class="image-browser-panel">
-      <div class="image-browser-head">
-        <h2 style="margin:0">Choose Website Image</h2>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <input id="image-search" type="search" placeholder="Search images..." oninput="renderImageBrowser()">
-          <label class="btn-accent" for="image-browser-upload">Upload Image</label>
-          <input id="image-browser-upload" type="file" accept="image/*" hidden onchange="uploadImageFromBrowser(this.files[0])">
-          <button class="btn-outline" onclick="closeImageBrowser()">Close</button>
-        </div>
-      </div>
-      <div id="image-browser-status" class="image-browser-status">Loading GitHub images...</div>
-      <div id="image-browser-grid" class="image-browser-grid"></div>
-    </div>
-  </div>
-
   <script>
-    const GITHUB_IMAGES_FUNCTION = 'https://axampuprcnauxbbijmmt.supabase.co/functions/v1/github-images';
     let editingId = null;
     let currentSession = null;
-    let imageFiles = [];
 
     function editorCommand(command) {
       if (command === 'createLink') {
@@ -138,18 +109,9 @@
     function imageSrcForAdmin(path) {
       if (!path) return '../assets/images/no-image.jpg';
       if (/^(https?:|data:|blob:)/i.test(path)) return path;
-      const githubUrl = githubImageUrl(path);
+      const githubUrl = window.adminImageLibrary?.imageSrcForAdmin(path);
       if (githubUrl) return githubUrl;
       return path.startsWith('../') ? path : `../${path.replace(/^\/+/, '')}`;
-    }
-
-    function githubImageUrl(path) {
-      const cleanPath = String(path || '').replace(/^(\.\/|\.\.\/|\/)+/, '');
-      const file = imageFiles.find(item => (item.webPath || `assets/images/${item.name}`) === cleanPath);
-      if (file?.downloadUrl) return file.downloadUrl;
-      return cleanPath.startsWith('assets/images/')
-        ? `https://raw.githubusercontent.com/s-george-dev/Warm-Right-Website/master/${cleanPath.split('/').map(encodeURIComponent).join('/')}`
-        : '';
     }
 
     function escapeHtml(value) {
@@ -177,7 +139,6 @@
       document.getElementById('summary').value = '';
       document.getElementById('image_url').value = '';
       document.getElementById('is_active').checked = true;
-      document.getElementById('image').value = '';
       document.getElementById('imagePreview').src = '../assets/images/no-image.jpg';
       setEditorHtml('');
     }
@@ -233,110 +194,20 @@
       loadOffers();
     };
 
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result).split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function safeFileName(file) {
-      const ext = file.name.split('.').pop();
-      const base = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      return `${Date.now()}-${base || 'offer'}.${ext}`;
-    }
-
-    async function uploadImage(file) {
-      const path = safeFileName(file);
-      const { data, error } = await window.db.functions.invoke('github-images', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${currentSession.access_token}` },
-        body: { name: path, contentBase64: await fileToBase64(file), message: `Upload offer image ${path}` }
-      });
-      if (error) throw error;
-      return data?.file?.path || `assets/images/${path}`;
-    }
-
-    async function callImageFunction(action, body = null, method = 'GET') {
-      if (!currentSession?.access_token) throw new Error('Your admin session has expired. Please sign in again.');
-      const response = await fetch(`${GITHUB_IMAGES_FUNCTION}?action=${encodeURIComponent(action)}`, {
-        method,
-        headers: {
-          Authorization: `Bearer ${currentSession.access_token}`,
-          ...(body ? { 'Content-Type': 'application/json' } : {}),
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || `Request failed with ${response.status}`);
-      return data;
-    }
-
     async function openImageBrowser() {
-      document.getElementById('image-browser-modal').style.display = 'flex';
-      document.getElementById('image-browser-status').textContent = 'Loading GitHub images...';
-      document.getElementById('image-browser-grid').innerHTML = '';
-      try {
-        const data = await callImageFunction('list');
-        imageFiles = (data.files || []).sort((a, b) => a.name.localeCompare(b.name));
-        renderImageBrowser();
-      } catch (err) {
-        imageFiles = [];
-        document.getElementById('image-browser-status').textContent = `Unable to load GitHub images: ${err.message}`;
-      }
-    }
-
-    function closeImageBrowser() {
-      document.getElementById('image-browser-modal').style.display = 'none';
-    }
-
-    function renderImageBrowser() {
-      const query = document.getElementById('image-search').value.trim().toLowerCase();
-      const files = imageFiles.filter(file => file.name.toLowerCase().includes(query));
-      document.getElementById('image-browser-status').textContent = `${files.length} image file${files.length === 1 ? '' : 's'} available.`;
-      document.getElementById('image-browser-grid').innerHTML = files.map(file => `
-        <button type="button" class="image-choice" onclick="chooseImage('${encodeURIComponent(file.webPath || `assets/images/${file.name}`)}')">
-          <img src="${escapeHtml(file.downloadUrl || imageSrcForAdmin(file.webPath))}" alt="${escapeHtml(file.name)}">
-          <span>${escapeHtml(file.name)}</span>
-        </button>
-      `).join('');
-    }
-
-    function chooseImage(encodedPath) {
-      const path = decodeURIComponent(encodedPath);
-      document.getElementById('image_url').value = path;
-      document.getElementById('imagePreview').src = imageSrcForAdmin(path);
-      document.getElementById('image').value = '';
-      closeImageBrowser();
-    }
-
-    async function uploadImageFromBrowser(file) {
-      if (!file) return;
-      const input = document.getElementById('image-browser-upload');
-      const status = document.getElementById('image-browser-status');
-      status.textContent = `Uploading ${file.name}...`;
-      try {
-        const path = await uploadImage(file);
-        document.getElementById('image_url').value = path;
-        document.getElementById('imagePreview').src = imageSrcForAdmin(path);
-        document.getElementById('image').value = '';
-        await openImageBrowser();
-        closeImageBrowser();
-      } catch (err) {
-        status.textContent = `Upload failed: ${err.message}`;
-      } finally {
-        input.value = '';
-      }
+      window.adminImageLibrary.open({
+        session: currentSession,
+        onSelect: path => {
+          document.getElementById('image_url').value = path;
+          document.getElementById('imagePreview').src = imageSrcForAdmin(path);
+        }
+      });
     }
 
     async function saveOffer() {
       const title = document.getElementById('title').value.trim();
       if (!title) return alert('Title is required');
       let imageUrl = document.getElementById('image_url').value.trim();
-      const file = document.getElementById('image').files[0];
-      if (file) imageUrl = await uploadImage(file);
       const payload = {
         title,
         summary: document.getElementById('summary').value.trim(),
@@ -349,10 +220,6 @@
       else { showTableMode(); loadOffers(); }
     }
 
-    document.getElementById('image').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) document.getElementById('imagePreview').src = URL.createObjectURL(file);
-    });
     document.getElementById('saveBtn').addEventListener('click', saveOffer);
     checkSecurity();
   </script>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WarmHub - Feature Lists | Warm Right Ltd</title>
+  <link rel="icon" href="../assets/images/favicon.png">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>window.adminPageTitle = "WarmHub - Feature Lists";</script>
+  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260625b"></script>
+  <style>
+    body { font-family:'Segoe UI', sans-serif; background:#f4f7f6; margin:0; padding:40px; visibility:hidden; color:#263238; }
+    #admin-header-container { margin:-40px -40px 30px -40px; }
+    .container { max-width:1300px; margin:0 auto; }
+    .panel { background:#fff; border-radius:12px; padding:24px; box-shadow:0 4px 8px rgba(0,0,0,.05); margin-bottom:24px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .toolbar-controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    h2, h3 { color:#004a99; margin:0; }
+    .hint, .status { color:#667085; font-size:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:14px; }
+    th { text-align:left; color:#004a99; background:#f9fafb; border-bottom:2px solid #e5e7eb; padding:12px; }
+    td { border-bottom:1px solid #e5e7eb; padding:12px; vertical-align:top; }
+    label { display:block; font-weight:700; margin:14px 0 6px; }
+    input, textarea, select, button { font-family:'Segoe UI', sans-serif; }
+    input, textarea, select { width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:6px; padding:10px; font-size:15px; }
+    textarea { min-height:90px; resize:vertical; }
+    input[type="checkbox"], input[type="range"] { width:auto; }
+    button { padding:10px 16px; border:0; border-radius:6px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:#004a99; color:#fff; }
+    .btn-accent { background:#ff8c00; color:#fff; }
+    .btn-outline { background:#fff; color:#004a99; border:1px solid #e5e7eb; }
+    .btn-danger { background:#ef4444; color:#fff; }
+    .view-hidden { display:none !important; }
+    .layout { display:grid; grid-template-columns:minmax(360px, .75fr) minmax(420px, 1fr); gap:24px; align-items:start; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .item-row { display:grid; grid-template-columns:30px 1fr auto; gap:10px; align-items:start; padding:12px 0; border-bottom:1px solid #e5e7eb; }
+    .drag-handle { cursor:grab; color:#98a2b3; font-size:20px; padding-top:34px; }
+    .item-row label { margin-top:0; }
+    .item-row textarea { min-height:72px; }
+    .item-options { display:grid; grid-template-columns:minmax(150px, 1fr) 150px; gap:12px; align-items:end; margin-top:10px; }
+    .item-icon-grid { display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; }
+    .preview-list { margin:0; padding:0; list-style:none; display:grid; gap:10px; }
+    .preview-list li { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:12px; display:flex; gap:12px; align-items:flex-start; }
+    .preview-list img { flex:0 0 auto; object-fit:contain; }
+    .icon-preview { width:44px; height:44px; object-fit:contain; background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:6px; }
+    @media (max-width:950px) { body{padding:75px 14px 20px!important;} #admin-header-container{margin:0 -14px 20px!important;} .layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <div id="admin-header-container"></div>
+  <main class="container">
+    <section id="list-view" class="panel">
+      <div class="toolbar">
+        <div>
+          <h2>Feature Lists</h2>
+          <p class="hint">Manage bullet/card lists on public pages. Existing page HTML stays as fallback if a list is not active here.</p>
+        </div>
+        <div class="toolbar-controls">
+          <select id="page-filter" onchange="renderLists()"></select>
+          <button class="btn-accent" onclick="seedFeatureLists()">Seed Current Page Lists</button>
+        </div>
+      </div>
+      <div id="status" class="status"></div>
+      <table>
+        <thead><tr><th>List</th><th>Page</th><th>Items</th><th>Visible</th><th></th></tr></thead>
+        <tbody id="lists-body"></tbody>
+      </table>
+    </section>
+
+    <section id="editor-view" class="layout view-hidden">
+      <div class="panel">
+        <div class="toolbar">
+          <h2 id="form-title">Edit Feature List</h2>
+          <button class="btn-outline" onclick="showListView()">Back to Feature Lists</button>
+        </div>
+        <label>List key</label>
+        <input id="list_key" readonly>
+        <label>Page key</label>
+        <input id="page_key" readonly>
+        <label>Admin title</label>
+        <input id="title" placeholder="Signs You May Need a Powerflush">
+        <label style="display:flex; gap:8px; align-items:center;"><input id="is_active" type="checkbox" checked onchange="updatePreview()"> Use managed list on website</label>
+        <p class="hint">Custom SVG/image bullets are set on each list item below, so one item can use an icon while another keeps the normal card/list style.</p>
+        <div class="actions">
+          <button class="btn-primary" onclick="saveList()">Save List</button>
+          <button class="btn-outline" onclick="showListView()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <h3>List Items</h3>
+          <button class="btn-outline" onclick="addItem()">Add Item</button>
+        </div>
+        <p class="hint">HTML such as <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;br&gt;</code> and links is allowed.</p>
+        <div id="items-editor"></div>
+        <div class="actions">
+          <button class="btn-primary" onclick="saveList()">Save List & Items</button>
+        </div>
+      </div>
+
+      <aside class="panel" style="grid-column:1 / -1;">
+        <h3>Preview</h3>
+        <ul id="preview-list" class="preview-list"></ul>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ';
+    const LIST_TABLE = 'site_feature_lists';
+    const ITEM_TABLE = 'site_feature_list_items';
+    const DEPLOYED_PAGES = [
+      { key:'breakdowns', title:'Breakdowns', url:'../services/breakdowns.html' },
+      { key:'repairs', title:'Repairs', url:'../services/repairs.html' },
+      { key:'annual-servicing', title:'Annual Servicing', url:'../services/annual-servicing.html' },
+      { key:'landlords-certificates', title:'Landlords Certificates', url:'../services/landlords-certificates.html' },
+      { key:'boiler-installation', title:'Boiler Installations', url:'../services/boiler-installation.html' },
+      { key:'powerflushing-descaling', title:'Powerflushing and Descaling', url:'../services/powerflushing-descaling.html' },
+      { key:'second-opinion', title:'Second Opinions', url:'../services/second-opinion.html' },
+      { key:'unvented-cylinders', title:'Unvented Cylinders', url:'../services/unvented-cylinders.html' },
+      { key:'common-faults', title:'Common Faults', url:'../support/common-faults.html' }
+    ];
+    let currentSession = null;
+    let lists = [];
+    let items = [];
+    let editingKey = null;
+
+    async function checkSecurity() {
+      const lib = window.supabase || window.Supabase;
+      if (!lib) { setTimeout(checkSecurity, 50); return; }
+      window.db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data: { session } } = await window.db.auth.getSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      currentSession = session;
+      await window.loadAdminHeader(session);
+      document.body.style.visibility = 'visible';
+      setupPageFilter();
+      await loadLists();
+    }
+
+    function setupPageFilter() {
+      document.getElementById('page-filter').innerHTML = `<option value="">All managed pages</option>${DEPLOYED_PAGES.map(page => `<option value="${page.key}">${escapeHtml(page.title)}</option>`).join('')}`;
+    }
+
+    async function loadLists() {
+      const [{ data: listData, error: listError }, { data: itemData, error: itemError }] = await Promise.all([
+        window.db.from(LIST_TABLE).select('*').order('page_key').order('sort_order'),
+        window.db.from(ITEM_TABLE).select('*').order('sort_order')
+      ]);
+      if (listError || itemError) return setStatus(listError?.message || itemError?.message);
+      lists = listData || [];
+      items = itemData || [];
+      renderLists();
+    }
+
+    function renderLists() {
+      const filter = document.getElementById('page-filter').value;
+      const rows = filter ? lists.filter(list => list.page_key === filter) : lists;
+      document.getElementById('lists-body').innerHTML = rows.map(list => `
+        <tr>
+          <td><strong>${escapeHtml(list.title || list.list_key)}</strong><br><small>${escapeHtml(list.list_key)}</small></td>
+          <td>${escapeHtml(pageTitle(list.page_key))}<br><small>${escapeHtml(list.page_key)}</small></td>
+          <td>${items.filter(item => item.list_key === list.list_key).length}</td>
+          <td>${list.is_active ? 'Yes' : 'No'}</td>
+          <td><button class="btn-outline" onclick="editList('${escapeAttr(list.list_key)}')">Edit</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="5">No lists found. Use Seed Current Page Lists.</td></tr>';
+    }
+
+    function editList(key) {
+      const list = lists.find(item => item.list_key === key);
+      if (!list) return;
+      editingKey = key;
+      document.getElementById('form-title').textContent = `Editing: ${list.title || key}`;
+      document.getElementById('list_key').value = list.list_key;
+      document.getElementById('page_key').value = list.page_key;
+      document.getElementById('title').value = list.title || '';
+      document.getElementById('is_active').checked = list.is_active !== false;
+      renderItemsEditor();
+      updatePreview();
+      document.getElementById('list-view').classList.add('view-hidden');
+      document.getElementById('editor-view').classList.remove('view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showListView() {
+      document.getElementById('editor-view').classList.add('view-hidden');
+      document.getElementById('list-view').classList.remove('view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function currentItems() {
+      return items
+        .filter(item => item.list_key === editingKey)
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    }
+
+    function renderItemsEditor() {
+      document.getElementById('items-editor').innerHTML = currentItems().map((item, index) => itemEditorHtml(item, index)).join('');
+      initSortable();
+    }
+
+    function itemEditorHtml(item, index) {
+      return `
+        <div class="item-row" data-id="${escapeAttr(item.id || '')}">
+          <div class="drag-handle">☰</div>
+          <div>
+            <label>Item content</label>
+            <textarea data-field="item_html" oninput="updatePreview()">${escapeHtml(item.item_html || '')}</textarea>
+            <div class="item-options">
+              <label style="display:flex; gap:8px; align-items:center;"><input type="checkbox" data-field="is_active" ${item.is_active !== false ? 'checked' : ''} onchange="updatePreview()"> Visible</label>
+              <label>Icon size
+                <input data-field="icon_size" type="number" min="8" max="96" value="${Number(item.icon_size || 24)}" oninput="updatePreview()">
+              </label>
+            </div>
+            <label style="display:flex; gap:8px; align-items:center; margin-top:10px;"><input type="checkbox" data-field="use_icon" ${item.use_icon ? 'checked' : ''} onchange="updatePreview()"> Custom SVG/image bullet for this item</label>
+            <label>Item icon URL</label>
+            <div class="item-icon-grid">
+              <input data-field="icon_url" value="${escapeHtml(item.icon_url || '')}" placeholder="assets/images/fire-svgrepo-com.svg" oninput="updatePreview()">
+              <button class="btn-outline" type="button" onclick="chooseItemIcon(${index})">Choose</button>
+              <button class="btn-outline" type="button" onclick="clearItemIcon(${index})">None</button>
+            </div>
+          </div>
+          <button class="btn-danger" type="button" onclick="removeItem(${index})">Delete</button>
+        </div>
+      `;
+    }
+
+    function initSortable() {
+      const el = document.getElementById('items-editor');
+      if (!window.Sortable || !el) return;
+      if (el._sortable) el._sortable.destroy();
+      el._sortable = Sortable.create(el, { handle: '.drag-handle', animation: 150, onEnd: syncEditorItems });
+    }
+
+    function syncEditorItems() {
+      const rows = Array.from(document.querySelectorAll('#items-editor .item-row'));
+      const existing = currentItems();
+      items = items.filter(item => item.list_key !== editingKey);
+      rows.forEach((row, index) => {
+        const original = existing.find(item => String(item.id || '') === row.dataset.id) || {};
+        items.push({
+          ...original,
+          id: row.dataset.id || original.id || `new-${Date.now()}-${index}`,
+          list_key: editingKey,
+          item_html: row.querySelector('[data-field="item_html"]').value,
+          is_active: row.querySelector('[data-field="is_active"]').checked,
+          use_icon: row.querySelector('[data-field="use_icon"]').checked,
+          icon_url: row.querySelector('[data-field="icon_url"]').value.trim(),
+          icon_size: Number(row.querySelector('[data-field="icon_size"]').value || 24),
+          sort_order: index
+        });
+      });
+    }
+
+    function addItem() {
+      syncEditorItems();
+      items.push({ id:`new-${Date.now()}`, list_key: editingKey, item_html:'New list item', is_active:true, use_icon:false, icon_url:'', icon_size:24, sort_order: currentItems().length });
+      renderItemsEditor();
+      updatePreview();
+    }
+
+    function removeItem(index) {
+      syncEditorItems();
+      const row = currentItems()[index];
+      if (!row) return;
+      items = items.filter(item => item.id !== row.id);
+      renderItemsEditor();
+      updatePreview();
+    }
+
+    function updatePreview() {
+      syncEditorItems();
+      document.getElementById('preview-list').innerHTML = currentItems().filter(item => item.is_active !== false).map(item => `
+        <li>${item.use_icon && item.icon_url ? `<img src="${imageSrc(item.icon_url)}" alt="" width="${Math.max(8, Number(item.icon_size || 24))}" height="${Math.max(8, Number(item.icon_size || 24))}">` : ''}<span>${item.item_html || ''}</span></li>
+      `).join('');
+    }
+
+    function chooseItemIcon(index) {
+      window.adminImageLibrary.open({
+        session: currentSession,
+        onSelect: path => {
+          const row = document.querySelectorAll('#items-editor .item-row')[index];
+          if (!row) return;
+          row.querySelector('[data-field="icon_url"]').value = path;
+          row.querySelector('[data-field="use_icon"]').checked = true;
+          updatePreview();
+        }
+      });
+    }
+
+    function clearItemIcon(index) {
+      const row = document.querySelectorAll('#items-editor .item-row')[index];
+      if (!row) return;
+      row.querySelector('[data-field="icon_url"]').value = '';
+      row.querySelector('[data-field="use_icon"]').checked = false;
+      updatePreview();
+    }
+
+    async function saveList() {
+      syncEditorItems();
+      const listKey = document.getElementById('list_key').value;
+      const payload = {
+        list_key: listKey,
+        page_key: document.getElementById('page_key').value,
+        title: document.getElementById('title').value.trim(),
+        is_active: document.getElementById('is_active').checked,
+        updated_at: new Date().toISOString()
+      };
+      const { error: listError } = await window.db.from(LIST_TABLE).upsert(payload, { onConflict:'list_key' });
+      if (listError) return alert(listError.message);
+
+      const listItems = currentItems().map((item, index) => ({
+        list_key: listKey,
+        item_html: item.item_html,
+        is_active: item.is_active !== false,
+        use_icon: item.use_icon === true,
+        icon_url: item.icon_url || '',
+        icon_size: Number(item.icon_size || 24),
+        sort_order: index
+      }));
+      const { error: deleteError } = await window.db.from(ITEM_TABLE).delete().eq('list_key', listKey);
+      if (deleteError) return alert(deleteError.message);
+      if (listItems.length) {
+        const { error: itemError } = await window.db.from(ITEM_TABLE).insert(listItems);
+        if (itemError) return alert(itemError.message);
+      }
+      await loadLists();
+      setStatus('Feature list saved.');
+      showListView();
+    }
+
+    async function seedFeatureLists() {
+      setStatus('Scanning deployed pages for feature lists...');
+      const seed = [];
+      for (const page of DEPLOYED_PAGES) {
+        try {
+          const response = await fetch(page.url, { cache:'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+          Array.from(doc.querySelectorAll('ul.values-list')).forEach((ul, index) => {
+            const listKey = `${page.key}:list-${index + 1}`;
+            seed.push({
+              list: { list_key:listKey, page_key:page.key, title:findHeading(ul) || `${page.title} list ${index + 1}`, sort_order:index, is_active:false },
+              items: Array.from(ul.querySelectorAll(':scope > li')).map((li, itemIndex) => ({
+                list_key:listKey,
+                item_html:sanitizeListHtml(li.innerHTML),
+                sort_order:itemIndex,
+                is_active:true,
+                use_icon:false,
+                icon_url:'',
+                icon_size:24
+              }))
+            });
+          });
+        } catch (err) {
+          console.warn(`Could not scan ${page.url}`, err);
+        }
+      }
+      const existingKeys = new Set(lists.map(list => list.list_key));
+      const missing = seed.filter(row => !existingKeys.has(row.list.list_key));
+      if (!missing.length) {
+        setStatus('All detected feature lists are already seeded.');
+        return;
+      }
+      const { error: listError } = await window.db.from(LIST_TABLE).insert(missing.map(row => row.list));
+      if (listError) return alert(listError.message);
+      const { error: itemError } = await window.db.from(ITEM_TABLE).insert(missing.flatMap(row => row.items));
+      if (itemError) return alert(itemError.message);
+      await loadLists();
+      setStatus(`${missing.length} feature list${missing.length === 1 ? '' : 's'} seeded. They are inactive until you enable them.`);
+    }
+
+    function findHeading(el) {
+      let node = el.previousElementSibling;
+      while (node) {
+        if (/^h[1-3]$/i.test(node.tagName)) return node.textContent.replace(/\s+/g, ' ').trim();
+        node = node.previousElementSibling;
+      }
+      return '';
+    }
+
+    function sanitizeListHtml(html) {
+      const template = document.createElement('template');
+      template.innerHTML = html || '';
+      template.content.querySelectorAll('script,style,iframe,object').forEach(el => el.remove());
+      template.content.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+          if (/^on/i.test(attr.name) || attr.name === 'style') el.removeAttribute(attr.name);
+        });
+      });
+      return template.innerHTML.trim();
+    }
+
+    function pageTitle(key) { return DEPLOYED_PAGES.find(page => page.key === key)?.title || key; }
+    function imageSrc(path) { return window.adminImageLibrary?.imageSrcForAdmin(path) || path || '../assets/images/no-image.jpg'; }
+    function setStatus(message) { document.getElementById('status').textContent = message || ''; }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }
+    function escapeAttr(value) { return escapeHtml(value); }
+
+    checkSecurity();
+  </script>
+</body>
+</html>

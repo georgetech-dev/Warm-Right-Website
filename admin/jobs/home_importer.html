@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Job Sheet Extractor & Calendar Sync</title>
+    <link rel="icon" href="../../assets/images/favicon.png">
+    <link rel="stylesheet" href="../../assets/css/admin.css?v=20260625fieldhub">
     <style>
-        body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background-color: #fafafa; }
-        .app-container { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
+        body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background-color: #fafafa; }
+        #admin-header-container { position: sticky; top: 0; z-index: 1000; }
+        .app-container { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; padding: 20px; }
         .left-panel { flex: 1; max-width: 50%; }
-        .right-panel { flex: 1; position: sticky; top: 20px; height: 90vh; }
+        .right-panel { flex: 1; position: sticky; top: 95px; height: calc(100vh - 115px); }
         .drop-zone { border: 2px dashed #0066cc; padding: 30px; text-align: center; margin-bottom: 20px; background: #f0f7ff; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
         .drop-zone.dragover { background: #cce5ff; border-color: #004c99; }
         #pdfInput { display: none; }
@@ -46,9 +49,13 @@
         .btn-action:hover { background: #0052a3; }
         .btn-secondary { background: #e0e0e0; color: #333; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; padding: 10px 14px; font-size: 0.95em; font-weight: bold; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>window.adminPageTitle = "WarmHub - Job Importer";</script>
+    <script src="../../assets/js/admin-include.js?v=20260625nav"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
-<body>
+<body style="visibility: hidden;">
+    <div id="admin-header-container"></div>
     <div class="app-container">
         <div class="left-panel">
             <div class="drop-zone" id="dropZone">
@@ -134,6 +141,23 @@
     </div>
 
     <script>
+        (function initAdminImporterNav() {
+            const lib = window.supabase || window.Supabase;
+            if (!lib || !window.loadAdminHeader) {
+                setTimeout(initAdminImporterNav, 50);
+                return;
+            }
+            window.db = window.db || lib.createClient(
+                'https://axampuprcnauxbbijmmt.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
+            );
+            window.db.auth.getSession()
+                .then(({ data }) => window.loadAdminHeader(data?.session || null))
+                .finally(() => {
+                    document.body.style.visibility = 'visible';
+                });
+        })();
+
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         const pdfInput = document.getElementById('pdfInput');

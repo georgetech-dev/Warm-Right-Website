@@ -6,11 +6,11 @@
   <title>Admin Dashboard | Warm Right Ltd</title>
   <link rel="icon" href="../assets/images/favicon.png">
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20260614c">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>window.adminPageTitle = "WarmHub";</script>
-  <script src="../assets/js/admin-include.js?v=20260614c"></script>
+  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
 
   <style>
     /* 1. Hide the body by default to prevent "peeking" */
@@ -69,15 +69,13 @@
       grid-template-columns: repeat(2, 1fr); 
       gap: 25px; 
       margin-top: 30px; 
-      /* Constrain the maximum width so it doesn't stretch infinitely on huge monitors */
-      max-width: 1000px; 
     }
 
     /* Override for Desktop (screens wider than 768px) */
     @media (min-width: 768px) {
       .menu-grid {
-        /* Force exactly 3 columns on desktop */
-        grid-template-columns: repeat(3, 1fr);
+        /* Force exactly 4 columns on desktop */
+        grid-template-columns: repeat(4, 1fr);
       }
     }
 
@@ -178,7 +176,7 @@
 
   <div id="tab-jobs" class="tab-content active">
     <div class="menu-grid">
-       <a href="../admin/jobs/job-home.html" class="card">
+       <a href="../admin/jobs/job-home.html" class="card" style="display:none">
         <div style="font-size: 40px; margin-bottom: 10px;">📥</div>
         <h3>Job Home</h3>
         <p>Manage and view all jobs</p>
@@ -233,6 +231,11 @@
         <div style="font-size: 40px; margin-bottom: 10px;">TXT</div>
         <h3>Page Content Cards</h3>
         <p>Add, edit and manage page content cards</p>
+      </a>
+      <a href="feature-lists-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">LIST</div>
+        <h3>Feature Lists</h3>
+        <p>Edit page bullet lists and custom icons</p>
       </a>
       <a href="hero-admin.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">HERO</div>

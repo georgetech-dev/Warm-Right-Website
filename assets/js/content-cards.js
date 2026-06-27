@@ -17,8 +17,7 @@
     if (/^(https?:|data:|blob:)/i.test(url)) return url;
     const cleanUrl = url.replace(/^(\.\/|\.\.\/|\/)+/, '');
     if (cleanUrl.startsWith('assets/images/')) {
-      const encodedPath = cleanUrl.split('/').map(encodeURIComponent).join('/');
-      return `https://raw.githubusercontent.com/s-george-dev/Warm-Right-Website/master/${encodedPath}`;
+      return window.WarmRightImages?.backgroundImageUrl(cleanUrl) || cleanUrl;
     }
     const isGitHub = window.location.hostname.includes('github.io');
     const siteRoot = isGitHub ? '/Warm-Right-Website/' : '/';

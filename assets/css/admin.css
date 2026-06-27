@@ -126,6 +126,25 @@ button {
   white-space: nowrap !important;
 }
 
+.admin-fieldhub-credit {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.admin-fieldhub-credit img {
+  display: block !important;
+  width: auto !important;
+  height: 34px !important;
+  max-width: none !important;
+  object-fit: contain !important;
+}
+
 .admin-nav-user {
   gap: 12px !important;
   padding-right: 15px !important;
@@ -320,6 +339,10 @@ button {
     .nav-left span { display: none !important; } /* Hide names/titles */
     .nav-left .logo { cursor: pointer; position: relative; z-index: 1001; }
     .nav-left .logo img { height: 40px !important; }
+    .admin-fieldhub-credit,
+    .admin-fieldhub-divider {
+        display: none !important;
+    }
     
     /* 3. TOP RIGHT REORDERING */
     .nav-right { 

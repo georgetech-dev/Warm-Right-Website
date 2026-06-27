@@ -118,6 +118,7 @@
     </div>
   </div>
 
+  <script src="assets/js/public-image-resolver.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const fallbackOffers = [
@@ -151,11 +152,17 @@
       return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     }
 
+    function imageMarkup(path, alt) {
+      const src = window.WarmRightImages?.imageUrl(path || 'assets/images/placeholder.jpg') || (path || 'assets/images/placeholder.jpg');
+      const raw = window.WarmRightImages?.githubRawUrl(path || '') || '';
+      return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" data-github-fallback="${escapeHtml(raw)}" onerror="if(this.dataset.githubFallback && this.dataset.githubFallback !== this.src){this.src=this.dataset.githubFallback;this.dataset.githubFallback='';}else{this.src='assets/images/placeholder.jpg';}">`;
+    }
+
     function renderOffers(offers) {
       window.currentOffers = offers;
       document.getElementById('offers-container').innerHTML = offers.map((offer, index) => `
         <div class="feature-tile ${index % 2 === 0 ? 'split-left' : 'split-right'} card visible">
-          <img src="${escapeHtml(offer.image_url || 'assets/images/placeholder.jpg')}" alt="${escapeHtml(offer.title)}">
+          ${imageMarkup(offer.image_url, offer.title)}
           <div class="tile-text">
             <h2>${escapeHtml(offer.title)}</h2>
             <p>${escapeHtml(offer.summary)}</p>

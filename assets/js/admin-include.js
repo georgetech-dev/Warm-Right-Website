@@ -10,7 +10,7 @@ window.loadAdminHeader = async function(session) {
         const partialsPath = siteRoot + "partials/";
 
         // Fetch using the absolute root path to avoid relative directory errors
-        const response = await fetch(partialsPath + 'admin-header.html?v=20260614c', { cache: 'no-store' });
+        const response = await fetch(partialsPath + 'admin-header.html?v=20260625nav', { cache: 'no-store' });
         const html = await response.text();
         container.innerHTML = html;
 
@@ -23,6 +23,7 @@ window.loadAdminHeader = async function(session) {
 
         // 3b. WEBSITE MANAGEMENT CHILD NAV
         renderWebsiteManagementNav();
+        renderImporterNav();
 
         // 4. SET USER DATA & AVATAR
         if (session && session.user) {
@@ -45,6 +46,13 @@ window.loadAdminHeader = async function(session) {
         }
 
         // 5. DROPDOWN TOGGLE
+        const hubBtn = document.getElementById('nav-hub-btn');
+        if (hubBtn) {
+            hubBtn.onclick = () => {
+                window.location.href = getAdminUrl('admin-landed.html');
+            };
+        }
+
         const trigger = document.getElementById('nav-drop-trigger');
         const menu = document.getElementById('nav-drop-menu');
         if (trigger && menu) {
@@ -113,7 +121,9 @@ function getAdminSiteRoot() {
 }
 
 function getAdminUrl(page) {
-    return getAdminSiteRoot() + "admin/" + page;
+    const cleanPage = String(page || '').replace(/^(\.\.\/|\.\/|\/)+/, '');
+    if (cleanPage.startsWith('admin/')) return getAdminSiteRoot() + cleanPage;
+    return getAdminSiteRoot() + "admin/" + cleanPage;
 }
 
 async function waitForAdminDb(maxAttempts = 40) {
@@ -153,6 +163,7 @@ function renderWebsiteManagementNav() {
         { file: 'rates.html', label: 'Manage Rates' },
         { file: 'offers-admin.html', label: 'Manage Offers' },
         { file: 'content-cards-admin.html', label: 'Content Cards' },
+        { file: 'feature-lists-admin.html', label: 'Feature Lists' },
         { file: 'hero-admin.html', label: 'Hero Pictures' },
         { file: 'testimonials-admin.html', label: 'Testimonials' },
         { file: 'site-management.html', label: 'Pages & Carousels' },
@@ -175,6 +186,34 @@ function renderWebsiteManagementNav() {
         <a class="admin-tab-link admin-tab-back" href="${getAdminUrl('admin-landed.html')}#tab-website">&lt; Back</a>
         ${pages.map(page => `
             <a class="admin-tab-link ${page.file === currentFile ? 'is-active' : ''}" href="${getAdminUrl(page.file)}">${page.label}</a>
+        `).join('')}
+    `;
+
+    const header = document.getElementById('admin-header-container');
+    if (header) header.appendChild(nav);
+}
+
+function renderImporterNav() {
+    const pages = [
+        { file: 'sed_importer.html', path: 'jobs/sed_importer.html', label: 'Sedgwick Import' },
+        { file: 'res_importer.html', path: 'jobs/res_importer.html', label: 'Resolving Import' },
+        { file: 'home_importer.html', path: 'jobs/home_importer.html', label: 'HomeServe Import' }
+    ];
+    const currentFile = window.location.pathname.split('/').pop();
+    if (!pages.some(page => page.file === currentFile)) return;
+    if (document.getElementById('importer-nav')) return;
+
+    const titleEl = document.getElementById('nav-page-title');
+    if (titleEl) titleEl.textContent = 'WarmHub - Importer';
+
+    const nav = document.createElement('nav');
+    nav.id = 'importer-nav';
+    nav.className = 'importer-nav admin-tab-strip';
+    nav.setAttribute('aria-label', 'Importer tools');
+    nav.innerHTML = `
+        <a class="admin-tab-link admin-tab-back" href="${getAdminUrl('admin-landed.html')}#tab-jobs">&lt; Back</a>
+        ${pages.map(page => `
+            <a class="admin-tab-link ${page.file === currentFile ? 'is-active' : ''}" href="${getAdminUrl(page.path)}">${page.label}</a>
         `).join('')}
     `;
 

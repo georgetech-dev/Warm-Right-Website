@@ -4,6 +4,7 @@
 
   function normalizePath(path) {
     if (!path) return '/';
+    if (String(path).startsWith('#')) return String(path).toLowerCase();
     try {
       path = new URL(path, window.location.origin).pathname;
     } catch (_) {}
@@ -25,6 +26,14 @@
     return getSiteRoot() + url.replace(/^(\.\.\/|\.\/|\/)+/, '');
   }
 
+  function setManagedImage(img, path) {
+    if (window.WarmRightImages) {
+      window.WarmRightImages.withImageFallback(img, path, 'assets/images/no-image.jpg');
+      return;
+    }
+    img.src = publicUrl(path);
+  }
+
   function applyPageVisibility(pages) {
     const sortedPages = [...pages].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     const pageMap = byUrl(sortedPages);
@@ -32,6 +41,15 @@
     reorderNavLinks(sortedPages);
 
     document.querySelectorAll('#header a[href], #header button[data-section]').forEach(el => {
+      const section = el.getAttribute('data-section');
+      if (section) {
+        const page = sortedPages.find(item => item.page_key === section || normalizePath(item.url) === `#${section}`);
+        if (!page || page.is_active) return;
+        const target = el.closest('.dropdown') || el.closest('.mobile-item') || el;
+        target.style.display = 'none';
+        return;
+      }
+
       const href = el.getAttribute('href');
       if (!href || href === '#') return;
       const page = pageMap.get(normalizePath(href));
@@ -79,12 +97,22 @@
     const nav = document.querySelector('#header #main-nav-bar .nav');
     if (!nav) return;
 
-    const slots = [...nav.querySelectorAll(':scope > a')];
+    const slots = [...nav.querySelectorAll(':scope > a, :scope > .dropdown')];
     const links = pages
-      .map(page => findLinkByUrl(nav, page.url, ':scope > a'))
+      .map(page => findMainDesktopNode(nav, page))
       .filter(Boolean);
 
     reorderExistingNodes(nav, slots, links);
+  }
+
+  function findMainDesktopNode(nav, page) {
+    if (page.page_key === 'services' || normalizePath(page.url) === '#services') {
+      return nav.querySelector(':scope > .dropdown a[data-section="services"]')?.closest('.dropdown');
+    }
+    if (page.page_key === 'support' || normalizePath(page.url) === '#support') {
+      return nav.querySelector(':scope > .dropdown a[data-section="support"]')?.closest('.dropdown');
+    }
+    return findLinkByUrl(nav, page.url, ':scope > a');
   }
 
   function reorderDesktopDropdown(section, pages) {
@@ -105,12 +133,22 @@
     if (!nav) return;
 
     const slots = [...nav.querySelectorAll(':scope > .mobile-item')]
-      .filter(item => item.querySelector(':scope > a'));
+      .filter(item => item.querySelector(':scope > a, :scope > button[data-section]'));
     const items = pages
-      .map(page => findLinkByUrl(nav, page.url, '.mobile-item > a')?.closest('.mobile-item'))
+      .map(page => findMainMobileNode(nav, page))
       .filter(Boolean);
 
     reorderExistingNodes(nav, slots, items);
+  }
+
+  function findMainMobileNode(nav, page) {
+    if (page.page_key === 'services' || normalizePath(page.url) === '#services') {
+      return nav.querySelector(':scope > .mobile-item .mobile-dropdown-button[data-section="services"]')?.closest('.mobile-item');
+    }
+    if (page.page_key === 'support' || normalizePath(page.url) === '#support') {
+      return nav.querySelector(':scope > .mobile-item .mobile-dropdown-button[data-section="support"]')?.closest('.mobile-item');
+    }
+    return findLinkByUrl(nav, page.url, '.mobile-item > a')?.closest('.mobile-item');
   }
 
   function reorderExistingNodes(parent, currentNodes, orderedNodes) {
@@ -154,8 +192,8 @@
     link.href = publicUrl(tile.link_url);
 
     const img = document.createElement('img');
-    img.src = publicUrl(tile.image_url);
     img.alt = tile.title || '';
+    setManagedImage(img, tile.image_url);
 
     const title = document.createElement('h3');
     title.textContent = tile.title || '';
@@ -214,7 +252,7 @@
 
     try {
       const [{ data: pages, error: pageError }, { data: tiles, error: tileError }] = await Promise.all([
-        window.db.from(PAGE_TABLE).select('title,url,is_active,sort_order,nav_group'),
+        window.db.from(PAGE_TABLE).select('page_key,title,url,is_active,sort_order,nav_group'),
         window.db.from(TILE_TABLE).select('carousel_key,title,description,image_url,link_url,sort_order,is_active')
       ]);
 

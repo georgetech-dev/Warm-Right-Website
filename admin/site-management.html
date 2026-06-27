@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WarmHub - Site Management | Warm Right Ltd</title>
   <link rel="icon" href="../assets/images/favicon.png">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20260614c">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.adminPageTitle = "WarmHub - Site Management";</script>
-  <script src="../assets/js/admin-include.js?v=20260614c"></script>
+  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
   <style>
     :root {
       --primary-blue: #004a99;
@@ -218,26 +218,28 @@
     const DEFAULT_PAGES = [
       { page_key: 'home', title: 'Home', url: '/index.html', nav_group: 'main', sort_order: 10, is_active: true },
       { page_key: 'about', title: 'About Us', url: '/about.html', nav_group: 'main', sort_order: 20, is_active: true },
-      { page_key: 'breakdowns', title: 'Breakdowns', url: '/services/breakdowns.html', nav_group: 'services', sort_order: 30, is_active: true },
-      { page_key: 'repairs', title: 'Repairs', url: '/services/repairs.html', nav_group: 'services', sort_order: 40, is_active: true },
-      { page_key: 'annual-servicing', title: 'Annual Servicing', url: '/services/annual-servicing.html', nav_group: 'services', sort_order: 50, is_active: true },
-      { page_key: 'landlords-certificates', title: "Landlord's Certificates (CP12)", url: '/services/landlords-certificates.html', nav_group: 'services', sort_order: 60, is_active: true },
-      { page_key: 'boiler-installation', title: 'Boiler Installations', url: '/services/boiler-installation.html', nav_group: 'services', sort_order: 70, is_active: true },
-      { page_key: 'general-maintenance', title: 'Plumbing', url: '/services/general-maintenance.html', nav_group: 'services', sort_order: 80, is_active: true },
-      { page_key: 'homebuyers-reports', title: "Homebuyer's Reports", url: '/services/homebuyers-reports.html', nav_group: 'services', sort_order: 90, is_active: true },
-      { page_key: 'kitchens-bathrooms', title: 'Kitchens & Bathrooms', url: '/services/kitchens-bathrooms.html', nav_group: 'services', sort_order: 100, is_active: true },
-      { page_key: 'powerflushing-descaling', title: 'Powerflushing and Descaling', url: '/services/powerflushing-descaling.html', nav_group: 'services', sort_order: 110, is_active: true },
-      { page_key: 'second-opinion', title: 'Second Opinions', url: '/services/second-opinion.html', nav_group: 'services', sort_order: 120, is_active: true },
-      { page_key: 'unvented-cylinders', title: 'Unvented Cylinders', url: '/services/unvented-cylinders.html', nav_group: 'services', sort_order: 130, is_active: true },
-      { page_key: 'common-faults', title: 'Common Faults', url: '/support/common-faults.html', nav_group: 'support', sort_order: 140, is_active: true },
-      { page_key: 'manuals', title: 'Boiler Manuals', url: '/support/manuals.html', nav_group: 'support', sort_order: 150, is_active: true },
-      { page_key: 'energy-efficiency', title: 'Energy Efficiency', url: '/support/energy-efficiency.html', nav_group: 'support', sort_order: 160, is_active: true },
-      { page_key: 'engineers', title: "Engineer's Support", url: '/support/engineers.html', nav_group: 'support', sort_order: 170, is_active: true },
-      { page_key: 'rates', title: 'Our Rates', url: '/schedule-of-rates.html', nav_group: 'main', sort_order: 180, is_active: true },
-      { page_key: 'offers', title: 'Offers', url: '/offers.html', nav_group: 'main', sort_order: 190, is_active: true },
-      { page_key: 'testimonials', title: 'Testimonials', url: '/testimonials.html', nav_group: 'main', sort_order: 200, is_active: true },
-      { page_key: 'book-a-visit', title: 'Book A Visit', url: '/book-a-visit.html', nav_group: 'main', sort_order: 210, is_active: true },
-      { page_key: 'contact', title: 'Contact Us', url: '/contact.html', nav_group: 'main', sort_order: 220, is_active: true }
+      { page_key: 'services', title: 'Services', url: '#services', nav_group: 'main', sort_order: 30, is_active: true },
+      { page_key: 'support', title: 'Support', url: '#support', nav_group: 'main', sort_order: 40, is_active: true },
+      { page_key: 'rates', title: 'Our Rates', url: '/schedule-of-rates.html', nav_group: 'main', sort_order: 50, is_active: true },
+      { page_key: 'offers', title: 'Offers', url: '/offers.html', nav_group: 'main', sort_order: 60, is_active: true },
+      { page_key: 'testimonials', title: 'Testimonials', url: '/testimonials.html', nav_group: 'main', sort_order: 70, is_active: true },
+      { page_key: 'book-a-visit', title: 'Book A Visit', url: '/book-a-visit.html', nav_group: 'main', sort_order: 80, is_active: true },
+      { page_key: 'contact', title: 'Contact Us', url: '/contact.html', nav_group: 'main', sort_order: 90, is_active: true },
+      { page_key: 'breakdowns', title: 'Breakdowns', url: '/services/breakdowns.html', nav_group: 'services', sort_order: 10, is_active: true },
+      { page_key: 'repairs', title: 'Repairs', url: '/services/repairs.html', nav_group: 'services', sort_order: 20, is_active: true },
+      { page_key: 'annual-servicing', title: 'Annual Servicing', url: '/services/annual-servicing.html', nav_group: 'services', sort_order: 30, is_active: true },
+      { page_key: 'landlords-certificates', title: "Landlord's Certificates (CP12)", url: '/services/landlords-certificates.html', nav_group: 'services', sort_order: 40, is_active: true },
+      { page_key: 'boiler-installation', title: 'Boiler Installations', url: '/services/boiler-installation.html', nav_group: 'services', sort_order: 50, is_active: true },
+      { page_key: 'general-maintenance', title: 'Plumbing', url: '/services/general-maintenance.html', nav_group: 'services', sort_order: 60, is_active: true },
+      { page_key: 'homebuyers-reports', title: "Homebuyer's Reports", url: '/services/homebuyers-reports.html', nav_group: 'services', sort_order: 70, is_active: true },
+      { page_key: 'kitchens-bathrooms', title: 'Kitchens & Bathrooms', url: '/services/kitchens-bathrooms.html', nav_group: 'services', sort_order: 80, is_active: true },
+      { page_key: 'powerflushing-descaling', title: 'Powerflushing and Descaling', url: '/services/powerflushing-descaling.html', nav_group: 'services', sort_order: 90, is_active: true },
+      { page_key: 'second-opinion', title: 'Second Opinions', url: '/services/second-opinion.html', nav_group: 'services', sort_order: 100, is_active: true },
+      { page_key: 'unvented-cylinders', title: 'Unvented Cylinders', url: '/services/unvented-cylinders.html', nav_group: 'services', sort_order: 110, is_active: true },
+      { page_key: 'common-faults', title: 'Common Faults', url: '/support/common-faults.html', nav_group: 'support', sort_order: 10, is_active: true },
+      { page_key: 'manuals', title: 'Boiler Manuals', url: '/support/manuals.html', nav_group: 'support', sort_order: 20, is_active: true },
+      { page_key: 'energy-efficiency', title: 'Energy Efficiency', url: '/support/energy-efficiency.html', nav_group: 'support', sort_order: 30, is_active: true },
+      { page_key: 'engineers', title: "Engineer's Support", url: '/support/engineers.html', nav_group: 'support', sort_order: 40, is_active: true }
     ];
 
     const DEFAULT_TILES = [
@@ -311,8 +313,30 @@
     async function seedPages() {
       const { error } = await window.db.from('site_pages').upsert(DEFAULT_PAGES, { onConflict: 'page_key' });
       if (error) return alert(error.message);
+      await removeRetiredPageRows();
       setStatus('page-status', 'Current pages saved to database.');
       await loadData();
+    }
+
+    async function removeRetiredPageRows() {
+      const defaultKeys = new Set(DEFAULT_PAGES.map(page => page.page_key));
+      const defaultUrls = new Set(DEFAULT_PAGES.map(page => normalizePageUrl(page.url)));
+      const { data, error } = await window.db.from('site_pages').select('id,page_key,url');
+      if (error) throw error;
+
+      const retiredIds = (data || [])
+        .filter(page => !defaultKeys.has(page.page_key) || !defaultUrls.has(normalizePageUrl(page.url)))
+        .map(page => page.id);
+
+      if (!retiredIds.length) return;
+      const { error: deleteError } = await window.db.from('site_pages').delete().in('id', retiredIds);
+      if (deleteError) throw deleteError;
+    }
+
+    function normalizePageUrl(url) {
+      const value = String(url || '').trim();
+      if (value.startsWith('#')) return value.toLowerCase();
+      return `/${value.replace(/^(\.\.\/|\.\/|\/)+/, '')}`.toLowerCase();
     }
 
     async function seedTiles() {
@@ -346,7 +370,7 @@
           <td class="drag-handle" title="Drag to reorder">☰</td>
           <td><input type="checkbox" ${page.is_active ? 'checked' : ''} onchange="togglePage('${page.id}', this.checked)"></td>
           <td><strong>${escapeHtml(page.title)}</strong></td>
-          <td>${escapeHtml(page.url)}</td>
+          <td>${page.url?.startsWith('#') ? 'Dropdown menu' : escapeHtml(page.url)}</td>
           <td>${escapeHtml(page.nav_group)}</td>
           <td><button class="btn-outline" onclick="togglePage('${page.id}', ${!page.is_active})">${page.is_active ? 'Deactivate' : 'Reinstate'}</button></td>
         </tr>

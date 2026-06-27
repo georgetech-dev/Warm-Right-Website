@@ -436,3 +436,68 @@ on conflict (page_key, hero_key) do nothing;
 insert into public.site_settings (setting_key, setting_value)
 values ('testimonial_team_email', 'info@warmright.uk')
 on conflict (setting_key) do nothing;
+
+create table if not exists public.site_feature_lists (
+  id uuid primary key default gen_random_uuid(),
+  list_key text not null unique,
+  page_key text not null,
+  title text not null default '',
+  sort_order integer not null default 0,
+  is_active boolean not null default false,
+  use_icon boolean not null default false,
+  icon_url text not null default '',
+  icon_size integer not null default 24,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.site_feature_list_items (
+  id uuid primary key default gen_random_uuid(),
+  list_key text not null references public.site_feature_lists(list_key) on delete cascade,
+  item_html text not null default '',
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  use_icon boolean not null default false,
+  icon_url text not null default '',
+  icon_size integer not null default 24,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_feature_list_items
+add column if not exists use_icon boolean not null default false;
+
+alter table public.site_feature_list_items
+add column if not exists icon_url text not null default '';
+
+alter table public.site_feature_list_items
+add column if not exists icon_size integer not null default 24;
+
+alter table public.site_feature_lists enable row level security;
+alter table public.site_feature_list_items enable row level security;
+
+drop policy if exists "Public can read feature lists" on public.site_feature_lists;
+create policy "Public can read feature lists"
+on public.site_feature_lists for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Public can read feature list items" on public.site_feature_list_items;
+create policy "Public can read feature list items"
+on public.site_feature_list_items for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Authenticated can manage feature lists" on public.site_feature_lists;
+create policy "Authenticated can manage feature lists"
+on public.site_feature_lists for all
+to authenticated
+using (true)
+with check (true);
+
+drop policy if exists "Authenticated can manage feature list items" on public.site_feature_list_items;
+create policy "Authenticated can manage feature list items"
+on public.site_feature_list_items for all
+to authenticated
+using (true)
+with check (true);
