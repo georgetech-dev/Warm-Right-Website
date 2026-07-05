@@ -13,8 +13,8 @@ SMTP_HOST = os.environ["SMTP_HOST"]
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
 SMTP_USER = os.environ["SMTP_USER"]
 SMTP_PASS = os.environ["SMTP_PASS"]
-SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER)
-SMTP_FROM_NAME = os.environ.get("SMTP_FROM_NAME", "FieldHub Support")
+SMTP_FROM = os.environ.get("SMTP_FROM", "support@georgetech.uk")
+SMTP_FROM_NAME = os.environ.get("SMTP_FROM_NAME", "GeorgeTech Support")
 BATCH_SIZE = int(os.environ.get("EMAIL_OUTBOX_BATCH_SIZE", "10"))
 
 

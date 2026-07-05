@@ -17,10 +17,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }, { threshold: 0.12 });
 
-  document.querySelectorAll('.card').forEach((c, i) => {
-    c.style.transitionDelay = `${i * 100}ms`;
-    observer.observe(c);
-  });
+  window.observeRevealCards = (root = document) => {
+    const cards = [];
+    if (root instanceof Element && root.matches('.card')) cards.push(root);
+    cards.push(...root.querySelectorAll('.card:not([data-reveal-observed])'));
+
+    cards.forEach((card, index) => {
+      if (card.dataset.revealObserved === 'true') return;
+      card.dataset.revealObserved = 'true';
+      card.style.transitionDelay = `${Math.min(index, 4) * 100}ms`;
+      observer.observe(card);
+    });
+  };
+
+  window.observeRevealCards(document);
 
   /* ================================
       SCROLL ANIMATIONS

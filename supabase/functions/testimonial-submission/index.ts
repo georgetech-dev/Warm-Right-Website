@@ -25,13 +25,21 @@ Deno.serve(async (req) => {
     const db = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'));
     const imageUrls = await uploadImages(db, payload.images);
 
-    const { data: settings } = await db
+    const { data: settingsRows } = await db
       .from('site_settings')
-      .select('setting_value')
-      .eq('setting_key', 'testimonial_team_email')
-      .maybeSingle();
+      .select('setting_key, setting_value')
+      .in('setting_key', [
+        'testimonial_team_email',
+        'testimonial_customer_email_sender_name',
+        'testimonial_customer_email_subject',
+        'testimonial_customer_email_logo_url',
+        'testimonial_customer_email_body_html',
+        'public_site_base_url',
+      ]);
 
-    const teamEmail = settings?.setting_value || 'info@warmright.uk';
+    const settings = Object.fromEntries((settingsRows || []).map(row => [row.setting_key, row.setting_value]));
+    const teamEmail = settings.testimonial_team_email || 'info@warmright.uk';
+    const publicSiteBaseUrl = configuredSiteBaseUrl(settings);
     const { data: submission, error } = await db.from('testimonial_submissions').insert({
       customer_name: payload.customer_name,
       customer_email: payload.customer_email,
@@ -47,8 +55,8 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    await queueTeamEmail(db, teamEmail, submission.id, payload, imageUrls);
-    await queueCustomerThankYouEmail(db, submission.id, payload);
+    await queueTeamEmail(db, teamEmail, submission.id, payload, imageUrls, publicSiteBaseUrl);
+    await queueCustomerThankYouEmail(db, submission.id, payload, settings, publicSiteBaseUrl);
     try {
       await triggerEmailOutbox();
     } catch (triggerErr) {
@@ -111,13 +119,13 @@ async function queueTeamEmail(
   submissionId: string,
   payload: ReturnType<typeof normalizePayload>,
   imageUrls: string[],
+  publicSiteBaseUrl: string,
 ) {
-  const fromAddress = emailAddressOnly(Deno.env.get('SMTP_FROM') || 'no-reply@fieldhub.uk');
-  const from = `${Deno.env.get('SMTP_FROM_NAME') || 'FieldHub Support'} <${fromAddress}>`;
+  const fromAddress = emailAddressOnly(Deno.env.get('SMTP_FROM') || 'support@georgetech.uk');
+  const from = `${Deno.env.get('SMTP_FROM_NAME') || 'GeorgeTech Support'} <${fromAddress}>`;
   const imageList = imageUrls.length ? imageUrls.map((url) => `- ${url}`).join('\n') : 'No photos uploaded.';
-  const siteBaseUrl = (Deno.env.get('SITE_BASE_URL') || 'https://warmright.fieldhub.uk').replace(/\/$/, '');
-  const adminUrl = `${siteBaseUrl}/admin/testimonials-admin.html`;
-  const logoUrl = `${siteBaseUrl}/assets/images/logo.png`;
+  const adminUrl = `${publicSiteBaseUrl}/admin/testimonials-admin.html`;
+  const logoUrl = `${publicSiteBaseUrl}/assets/images/logo.png`;
   const plainText = [
     `A new customer testimonial is waiting for admin approval.`,
     ``,
@@ -157,57 +165,109 @@ async function queueCustomerThankYouEmail(
   db: ReturnType<typeof createClient>,
   submissionId: string,
   payload: ReturnType<typeof normalizePayload>,
+  settings: Record<string, string>,
+  publicSiteBaseUrl: string,
 ) {
-  const fromAddress = emailAddressOnly(Deno.env.get('SMTP_FROM') || 'no-reply@fieldhub.uk');
-  const from = `${Deno.env.get('SMTP_FROM_NAME') || 'FieldHub Support'} <${fromAddress}>`;
-  const siteBaseUrl = (Deno.env.get('SITE_BASE_URL') || 'https://warmright.fieldhub.uk').replace(/\/$/, '');
-  const logoUrl = `${siteBaseUrl}/assets/images/logo.png`;
-  const text = [
-    `Thank you for your feedback.`,
-    ``,
-    `If you want to talk to us call 0800 756 6758 or email info@warmright.uk`,
-  ].join('\n');
-
-  const html = `<!doctype html>
-<html>
-  <body style="margin:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#10233f;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f7fb;padding:28px 12px;">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,0.08);">
-            <tr>
-              <td style="background:#123b75;padding:22px 26px;">
-                <img src="${escapeAttr(logoUrl)}" alt="Warm Right Ltd" style="max-width:170px;height:auto;display:block;background:#ffffff;border-radius:8px;padding:8px;">
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:30px;">
-                <h1 style="margin:0 0 12px;color:#062940;font-size:26px;line-height:1.2;">Thank you for your feedback</h1>
-                <p style="margin:0;color:#475569;font-size:16px;line-height:1.7;">
-                  If you want to talk to us call <strong>0800 756 6758</strong> or email
-                  <a href="mailto:info@warmright.uk" style="color:#123b75;font-weight:700;">info@warmright.uk</a>.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+  const fromAddress = emailAddressOnly(Deno.env.get('SMTP_FROM') || 'support@georgetech.uk');
+  const senderName = cleanText(settings.testimonial_customer_email_sender_name, 120) || 'Warm Right Ltd';
+  const from = `${senderName} <${fromAddress}>`;
+  const values = customerTemplateValues(payload);
+  const subjectTemplate = settings.testimonial_customer_email_subject || 'Thank you for your feedback, {customer_name}';
+  const bodyTemplate = settings.testimonial_customer_email_body_html || '<h1>Thank you for your feedback</h1><p>Hello {customer_name},</p><p>Thank you for sharing your testimonial with Warm Right Ltd.</p><p>If you would like to talk to us, call <strong>0800 756 6748</strong> or email <a href="mailto:info@warmright.uk">info@warmright.uk</a>.</p>';
+  const logoSetting = settings.testimonial_customer_email_logo_url ?? 'assets/images/logo.png';
+  const renderedBody = resolveTemplateUrls(renderTemplate(bodyTemplate, values, true), publicSiteBaseUrl);
+  const subject = renderTemplate(subjectTemplate, values, false).replace(/[\r\n]+/g, ' ').slice(0, 200);
+  const html = buildCustomerEmailShell(renderedBody, resolveSiteAssetUrl(logoSetting, publicSiteBaseUrl));
+  const text = htmlToText(renderedBody);
 
   const { error } = await db.from('email_outbox').insert({
     related_table: 'testimonial_submissions',
     related_id: submissionId,
     from_email: from,
     to_email: payload.customer_email,
-    subject: 'Thank you for your feedback',
+    subject,
     text_body: text,
     html_body: html,
     status: 'queued',
   });
 
   if (error) console.error('Could not queue customer thank you email:', error);
+}
+
+function customerTemplateValues(payload: ReturnType<typeof normalizePayload>) {
+  return {
+    customer_name: payload.customer_name,
+    customer_email: payload.customer_email,
+    customer_phone: payload.customer_phone || 'Not provided',
+    job_number: payload.job_number || 'Not provided',
+    customer_address: payload.customer_address || 'Not provided',
+    testimonial_title: payload.subject,
+    testimonial_content: payload.content,
+    rating: `${payload.rating}/5`,
+  };
+}
+
+function renderTemplate(template: string, values: Record<string, string>, html: boolean) {
+  return String(template || '').replace(/\{([a-z0-9_]+)\}/gi, (match, key) => {
+    if (!(key in values)) return match;
+    const value = String(values[key] || '');
+    return html ? escapeHtml(value).replace(/\n/g, '<br>') : value;
+  });
+}
+
+function resolveSiteAssetUrl(path: string, publicSiteBaseUrl: string) {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      const parsed = new URL(path);
+      if (!isLocalHostname(parsed.hostname)) return path;
+      return `${publicSiteBaseUrl}${parsed.pathname.startsWith('/') ? parsed.pathname : `/${parsed.pathname}`}`;
+    } catch { return ''; }
+  }
+  return `${publicSiteBaseUrl}/${path.replace(/^\/+/, '')}`;
+}
+
+function resolveTemplateUrls(value: string, publicSiteBaseUrl: string) {
+  return String(value || '')
+    .replace(/https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/gi, publicSiteBaseUrl)
+    .replace(/(href|src)=(['"])\/(?!\/)/gi, `$1=$2${publicSiteBaseUrl}/`);
+}
+
+function configuredSiteBaseUrl(settings: Record<string, string>) {
+  const candidates = [settings.public_site_base_url, Deno.env.get('SITE_BASE_URL'), 'https://warmright.uk'];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol !== 'https:' || isLocalHostname(parsed.hostname)) continue;
+      return `${parsed.origin}${parsed.pathname.replace(/\/+$/, '')}`;
+    } catch { /* Try the next configured value. */ }
+  }
+  return 'https://warmright.uk';
+}
+
+function isLocalHostname(hostname: string) {
+  return ['localhost', '127.0.0.1', '::1'].includes(hostname.toLowerCase());
+}
+
+function buildCustomerEmailShell(bodyHtml: string, logoUrl: string) {
+  const logo = logoUrl ? `<tr><td style="background:#123b75;padding:22px 28px;"><img src="${escapeAttr(logoUrl)}" alt="Warm Right Ltd" style="display:block;max-width:180px;max-height:80px;width:auto;height:auto;background:#fff;border-radius:7px;padding:7px;"></td></tr>` : '';
+  return `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#10233f;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f7fb;padding:28px 12px;"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.08);">${logo}<tr><td style="padding:30px 28px;font-size:16px;line-height:1.65;color:#10233f;">${bodyHtml}</td></tr></table></td></tr></table></body></html>`;
+}
+
+function htmlToText(value: string) {
+  return String(value || '')
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<\/(p|h1|h2|h3|li)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 async function triggerEmailOutbox() {

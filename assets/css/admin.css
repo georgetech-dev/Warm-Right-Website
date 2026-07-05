@@ -126,7 +126,7 @@ button {
   white-space: nowrap !important;
 }
 
-.admin-fieldhub-credit {
+.admin-georgetech-credit {
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -137,10 +137,10 @@ button {
   white-space: nowrap !important;
 }
 
-.admin-fieldhub-credit img {
+.admin-georgetech-credit img {
   display: block !important;
   width: auto !important;
-  height: 34px !important;
+  height: 42px !important;
   max-width: none !important;
   object-fit: contain !important;
 }
@@ -339,8 +339,8 @@ button {
     .nav-left span { display: none !important; } /* Hide names/titles */
     .nav-left .logo { cursor: pointer; position: relative; z-index: 1001; }
     .nav-left .logo img { height: 40px !important; }
-    .admin-fieldhub-credit,
-    .admin-fieldhub-divider {
+    .admin-georgetech-credit,
+    .admin-georgetech-divider {
         display: none !important;
     }
     

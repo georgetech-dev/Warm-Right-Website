@@ -130,16 +130,20 @@ create table if not exists public.feedback_surveys (
   customer_phone text not null default '',
   job_number text not null default '',
   customer_address text not null default '',
+  job_origin text not null default 'direct' check (job_origin in ('direct', 'referred')),
+  has_main_body boolean not null default false,
   engineer_name text not null default '',
   insurer_agent_name text not null default '',
-  main_body_communication integer not null default 3 check (main_body_communication between 1 and 5),
-  main_body_experience integer not null default 3 check (main_body_experience between 1 and 5),
+  main_body_communication integer check (main_body_communication between 1 and 5),
+  main_body_experience integer check (main_body_experience between 1 and 5),
   main_body_comments text not null default '',
   engineer_communication integer not null default 3 check (engineer_communication between 1 and 5),
   engineer_experience integer not null default 3 check (engineer_experience between 1 and 5),
   engineer_comments text not null default '',
   final_remarks text not null default '',
   wants_contact boolean not null default false,
+  pass_to_main_body boolean not null default false,
+  wants_testimonial boolean not null default false,
   source text not null default 'direct',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -338,7 +342,7 @@ values
   ('contact', 'Contact Us', 'contact.html', 'main', 8, true),
   ('testimonials', 'Testimonials', 'testimonials.html', 'main', 6, true),
   ('testimonial-submit', 'Submit Testimonial', 'testimonial-submit.html', 'hidden', 0, true)
-  ,('feedback', 'Feedback Survey', 'feedback.html', 'hidden', 0, true)
+  ,('feedback', 'Feedback Survey', 'https://feedback.warmright.uk/', 'hidden', 0, true)
 on conflict (page_key) do update
 set title = excluded.title,
     url = excluded.url,
@@ -435,6 +439,28 @@ on conflict (page_key, hero_key) do nothing;
 
 insert into public.site_settings (setting_key, setting_value)
 values ('testimonial_team_email', 'info@warmright.uk')
+on conflict (setting_key) do nothing;
+
+insert into public.site_settings (setting_key, setting_value)
+values
+  ('feedback_team_email', 'info@warmright.uk'),
+  ('feedback_send_customer_confirmation', 'true')
+on conflict (setting_key) do nothing;
+
+insert into public.site_settings (setting_key, setting_value)
+values ('public_site_base_url', 'https://warmright.uk')
+on conflict (setting_key) do nothing;
+
+insert into public.site_settings (setting_key, setting_value)
+values
+  ('testimonial_customer_email_sender_name', 'Warm Right Ltd'),
+  ('testimonial_customer_email_subject', 'Thank you for your feedback, {customer_name}'),
+  ('testimonial_customer_email_logo_url', 'assets/images/logo.png'),
+  ('testimonial_customer_email_body_html', '<h1>Thank you for your feedback</h1><p>Hello {customer_name},</p><p>Thank you for sharing your testimonial with Warm Right Ltd.</p><p>If you would like to talk to us, call <strong>0800 756 6748</strong> or email <a href="mailto:info@warmright.uk">info@warmright.uk</a>.</p>'),
+  ('feedback_customer_email_sender_name', 'Warm Right Ltd'),
+  ('feedback_customer_email_subject', 'Thank you for your feedback, {customer_name}'),
+  ('feedback_customer_email_logo_url', 'assets/images/logo.png'),
+  ('feedback_customer_email_body_html', '<h1>Thank you for your feedback</h1><p>Hello {customer_name},</p><p>Thank you for sharing your experience with Warm Right Ltd. Your response has been received by our team.</p><p>If you would like to talk to us, call <strong>0800 756 6748</strong> or email <a href="mailto:info@warmright.uk">info@warmright.uk</a>.</p>')
 on conflict (setting_key) do nothing;
 
 create table if not exists public.site_feature_lists (

@@ -608,6 +608,7 @@
 
     let titleGenerationStarted = false;
     let titleHasGenerated = false;
+    let testimonialIsBeingEdited = false;
     const titlePlaceholder = 'e.g. Brilliant boiler service';
     const titleWaitingPlaceholder = 'Write your testimonial first';
     const minimumTitleWords = 8;
@@ -616,39 +617,59 @@
       return document.getElementById('content').value.trim().split(/\s+/).filter(Boolean).length;
     }
 
-    function updateTitleAvailability() {
+    function updateTitleAvailability(allowManualTitle = false) {
       const subject = document.getElementById('subject');
       const errorMessage = document.getElementById('ai-title-error');
-      const hasAnyWords = getTestimonialWordCount() > 0;
+      const wordCount = getTestimonialWordCount();
 
-      if (hasAnyWords) {
+      if (titleHasGenerated || subject.value.trim()) {
         subject.disabled = false;
         subject.placeholder = titlePlaceholder;
-        document.getElementById('regenerate-title-btn').classList.toggle('active', titleHasGenerated && getTestimonialWordCount() >= minimumTitleWords);
+        document.getElementById('regenerate-title-btn').classList.toggle('active', titleHasGenerated && wordCount >= minimumTitleWords);
         return;
       }
 
-      titleGenerationStarted = false;
-      titleHasGenerated = false;
-      subject.value = '';
-      subject.disabled = true;
-      subject.readOnly = false;
-      subject.placeholder = titleWaitingPlaceholder;
-      document.getElementById('regenerate-title-btn').classList.remove('active');
-      errorMessage.textContent = '';
-      errorMessage.classList.remove('active');
+      if (!wordCount || !allowManualTitle) {
+        if (!wordCount) {
+          titleGenerationStarted = false;
+          titleHasGenerated = false;
+          errorMessage.textContent = '';
+          errorMessage.classList.remove('active');
+        }
+        subject.disabled = true;
+        subject.placeholder = titleWaitingPlaceholder;
+        document.getElementById('regenerate-title-btn').classList.remove('active');
+        return;
+      }
+
+      subject.disabled = false;
+      subject.placeholder = titlePlaceholder;
     }
 
     document.getElementById('content').addEventListener('input', () => {
-      titleGenerationStarted = false;
+      testimonialIsBeingEdited = true;
+      if (!titleHasGenerated && !document.getElementById('subject').value.trim()) titleGenerationStarted = false;
       updateTitleAvailability();
     });
 
-    document.getElementById('subject').addEventListener('focus', () => {
+    document.getElementById('content').addEventListener('focus', () => {
+      testimonialIsBeingEdited = true;
+    });
+
+    function finishTestimonialEditing() {
+      if (!testimonialIsBeingEdited) return;
+      testimonialIsBeingEdited = false;
       const subject = document.getElementById('subject');
-      if (!subject.disabled && getTestimonialWordCount() >= minimumTitleWords && !titleGenerationStarted && !subject.value.trim()) {
+      if (getTestimonialWordCount() >= minimumTitleWords && !titleGenerationStarted && !subject.value.trim()) {
         generateShortTitle();
+      } else {
+        updateTitleAvailability(true);
       }
+    }
+
+    document.getElementById('content').addEventListener('focusout', finishTestimonialEditing);
+    document.addEventListener('pointerdown', (event) => {
+      if (event.target !== document.getElementById('content')) finishTestimonialEditing();
     });
 
     document.getElementById('regenerate-title-btn').addEventListener('click', () => {
@@ -665,7 +686,7 @@
       const regenerateButton = document.getElementById('regenerate-title-btn');
 
       if (getTestimonialWordCount() < minimumTitleWords) {
-        updateTitleAvailability();
+        updateTitleAvailability(true);
         return;
       }
 
@@ -842,7 +863,7 @@
         job: lastSubmittedTestimonial?.job_number || document.getElementById('job_number').value.trim(),
         address: lastSubmittedTestimonial?.customer_address || document.getElementById('customer_address').value.trim(),
       });
-      window.location.href = `feedback.html?${params.toString()}`;
+      window.location.href = `https://feedback.warmright.uk/?${params.toString()}`;
     }
   </script>
   <script src="assets/js/include.js"></script>

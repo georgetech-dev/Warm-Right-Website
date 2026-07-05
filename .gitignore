@@ -1,3 +1,8 @@
 # Ignore local backup folders and large archives
 Warm Right Website BackUps/
 *.zip
+customer-email-templates-update.sql
+public-site-base-url-update.sql
+rate-options-update.sql
+supabase-site-management.sql
+supabase-feedback-survey-update.sql

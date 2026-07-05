@@ -1,24 +1,25 @@
-create table if not exists public.feedback_surveys (
-  id uuid primary key default gen_random_uuid(),
-  customer_name text not null,
-  customer_email text not null default '',
-  customer_phone text not null default '',
-  job_number text not null default '',
-  customer_address text not null default '',
-  engineer_name text not null default '',
-  insurer_agent_name text not null default '',
-  main_body_communication integer not null default 3 check (main_body_communication between 1 and 5),
-  main_body_experience integer not null default 3 check (main_body_experience between 1 and 5),
-  main_body_comments text not null default '',
-  engineer_communication integer not null default 3 check (engineer_communication between 1 and 5),
-  engineer_experience integer not null default 3 check (engineer_experience between 1 and 5),
-  engineer_comments text not null default '',
-  final_remarks text not null default '',
-  wants_contact boolean not null default false,
-  source text not null default 'direct',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+-- Warm Right standalone feedback survey update.
+-- Run this complete file in the Supabase SQL Editor.
+
+alter table public.feedback_surveys
+  add column if not exists job_origin text not null default 'direct',
+  add column if not exists has_main_body boolean not null default false,
+  add column if not exists pass_to_main_body boolean not null default false,
+  add column if not exists wants_testimonial boolean not null default false;
+
+alter table public.feedback_surveys
+  drop constraint if exists feedback_surveys_job_origin_check;
+
+alter table public.feedback_surveys
+  add constraint feedback_surveys_job_origin_check
+  check (job_origin in ('direct', 'referred'));
+
+-- Direct customers do not answer the insurer/agent/landlord ratings.
+alter table public.feedback_surveys
+  alter column main_body_communication drop not null,
+  alter column main_body_communication drop default,
+  alter column main_body_experience drop not null,
+  alter column main_body_experience drop default;
 
 alter table public.feedback_surveys enable row level security;
 
@@ -29,16 +30,16 @@ to authenticated
 using (true)
 with check (true);
 
-alter table public.testimonial_submissions
-add column if not exists job_number text not null default '';
-
-alter table public.testimonial_submissions
-add column if not exists customer_address text not null default '';
+insert into public.site_settings (setting_key, setting_value)
+values
+  ('feedback_team_email', 'info@warmright.uk'),
+  ('feedback_send_customer_confirmation', 'true')
+on conflict (setting_key) do nothing;
 
 insert into public.site_pages
   (page_key, title, url, nav_group, sort_order, is_active)
 values
-  ('feedback', 'Feedback Survey', 'feedback.html', 'hidden', 0, true)
+  ('feedback', 'Feedback Survey', 'https://feedback.warmright.uk/', 'hidden', 0, true)
 on conflict (page_key) do update
 set title = excluded.title,
     url = excluded.url,

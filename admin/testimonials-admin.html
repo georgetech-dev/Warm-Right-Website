@@ -6,12 +6,13 @@
   <title>WarmHub - Testimonials | Warm Right Ltd</title>
       <link rel="icon" href="../assets/images/favicon.png">
 
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20260625fieldhub">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
+  <link rel="stylesheet" href="../assets/css/customer-email-editor.css?v=1">
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>window.adminPageTitle = "WarmHub - Testimonials";</script>
-  <script src="../assets/js/admin-include.js?v=20260625nav"></script>
+<script src="../assets/js/admin-include.js?v=20260703feedback"></script>
   
   <style>
     :root {
@@ -99,6 +100,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin:0">Customer Testimonials</h2>
         <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn-outline" onclick="openCustomerEmailEditor()">Customise Email</button>
           <button class="btn-primary" onclick="triggerEmailOutbox()">Send Queued Emails</button>
           <button id="add-btn" class="btn-accent" onclick="showFormMode()">+ New Testimonial</button>
         </div>
@@ -197,6 +199,8 @@
 
   </div>
 
+  <script src="../assets/js/admin-image-library.js?v=2"></script>
+  <script src="../assets/js/customer-email-editor.js?v=1"></script>
   <script>
     /* 1. INITIALIZATION & SECURITY */
     let editingId = null;
@@ -220,6 +224,8 @@
         window.location.href = 'login.html'; 
         return; 
       }
+
+      window.currentSession = session;
       
       // LOAD THE MODULAR HEADER
       await window.loadAdminHeader(session);
@@ -335,18 +341,56 @@
       `).join('');
     }
 
+    async function getFunctionErrorMessage(error) {
+      const fallback = error?.message || 'Could not start email sender.';
+      const response = error?.context;
+      if (!response || typeof response.text !== 'function') return fallback;
+
+      try {
+        const body = await response.text();
+        if (!body) return fallback;
+        try {
+          const detail = JSON.parse(body);
+          return detail.error || detail.message || fallback;
+        } catch {
+          return body.slice(0, 500);
+        }
+      } catch {
+        return fallback;
+      }
+    }
+
     async function triggerEmailOutbox() {
       const status = document.getElementById('email-outbox-status');
+      const button = document.querySelector('[onclick="triggerEmailOutbox()"]');
+      if (button) button.disabled = true;
       status.style.color = 'var(--primary-blue)';
       status.textContent = 'Starting email sender...';
-      const { error } = await window.db.functions.invoke('trigger-email-outbox', { body: {} });
-      if (error) {
+
+      try {
+        const { error } = await window.db.functions.invoke('trigger-email-outbox', { body: {} });
+        if (!error) {
+          status.style.color = '#166534';
+          status.textContent = 'Email sender started. Check GitHub Actions for the run result.';
+          return;
+        }
         status.style.color = '#ef4444';
-        status.textContent = error.message || 'Could not start email sender.';
-        return;
+        status.textContent = await getFunctionErrorMessage(error);
+      } catch (error) {
+        status.style.color = '#ef4444';
+        status.textContent = error?.message || 'Could not start email sender.';
+      } finally {
+        if (button) button.disabled = false;
       }
-      status.style.color = '#166534';
-      status.textContent = 'Email sender started. Check GitHub Actions for the run result.';
+    }
+
+    async function openCustomerEmailEditor() {
+      const { data } = await window.db.auth.getSession();
+      window.customerEmailEditor.open({
+        db: window.db,
+        session: data.session,
+        templateType: 'testimonial',
+      });
     }
 
     async function loadTestimonials() {

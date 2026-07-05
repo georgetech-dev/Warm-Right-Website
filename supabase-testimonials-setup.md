@@ -26,7 +26,8 @@ supabase secrets set SMTP_HOST="smtp.example.com"
 supabase secrets set SMTP_PORT="465"
 supabase secrets set SMTP_USER="..."
 supabase secrets set SMTP_PASS="..."
-supabase secrets set SMTP_FROM="Warm Right Ltd <info@warmright.uk>"
+supabase secrets set SMTP_FROM="support@georgetech.uk"
+supabase secrets set SMTP_FROM_NAME="GeorgeTech Support"
 ```
 
 The team notification email can be edited in WarmHub:
@@ -55,8 +56,8 @@ SMTP_HOST=smtp.livemail.co.uk
 SMTP_PORT=465
 SMTP_USER=...
 SMTP_PASS=...
-SMTP_FROM=no-reply@fieldhub.uk
-SMTP_FROM_NAME=FieldHub Support
+SMTP_FROM=support@georgetech.uk
+SMTP_FROM_NAME=GeorgeTech Support
 ```
 
 Set these Supabase secrets so WarmHub can trigger the GitHub Action:
@@ -67,9 +68,9 @@ supabase secrets set GITHUB_REPO="Warm-Right-Website"
 supabase secrets set GITHUB_TOKEN="..."
 supabase secrets set GITHUB_EMAIL_WORKFLOW="send-email-outbox.yml"
 supabase secrets set GITHUB_BRANCH="master"
-supabase secrets set SMTP_FROM="no-reply@fieldhub.uk"
-supabase secrets set SMTP_FROM_NAME="FieldHub Support"
-supabase secrets set SITE_BASE_URL="https://warmright.fieldhub.uk"
+supabase secrets set SMTP_FROM="support@georgetech.uk"
+supabase secrets set SMTP_FROM_NAME="GeorgeTech Support"
+supabase secrets set SITE_BASE_URL="https://warmright.georgetech.uk"
 ```
 
 The GitHub token needs permission to run Actions workflows on this repository.
@@ -101,37 +102,29 @@ The API key is only used inside the `testimonial-title-suggestion` Edge Function
 
 ## Feedback survey page
 
-The dedicated feedback survey lives at:
+The standalone feedback site lives at:
 
 ```text
-feedback.html
+feedback-site/
 ```
 
-It can be hosted on a subdomain such as `feedback.warmright.uk` by pointing that subdomain at the same deployed site and using this page as the entry point.
+Copy the contents of that folder into its own GitHub repository and deploy it at `feedback.warmright.uk`. The main site's `feedback.html` redirects to the standalone survey.
 
-Run the latest SQL in `supabase-site-management.sql` before deploying. It adds:
+Run `supabase-feedback-survey-update.sql` before deploying. It adds:
 
-- `feedback_surveys`
-- `job_number` and `customer_address` fields on `testimonial_submissions`
+- conditional direct/referred feedback fields
+- feedback forwarding and customer-confirmation settings
+- the external feedback page URL
 
-The feedback survey submits through the `feedback-submission` Edge Function and queues an email through the existing GitHub email outbox workflow.
+Redeploy the `feedback-submission` Edge Function after running the SQL. The survey queues both the team notification and, when enabled in Feedback admin, a customer confirmation through the existing GitHub email outbox workflow.
 
 ## Google address finder
 
-The address finder uses Google Maps Places in the browser. Create a browser API key in Google Cloud/Google Maps Platform, enable the Places API, and restrict the key to your site domains.
+The address finder calls the `google-places` Edge Function, so the Google key remains in Supabase secrets rather than the browser.
 
-For the intended setup, include these referrers:
+Set the server-side key and deploy the function:
 
-```text
-https://warmright.fieldhub.uk/*
-https://feedback.warmright.uk/*
-http://localhost:6767/*
+```bash
+supabase secrets set GOOGLE_MAPS_API_KEY="..."
+supabase functions deploy google-places
 ```
-
-Then set the key in:
-
-```text
-assets/js/site-config.js
-```
-
-The key is public by design, so keep it browser-restricted in Google Cloud.
