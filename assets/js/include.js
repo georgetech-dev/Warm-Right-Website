@@ -27,7 +27,7 @@ async function initPublicDatabase() {
 }
 
 function loadHTML(id, file) {
-  return fetch(file)
+  return fetch(file, { cache: 'no-store' })
     .then(res => res.text())
     .then(data => {
       const el = document.getElementById(id);

@@ -6,3 +6,5 @@ public-site-base-url-update.sql
 rate-options-update.sql
 supabase-site-management.sql
 supabase-feedback-survey-update.sql
+callback-requests-update.sql
+supabase-site-management.sql

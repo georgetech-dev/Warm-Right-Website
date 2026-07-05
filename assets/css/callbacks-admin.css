@@ -1,0 +1,45 @@
+body { margin: 0; padding: 40px; visibility: hidden; background: #f4f7f6; color: #243244; }
+#admin-header-container { margin: -40px -40px 30px; }
+.callbacks-admin { width: min(1320px, 100%); margin: 0 auto; }
+.callback-panel { margin-bottom: 22px; padding: 26px; border-radius: 8px; background: #fff; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
+.callback-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+.callback-heading h1, .callback-heading h2 { margin: 0 0 5px; color: #062940; }
+.callback-heading p { margin: 0; color: #64748b; }
+.callback-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin-bottom: 22px; }
+.callback-metrics div { padding: 18px; border: 1px solid #dce5ef; border-radius: 8px; background: #fff; }
+.callback-metrics span { display: block; color: #64748b; font-size: .78rem; font-weight: 800; text-transform: uppercase; }
+.callback-metrics strong { display: block; margin-top: 6px; color: #123b75; font-size: 1.8rem; }
+.callback-settings-grid { display: grid; grid-template-columns: minmax(260px,1fr) minmax(280px,1fr) auto; gap: 18px; align-items: end; }
+.callback-settings-grid label, .callback-comments { color: #123b75; font-weight: 700; }
+.callback-settings-grid input[type="email"], .callback-tools input, .callback-comments textarea { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.callback-check { display: flex; min-height: 42px; align-items: center; gap: 9px; color: #243244 !important; }
+.callback-check input { width: 18px; height: 18px; margin: 0; }
+.callback-actions, .callback-tools, .callback-modal-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.callback-btn { min-height: 42px; padding: 0 16px; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; }
+.callback-btn.primary { border: 0; background: #123b75; color: #fff; }
+.callback-btn.secondary { border: 1px solid #cbd5e1; background: #fff; color: #123b75; }
+.callback-btn:disabled { opacity: .58; cursor: wait; }
+.callback-status { min-height: 21px; margin: 10px 0 0; color: #166534; font-weight: 700; }
+.callback-status.error { color: #b42318; }
+.callback-table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 13px; border-bottom: 2px solid #e2e8f0; background: #f8fafc; color: #123b75; text-align: left; }
+td { padding: 13px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
+.callback-request-summary { display: block; max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.callback-pill { display: inline-flex; padding: 4px 8px; border-radius: 5px; font-size: .75rem; font-weight: 800; }
+.callback-pill.pending { background: #fff7ed; color: #9a3412; }
+.callback-pill.completed { background: #ecfdf3; color: #166534; }
+.callback-modal { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 22px; background: rgba(15,23,42,.72); }
+.callback-modal[hidden] { display: none; }
+.callback-modal-card { position: relative; width: min(760px,100%); max-height: calc(100vh - 44px); overflow-y: auto; padding: 28px; box-sizing: border-box; border-radius: 8px; background: #fff; }
+.callback-modal-card h2 { margin: 0 0 18px; color: #062940; }
+.callback-modal-close { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; font-size: 1.35rem; cursor: pointer; }
+.callback-detail-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+.callback-detail { padding: 11px 13px; border-radius: 6px; background: #f8fafc; }
+.callback-detail.wide { grid-column: 1/-1; }
+.callback-detail strong { display: block; margin-bottom: 3px; color: #64748b; font-size: .72rem; text-transform: uppercase; }
+.callback-comments { display: block; margin-top: 18px; }
+.callback-modal-actions { justify-content: flex-end; margin-top: 14px; }
+
+@media (max-width: 900px) { .callback-settings-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { body { padding: 20px; } #admin-header-container { margin: -20px -20px 20px; } .callback-panel { padding: 18px; } .callback-metrics, .callback-detail-grid { grid-template-columns: 1fr; } .callback-heading { flex-direction: column; } .callback-tools, .callback-tools input { width: 100%; } .callback-detail.wide { grid-column: auto; } }

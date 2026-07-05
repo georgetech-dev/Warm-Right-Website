@@ -82,8 +82,7 @@
       <h2 class="modal-title-single">Request a Callback</h2>
       <p class="modal-left-text">Please fill in your details and an engineer will be in touch.</p>
       
-      <!-- Replace 'your-id-here' with your actual Formspree ID -->
-      <form id="footer-callback-form" action="https://formspree.io/f/xjkalnqv" method="POST">
+      <form id="footer-callback-form">
         <fieldset class="form-group-box">
           <label for="modal-name">Name*</label>
           <input type="text" id="modal-name" name="name" placeholder="Your full name" required>
@@ -97,7 +96,7 @@
           <label for="modal-time">Preferred Callback Time*</label>
           <select id="modal-time" name="time" required>
             <option value="" disabled selected>Select a time...</option>
-			 <option value="morning">ASAP!</option>
+             <option value="asap">ASAP</option>
             <option value="morning">Morning (8am - 12pm)</option>
             <option value="afternoon">Afternoon (12pm - 4pm)</option>
             <option value="evening">Evening (4pm - 6pm)</option>
@@ -109,9 +108,10 @@
         </fieldset>
 
         <div class="call-modal-actions">
-          <button type="submit" class="btn primary">Submit Request</button>
+          <button type="submit" class="btn primary" id="callback-submit-button">Submit Request</button>
           <button type="button" id="btn-modal-back" class="btn secondary">Back</button>
         </div>
+        <p id="callback-form-status" class="callback-form-status" role="status" aria-live="polite"></p>
       </form>
     </div>
 

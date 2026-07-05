@@ -167,6 +167,7 @@ function renderWebsiteManagementNav() {
         { file: 'hero-admin.html', label: 'Hero Pictures' },
         { file: 'testimonials-admin.html', label: 'Testimonials' },
         { file: 'feedback-admin.html', label: 'Feedback' },
+        { file: 'callbacks-admin.html', label: 'Callbacks' },
         { file: 'site-management.html', label: 'Pages & Appearance' },
         { file: 'carousels-admin.html', label: 'Carousels' },
         { file: 'coverage-admin.html', label: 'Coverage Map' },

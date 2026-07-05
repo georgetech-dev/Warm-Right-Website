@@ -93,6 +93,8 @@ window.initWarmRight = async function() {
     if (!callModal) return;
     callModal.style.display = "flex";
     document.body.classList.add('modal-open');
+    const callbackStatus = document.getElementById('callback-form-status');
+    if (callbackStatus) { callbackStatus.textContent = ''; callbackStatus.classList.remove('error'); }
 
     // SURGICAL TEXT UPDATE
     if (!status.isOpen && modalInitial) {
@@ -295,14 +297,45 @@ applyHighlights();
   if (callbackForm) {
     callbackForm.onsubmit = async (e) => {
       e.preventDefault();
+      const submitButton = document.getElementById('callback-submit-button');
+      const formStatus = document.getElementById('callback-form-status');
+      const formData = new FormData(callbackForm);
+      const payload = {
+        customer_name: formData.get('name'),
+        customer_phone: formData.get('phone'),
+        customer_email: formData.get('email'),
+        preferred_time: formData.get('time'),
+        description: formData.get('description'),
+        source_page: window.location.pathname,
+      };
+      if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Sending request...'; }
+      if (formStatus) { formStatus.textContent = 'Sending your callback request...'; formStatus.classList.remove('error'); }
       try {
-        await fetch(callbackForm.action, { method: "POST", body: new FormData(callbackForm), headers: { "Accept": "application/json" } });
+        const { error } = await window.db.functions.invoke('callback-submission', { body: payload });
+        if (error) throw new Error(await getCallbackFunctionError(error));
+        callbackForm.reset();
         if (modalForm) modalForm.style.display = "none";
         if (modalThankYou) modalThankYou.style.display = "block";
-      } catch (err) { alert("Technical problem. Please call us directly."); }
+      } catch (err) {
+        if (formStatus) { formStatus.textContent = err.message || 'We could not send your request. Please call 0800 756 6748.'; formStatus.classList.add('error'); }
+      } finally {
+        if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'Submit Request'; }
+      }
     };
   }
 };
+
+async function getCallbackFunctionError(error) {
+  const fallback = error?.message || 'We could not send your request. Please call 0800 756 6748.';
+  const response = error?.context;
+  if (!response || typeof response.text !== 'function') return fallback;
+  try {
+    const body = await response.text();
+    if (!body) return fallback;
+    try { const detail = JSON.parse(body); return detail.error || detail.message || fallback; }
+    catch { return body.slice(0, 300); }
+  } catch { return fallback; }
+}
 
 document.addEventListener("includesLoaded", () => {
   const checkDb = setInterval(() => {

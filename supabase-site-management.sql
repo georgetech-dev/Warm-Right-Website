@@ -165,6 +165,25 @@ create table if not exists public.email_outbox (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.callback_requests (
+  id uuid primary key default gen_random_uuid(),
+  customer_name text not null,
+  customer_phone text not null,
+  customer_email text not null default '',
+  preferred_time text not null,
+  description text not null,
+  source_page text not null default '',
+  status text not null default 'pending' check (status in ('pending', 'completed')),
+  admin_comments text not null default '',
+  completed_at timestamptz,
+  completed_by text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists callback_requests_status_created_idx
+on public.callback_requests (status, created_at desc);
+
 alter table public.site_pages enable row level security;
 alter table public.site_carousel_tiles enable row level security;
 alter table public.site_offers enable row level security;
@@ -175,6 +194,7 @@ alter table public.site_settings enable row level security;
 alter table public.testimonial_submissions enable row level security;
 alter table public.feedback_surveys enable row level security;
 alter table public.email_outbox enable row level security;
+alter table public.callback_requests enable row level security;
 
 drop policy if exists "Public can read page visibility" on public.site_pages;
 create policy "Public can read page visibility"
@@ -290,6 +310,13 @@ with check (true);
 drop policy if exists "Authenticated can manage email outbox" on public.email_outbox;
 create policy "Authenticated can manage email outbox"
 on public.email_outbox for all
+to authenticated
+using (true)
+with check (true);
+
+drop policy if exists "Authenticated can manage callback requests" on public.callback_requests;
+create policy "Authenticated can manage callback requests"
+on public.callback_requests for all
 to authenticated
 using (true)
 with check (true);
@@ -451,6 +478,12 @@ insert into public.site_settings (setting_key, setting_value)
 values
   ('feedback_team_email', 'info@warmright.uk'),
   ('feedback_send_customer_confirmation', 'true')
+on conflict (setting_key) do nothing;
+
+insert into public.site_settings (setting_key, setting_value)
+values
+  ('callback_team_email', 'info@warmright.uk'),
+  ('callback_send_customer_confirmation', 'true')
 on conflict (setting_key) do nothing;
 
 insert into public.site_settings (setting_key, setting_value)
