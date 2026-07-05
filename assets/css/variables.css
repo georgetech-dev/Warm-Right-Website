@@ -16,6 +16,9 @@
   --text-banner-secondary: White;
   --primary-blue: rgba(10, 44, 102, 0.95);
   --accent-orange: #D97706;
+  --footer-background: #062940;
+  --footer-text: #FFFFFF;
+  --site-background-image: none;
   --base-font-size: 14px;
 }
 
@@ -28,11 +31,27 @@
   --accent-teal: #4DB6AC;
   --highlight-amber: #F59E0B;
   --frame-neutral: #333333;
-  --tile-background: #FFFFFF;
-  --nav-text: Black;
-  --nav-background: rgba(10, 44, 102, 0.95) ;
-  --text-banner-primary:;
-  --text-banner-secondary:;
-   --base-font-size: 14px;
+  --tile-background: #242A31;
+  --nav-text: #FFFFFF;
+  --nav-background: #101827;
+  --text-banner-primary: #FFFFFF;
+  --text-banner-secondary: #FFFFFF;
+  --primary-blue: #7DB7FF;
+  --accent-orange: #F59E0B;
+  --footer-background: #0B111B;
+  --footer-text: #F8FAFC;
+  --base-font-size: 14px;
 }
+
+body {
+  background-image: var(--site-background-image);
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+#main-nav-bar .nav a { color: var(--nav-text) !important; }
+#main-nav-bar .nav a:hover,
+#main-nav-bar .nav a.active { color: var(--highlight-amber) !important; border-bottom-color: var(--highlight-amber) !important; }
 

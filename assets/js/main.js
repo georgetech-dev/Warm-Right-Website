@@ -296,20 +296,44 @@ function initMapOverlay() {
   }
 }
 
-//accessibility widget for text size adjustment, using CSS variable for dynamic font sizing
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("accessibility-toggle")) {
-    const options = document.getElementById("accessibility-options");
-    options.style.display = options.style.display === "none" ? "block" : "inline-block";
+function syncAccessibilityControls() {
+  const preference = window.getWarmRightThemePreference?.() || 'system';
+  document.querySelectorAll('[data-theme-choice]').forEach(button => button.classList.toggle('is-active', button.dataset.themeChoice === preference));
+  const textSize = localStorage.getItem('warmright-text-size') || '14';
+  const slider = document.getElementById('text-size');
+  if (slider) slider.value = textSize;
+  document.documentElement.style.setProperty('--base-font-size', `${textSize}px`);
+}
+
+document.addEventListener('click', event => {
+  const toggle = event.target.closest('#accessibility-toggle');
+  const themeButton = event.target.closest('[data-theme-choice]');
+  const options = document.getElementById('accessibility-options');
+  if (toggle && options) {
+    const opening = options.hidden;
+    options.hidden = !opening;
+    toggle.setAttribute('aria-expanded', String(opening));
+    if (opening) syncAccessibilityControls();
+    return;
+  }
+  if (themeButton) {
+    window.setWarmRightThemePreference?.(themeButton.dataset.themeChoice);
+    syncAccessibilityControls();
+    return;
+  }
+  if (options && !options.hidden && !event.target.closest('.accessibility-widget')) {
+    options.hidden = true;
+    document.getElementById('accessibility-toggle')?.setAttribute('aria-expanded', 'false');
   }
 });
 
-document.addEventListener("input", (e) => {
-  if (e.target.id === "text-size") {
-    document.documentElement.style.setProperty('--base-font-size', `${e.target.value}px`);
-  }
-  
+document.addEventListener('input', event => {
+  if (event.target.id !== 'text-size') return;
+  localStorage.setItem('warmright-text-size', event.target.value);
+  document.documentElement.style.setProperty('--base-font-size', `${event.target.value}px`);
 });
+
+document.addEventListener('includesLoaded', syncAccessibilityControls);
 
 document.addEventListener("DOMContentLoaded", initMapOverlay);
 document.addEventListener("includesLoaded", initMapOverlay);

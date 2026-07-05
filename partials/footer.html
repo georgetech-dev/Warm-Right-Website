@@ -37,13 +37,18 @@
 
   <!-- Accessibility Widget -->
   <div class="accessibility-widget">
-    <button id="accessibility-toggle" class="btn secondary">Accessibility Options</button>
-    <div id="accessibility-options" class="accessibility-options" style="display: none;">
-      <button id="toggle-dark-mode" class="btn secondary">Toggle Dark Mode</button>
-   <div class="text-size-slider">
-    <label for="text-size">Text Size:</label>
-    <input type="range" id="text-size" name="text-size" min="10" max="18" value="14">
-  </div>
+    <button id="accessibility-toggle" class="accessibility-toggle" type="button" aria-expanded="false" aria-controls="accessibility-options" aria-label="Accessibility options" title="Accessibility options"><span aria-hidden="true">Aa</span></button>
+    <div id="accessibility-options" class="accessibility-options" hidden>
+      <h3>Display preferences</h3>
+      <div class="theme-choice-group" aria-label="Colour mode">
+        <button type="button" data-theme-choice="light">Light</button>
+        <button type="button" data-theme-choice="dark">Dark</button>
+        <button type="button" data-theme-choice="system">System</button>
+      </div>
+      <div class="text-size-slider">
+        <label for="text-size">Text size</label>
+        <input type="range" id="text-size" name="text-size" min="10" max="18" value="14">
+      </div>
     </div>
   </div>
 

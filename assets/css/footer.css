@@ -10,8 +10,8 @@ body.modal-open {
    2. FOOTER MAIN STYLES
    ========================================== */
 .footer {
-    background: #062940;
-    color: #fff;
+    background: var(--footer-background, #062940);
+    color: var(--footer-text, #fff);
     padding: 20px 10px;
     border-top: 4px solid #ffd166;
     margin-top: 32px;
@@ -48,7 +48,7 @@ body.modal-open {
 
 .footer-section a, 
 .footer-a {
-    color: #fff;
+    color: var(--footer-text, #fff);
     text-decoration: none;
     transition: text-decoration 0.3s;
 }
@@ -291,6 +291,54 @@ body.modal-open {
 }
 
 .back-to-top.show { opacity: 1; pointer-events: auto; }
+
+.accessibility-widget {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 5000;
+}
+
+.accessibility-toggle {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid var(--highlight-amber, #ffd166);
+    border-radius: 50%;
+    background: var(--nav-background, #0a2c66);
+    color: var(--nav-text, #fff);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.3);
+    cursor: pointer;
+}
+
+.accessibility-options {
+    position: absolute;
+    left: 0;
+    bottom: 58px;
+    width: min(290px, calc(100vw - 36px));
+    padding: 14px;
+    border: 1px solid var(--frame-neutral, #dbe4ef);
+    border-radius: 8px;
+    background: var(--tile-background, #fff);
+    color: var(--text-primary, #0f1724);
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.24);
+}
+
+.accessibility-options[hidden] { display: none !important; }
+.accessibility-options h3 { margin: 0 0 10px; font-size: 1rem; color: var(--text-primary); }
+.theme-choice-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.theme-choice-group button { min-height: 38px; padding: 0 8px; border: 1px solid var(--frame-neutral); border-radius: 5px; background: var(--background-alt); color: var(--text-primary); font: inherit; font-weight: 700; cursor: pointer; }
+.theme-choice-group button.is-active { border-color: var(--highlight-amber); background: var(--nav-background); color: var(--nav-text); }
+.text-size-slider { margin-top: 14px; }
+.text-size-slider label { display: block; margin-bottom: 7px; font-weight: 700; }
+.text-size-slider input { width: 100%; }
 
 .floating-book-btn:hover, .back-to-top:hover {
     background: #e68a00;

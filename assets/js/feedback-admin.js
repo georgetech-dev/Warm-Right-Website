@@ -67,7 +67,7 @@
     body.innerHTML = rows.map(row => {
       const referred = row.has_main_body || row.job_origin === 'referred';
       const engineerAverage = ((Number(row.engineer_communication) + Number(row.engineer_experience)) / 2).toFixed(1);
-      return `<tr><td><strong>${escapeHtml(row.customer_name)}</strong><br><small>${escapeHtml(row.customer_email)}</small></td><td>${formatDate(row.created_at)}</td><td><span class="route-pill">${referred ? 'Referred' : 'Direct'}</span></td><td class="score">${engineerAverage}/5</td><td class="${row.wants_contact ? 'yes' : 'no'}">${yesNo(row.wants_contact)}</td><td class="${row.wants_testimonial ? 'yes' : 'no'}">${yesNo(row.wants_testimonial)}</td><td><button class="admin-button secondary" type="button" data-view-feedback="${row.id}">View</button></td></tr>`;
+      return `<tr><td><strong>${escapeHtml(row.customer_name)}</strong><br><small>${escapeHtml(row.customer_email)}</small></td><td>${formatDate(row.created_at)}</td><td><span class="route-pill">${referred ? 'Contracted' : 'Direct'}</span></td><td class="score">${engineerAverage}/5</td><td class="${row.wants_contact ? 'yes' : 'no'}">${yesNo(row.wants_contact)}</td><td class="${row.wants_testimonial ? 'yes' : 'no'}">${yesNo(row.wants_testimonial)}</td><td><div class="feedback-row-actions"><button class="admin-button secondary" type="button" data-view-feedback="${row.id}">View</button><button class="admin-button danger" type="button" data-delete-feedback="${row.id}">Delete</button></div></td></tr>`;
     }).join('');
   }
 
@@ -135,6 +135,31 @@
     });
   }
 
+  async function deleteFeedback(id) {
+    const row = feedbackRows.find(item => item.id === id);
+    if (!row) return;
+    if (!window.confirm(`Delete the feedback submitted by ${row.customer_name}? This cannot be undone.`)) return;
+
+    const { error: outboxError } = await db
+      .from('email_outbox')
+      .delete()
+      .eq('related_table', 'feedback_surveys')
+      .eq('related_id', id)
+      .in('status', ['queued', 'failed']);
+    if (outboxError) {
+      window.alert(`The feedback was not deleted: ${outboxError.message}`);
+      return;
+    }
+
+    const { error } = await db.from('feedback_surveys').delete().eq('id', id);
+    if (error) {
+      window.alert(`The feedback was not deleted: ${error.message}`);
+      return;
+    }
+    closeModal();
+    await loadFeedback();
+  }
+
   document.getElementById('save-settings').addEventListener('click', saveSettings);
   document.getElementById('customise-feedback-email').addEventListener('click', openCustomerEmailEditor);
   document.getElementById('send-queued').addEventListener('click', sendQueuedEmails);
@@ -142,7 +167,13 @@
     const query = event.target.value.trim().toLowerCase();
     renderTable(feedbackRows.filter(row => [row.customer_name, row.customer_email, row.job_number, row.insurer_agent_name].some(value => String(value || '').toLowerCase().includes(query))));
   });
-  document.addEventListener('click', event => { const view = event.target.closest('[data-view-feedback]'); if (view) openDetails(view.dataset.viewFeedback); if (event.target.matches('.modal-close') || event.target.id === 'feedback-modal') closeModal(); });
+  document.addEventListener('click', event => {
+    const view = event.target.closest('[data-view-feedback]');
+    const remove = event.target.closest('[data-delete-feedback]');
+    if (view) openDetails(view.dataset.viewFeedback);
+    if (remove) deleteFeedback(remove.dataset.deleteFeedback);
+    if (event.target.matches('.modal-close') || event.target.id === 'feedback-modal') closeModal();
+  });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
   initialise();
 }());

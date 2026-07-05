@@ -17,6 +17,8 @@ body { margin: 0; padding: 40px; visibility: hidden; background: #f4f7f6; }
 .toggle-label input { width: 19px; height: 19px; }
 .admin-button { min-height: 42px; padding: 0 16px; border: 0; border-radius: 6px; background: #123b75; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .admin-button.secondary { border: 1px solid #cbd5e1; background: #fff; color: #123b75; }
+.admin-button.danger { background: #dc2626; color: #fff; }
+.feedback-row-actions { display: flex; gap: 7px; justify-content: flex-end; }
 .settings-status { min-height: 20px; margin: 10px 0 0; color: #166534; font-weight: 600; }
 .settings-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .table-tools { display: flex; gap: 12px; }

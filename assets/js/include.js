@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   Promise.all([
     initPublicDatabase(),
     loadScriptOnce(siteRoot + "assets/js/public-image-resolver.js?v=1"),
+    loadScriptOnce(siteRoot + "assets/js/site-theme.js?v=1"),
     loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=8"),
     loadScriptOnce(siteRoot + "assets/js/hero-management-public.js?v=9"),
     loadScriptOnce(siteRoot + "assets/js/content-cards.js?v=9"),
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadHTML("header", partialsPath + "header.html"),
     loadHTML("footer", partialsPath + "footer.html")
   ]).then(() => {
+    if (typeof window.initSiteTheme === "function") window.initSiteTheme();
     const header = document.getElementById("header");
     if (header) {
       fixInjectedPaths(header, siteRoot);

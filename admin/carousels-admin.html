@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Carousels | Warm Right Admin</title>
+  <link rel="icon" href="../assets/images/favicon.png">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
+  <link rel="stylesheet" href="../assets/css/site-admin.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>window.adminPageTitle = 'Carousels';</script>
+  <script src="../assets/js/admin-include.js?v=20260705theme"></script>
+</head>
+<body>
+  <div id="admin-header-container"></div>
+  <main class="site-admin-shell">
+    <section id="carousel-list-view" class="site-admin-panel">
+      <div class="site-admin-heading">
+        <div><h1>Carousel Tiles</h1><p>Choose a carousel, then drag, add, edit, deactivate or remove its tiles.</p></div>
+        <div class="site-heading-actions">
+          <select id="carousel-filter" aria-label="Carousel"><option value="take-a-look">Take a look around</option><option value="support">Support</option></select>
+          <button class="site-btn secondary" id="seed-tiles" type="button">Seed Current Tiles</button>
+          <button class="site-btn accent" id="add-tile" type="button">Add Tile</button>
+        </div>
+      </div>
+      <p class="site-status" id="tile-status" role="status"></p>
+      <div class="site-table-wrap">
+        <table class="site-table">
+          <thead><tr><th></th><th>Visible</th><th>Image</th><th>Tile</th><th>Description</th><th></th></tr></thead>
+          <tbody id="tiles-body"><tr><td colspan="6">Loading carousel tiles...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="carousel-editor-view" class="site-admin-panel hidden">
+      <div class="site-admin-heading">
+        <div><h2 id="tile-form-title">Add Carousel Tile</h2><p>Descriptions are currently limited to 150 characters.</p></div>
+        <button class="site-btn secondary" id="close-tile-editor" type="button">Cancel & Close</button>
+      </div>
+      <div class="site-form-grid">
+        <label>Carousel<select id="tile-carousel"><option value="take-a-look">Take a look around</option><option value="support">Support</option></select></label>
+        <label>Tile name<input id="tile-title" maxlength="80" placeholder="e.g. Boiler Installations"></label>
+        <label class="wide">Link URL<input id="tile-link" placeholder="/services/boiler-installation.html"></label>
+        <label class="wide">Image<span class="image-input-row"><input id="tile-image" placeholder="assets/images/boiler-installation.jpg"><button class="site-btn secondary" id="choose-tile-image" type="button">Choose Image</button></span></label>
+        <label class="wide">Description<textarea id="tile-description" maxlength="150" rows="4" placeholder="Short tile description"></textarea><small><span id="desc-count">0</span>/150 characters</small></label>
+        <label class="site-check"><input id="tile-active" type="checkbox" checked> Visible on website</label>
+      </div>
+      <div class="site-form-actions"><button class="site-btn primary" id="save-tile" type="button">Save Tile</button><button class="site-btn danger hidden" id="delete-tile" type="button">Delete Tile</button></div>
+      <p class="site-status" id="tile-form-status" role="status"></p>
+    </section>
+  </main>
+
+  <script src="../assets/js/admin-image-library.js?v=2"></script>
+  <script src="../assets/js/carousels-admin.js?v=1"></script>
+</body>
+</html>
