@@ -21,7 +21,8 @@
       min-height: 350px;
       overflow: hidden;
       border-radius: 20pt;
-      background: #fff;
+      background: var(--offers-card-background);
+      color: var(--offers-card-text);
       box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
     .offers-grid .feature-tile img {
@@ -41,25 +42,25 @@
     }
     .offers-grid .tile-text h2 {
       font-size: 1.8rem;
-      color: var(--primary-blue);
+      color: var(--offers-card-text);
       margin-bottom: 15px;
     }
     .offers-grid .tile-text p {
-      color: var(--text-secondary, #555);
+      color: var(--offers-card-muted);
       line-height: 1.6;
       margin-bottom: 20px;
     }
     .offers-grid .offer-button-wrap {
       margin-top: auto;
       padding-top: 20px;
-      border-top: 1px solid rgba(0,0,0,0.06);
+      border-top: 1px solid color-mix(in srgb, var(--offers-card-muted) 20%, transparent);
     }
     .btn-read-more {
       display: inline-block;
       margin-top: 0;
       padding: 12px 28px;
-      background: var(--primary-blue);
-      color: #fff !important;
+      background: var(--offers-button-background);
+      color: var(--offers-button-text) !important;
       text-decoration: none !important;
       border-radius: 10px;
       font-weight: 700;
@@ -68,10 +69,11 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-    .btn-read-more:hover { background: var(--accent-orange); transform: scale(1.03); }
+    .btn-read-more:hover { background: var(--accent-orange); color: var(--offers-button-text) !important; transform: scale(1.03); }
     .offer-modal { display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; background:rgba(12,22,40,0.75); backdrop-filter:blur(6px); }
-    .offer-modal-content { background:#fff; width:min(90vw, 650px); max-height:86vh; overflow:auto; border-radius:20px; padding:36px; position:relative; box-shadow:0 24px 70px rgba(0,0,0,0.35); }
-    .offer-modal-close { position:absolute; top:18px; right:18px; width:36px; height:36px; border:0; border-radius:50%; cursor:pointer; font-size:1.2rem; }
+    .offer-modal-content { background:var(--offers-modal-background); color:var(--offers-modal-text); width:min(90vw, 650px); max-height:86vh; overflow:auto; border-radius:20px; padding:36px; position:relative; box-shadow:0 24px 70px rgba(0,0,0,0.35); }
+    .offer-modal-close { position:absolute; top:18px; right:18px; width:36px; height:36px; border:0; border-radius:50%; cursor:pointer; font-size:1.2rem; background:var(--offers-modal-close-background); color:var(--offers-modal-close-text); }
+    #offer-modal-body, #offer-modal-body p, #offer-modal-body li, #offer-modal-body span { color:var(--offers-modal-text); }
     .offer-actions { display:flex; gap:12px; margin-top:20px; }
     .offer-actions .btn-read-more { flex:1; text-align:center; }
     @media (max-width: 992px) {
@@ -109,7 +111,7 @@
   <div id="offer-modal" class="offer-modal" onclick="if(event.target === this) closeOfferModal()">
     <div class="offer-modal-content">
       <button class="offer-modal-close" onclick="closeOfferModal()">&times;</button>
-      <h2 id="offer-modal-title" style="margin-top:0; color:var(--primary-blue);">Offer Details</h2>
+      <h2 id="offer-modal-title" style="margin-top:0; color:var(--offers-card-text);">Offer Details</h2>
       <div id="offer-modal-body" style="line-height:1.7;"></div>
       <div class="offer-actions">
         <button class="btn-read-more" onclick="closeOfferModal()">Close Window</button>

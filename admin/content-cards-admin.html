@@ -178,6 +178,13 @@
           <option value="center">Centre</option>
           <option value="right">Right</option>
         </select>
+        <label>Mobile text alignment</label>
+        <select id="text_alignment_mobile" onchange="updatePreview()">
+          <option value="justify">Justify</option>
+          <option value="left">Left</option>
+          <option value="center">Centre</option>
+          <option value="right">Right</option>
+        </select>
         <label>Image URL</label>
         <div style="display:grid; grid-template-columns:1fr auto auto; gap:10px;">
           <input id="image_url" placeholder="assets/images/professional.jpg">
@@ -338,6 +345,7 @@
         document.getElementById(key).value = card[key] ?? '';
       }
       document.getElementById('text_alignment').value = card.text_alignment || 'justify';
+      document.getElementById('text_alignment_mobile').value = card.text_alignment_mobile || card.text_alignment || 'justify';
       setBodyEditorHtml(card.body_html || '');
       document.getElementById('mobile_image_position_x').value = card.mobile_image_position_x ?? card.image_position_x ?? 50;
       document.getElementById('mobile_image_position_y').value = card.mobile_image_position_y ?? card.image_position_y ?? 50;
@@ -354,6 +362,7 @@
       for (const key of ['card_key','page_key','title','body_html','image_url','button_label','button_url']) document.getElementById(key).value = '';
       setBodyEditorHtml('');
       document.getElementById('text_alignment').value = 'justify';
+      document.getElementById('text_alignment_mobile').value = 'justify';
       document.getElementById('image_position_x').value = 50;
       document.getElementById('image_position_y').value = 50;
       document.getElementById('image_zoom').value = 115;
@@ -376,6 +385,7 @@
         title: document.getElementById('title').value.trim(),
         body_html: document.getElementById('body_html').value.trim(),
         text_alignment: document.getElementById('text_alignment').value || 'justify',
+        text_alignment_mobile: document.getElementById('text_alignment_mobile').value || document.getElementById('text_alignment').value || 'justify',
         image_url: document.getElementById('image_url').value.trim(),
         image_position_x: Number(document.getElementById('image_position_x').value),
         image_position_y: Number(document.getElementById('image_position_y').value),
@@ -429,8 +439,8 @@
 
     async function buildSeedRowsFromDeployedPages() {
       const fallbackRows = [
-        { card_key:'home:intro', page_key:'home', title:'Welcome to Warm Right', body_html:'Your home deserves reliable heat, safe systems, and clear advice - and that is exactly what we deliver.<br><br>Whether you need a new installation, a system service, or a second opinion, you are in expert hands.', text_alignment:'justify', image_url:'assets/images/professional.jpg', image_position_x:50, image_position_y:42, image_zoom:118, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:118, show_button:true, button_label:'Book a Visit', button_url:'book-a-visit.html', sort_order:0, is_active:true },
-        { card_key:'home:support', page_key:'home', title:'Need help?', body_html:'We have created our own fault guides that are easy for anyone to navigate.<br><br>If you need assistance and want to chat, visit our Contact Us page or why not start a live web chat?', text_alignment:'justify', image_url:'assets/images/fault-finder.png', image_position_x:50, image_position_y:50, image_zoom:115, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:115, show_button:true, button_label:'Contact Us', button_url:'/contact.html', sort_order:1, is_active:true }
+        { card_key:'home:intro', page_key:'home', title:'Welcome to Warm Right', body_html:'Your home deserves reliable heat, safe systems, and clear advice - and that is exactly what we deliver.<br><br>Whether you need a new installation, a system service, or a second opinion, you are in expert hands.', text_alignment:'justify', text_alignment_mobile:'justify', image_url:'assets/images/professional.jpg', image_position_x:50, image_position_y:42, image_zoom:118, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:118, show_button:true, button_label:'Book a Visit', button_url:'book-a-visit.html', sort_order:0, is_active:true },
+        { card_key:'home:support', page_key:'home', title:'Need help?', body_html:'We have created our own fault guides that are easy for anyone to navigate.<br><br>If you need assistance and want to chat, visit our Contact Us page or why not start a live web chat?', text_alignment:'justify', text_alignment_mobile:'justify', image_url:'assets/images/fault-finder.png', image_position_x:50, image_position_y:50, image_zoom:115, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:115, show_button:true, button_label:'Contact Us', button_url:'/contact.html', sort_order:1, is_active:true }
       ];
 
       const extractedRows = [];
@@ -448,6 +458,7 @@
               title: findSeedTitle(cardEl, page.title),
               body_html: sanitizeBodyHtml(cardEl.innerHTML) || seedBodyForPage(page.key),
               text_alignment: 'justify',
+              text_alignment_mobile: 'justify',
               image_url: seedImageForPage(page.key, index),
               image_position_x: 50,
               image_position_y: 50,
@@ -469,6 +480,7 @@
             title: page.title,
             body_html: '',
             text_alignment: 'justify',
+            text_alignment_mobile: 'justify',
             image_url: seedImageForPage(page.key, 0),
             image_position_x: 50,
             image_position_y: 50,
@@ -560,6 +572,8 @@
       const body = document.getElementById('body_html').value || 'Card preview text will appear here.';
       const alignment = document.getElementById('text_alignment').value || 'justify';
       const alignmentLast = alignment === 'justify' ? 'left' : alignment;
+      const mobileAlignment = document.getElementById('text_alignment_mobile').value || alignment;
+      const mobileAlignmentLast = mobileAlignment === 'justify' ? 'left' : mobileAlignment;
       const html = `<span class="content-card-body">${body}</span>${showButton && buttonLabel ? `<span class="content-card-actions"><a class="content-card-button">${escapeHtml(buttonLabel)}</a></span>` : ''}`;
 
       document.getElementById('image_position_x_value').textContent = `${x}%`;
@@ -587,6 +601,8 @@
       mobilePreview.style.setProperty('--article-mobile-image-size', `${mobileZoom}%`);
       mobilePreview.style.setProperty('--content-card-text-align', alignment);
       mobilePreview.style.setProperty('--content-card-text-align-last', alignmentLast);
+      mobilePreview.style.setProperty('--content-card-mobile-text-align', mobileAlignment);
+      mobilePreview.style.setProperty('--content-card-mobile-text-align-last', mobileAlignmentLast);
       mobilePreview.innerHTML = html;
     }
 

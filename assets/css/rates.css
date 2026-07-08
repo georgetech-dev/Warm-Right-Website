@@ -10,9 +10,10 @@
   grid-template-columns: minmax(300px, 38%) minmax(0, 1fr);
   min-height: 390px;
   overflow: hidden;
-  background: #fff;
+  background: var(--rates-card-background);
   border-radius: 20pt;
   box-shadow: 0 12px 32px rgba(10, 44, 102, 0.08);
+  color: var(--rates-card-text);
 }
 
 .rate-card-image-right { grid-template-columns: minmax(0, 1fr) minmax(300px, 38%); }
@@ -35,13 +36,13 @@
 
 .rate-card-copy h2 {
   margin: 0 0 12px;
-  color: var(--primary-blue);
+  color: var(--rates-card-text);
   font-size: 1.8rem;
 }
 
 .rate-card-copy p {
   margin: 0;
-  color: var(--text-secondary, #555);
+  color: var(--rates-card-muted);
   line-height: 1.6;
 }
 
@@ -50,7 +51,7 @@
   grid-template-columns: repeat(var(--rate-option-count, 1), minmax(0, 1fr));
   margin-top: auto;
   padding-top: 26px;
-  border-top: 1px solid #dfe3e8;
+  border-top: 1px solid var(--rates-card-divider);
 }
 
 .rate-option {
@@ -63,12 +64,12 @@
 
 .rate-option:first-child { padding-left: 0; }
 .rate-option:last-child { padding-right: 0; }
-.rate-option + .rate-option { border-left: 1px solid #d1d5db; }
+.rate-option + .rate-option { border-left: 1px solid var(--rates-card-divider); }
 
 .rate-option-title {
   min-height: 1.5em;
   margin: 0 0 8px;
-  color: #334155;
+  color: var(--rates-card-text);
   font-size: 1rem;
   font-weight: 800;
   line-height: 1.35;
@@ -78,7 +79,7 @@
   display: flex;
   align-items: baseline;
   gap: 5px;
-  color: var(--primary-blue);
+  color: var(--rates-card-text);
   font-size: clamp(1.35rem, 2vw, 1.75rem);
   font-weight: 800;
   line-height: 1.2;
@@ -94,7 +95,7 @@
 .rate-option-ex-vat {
   display: block;
   margin-top: 3px;
-  color: #64748b;
+  color: var(--rates-card-muted);
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -108,8 +109,8 @@
   padding: 10px 20px;
   border: 0;
   border-radius: 6px;
-  background: var(--primary-blue);
-  color: #fff;
+  background: var(--rates-button-background);
+  color: var(--rates-button-text);
   font: inherit;
   font-size: 0.9rem;
   font-weight: 750;
@@ -142,7 +143,7 @@
   padding-left: 16px;
 }
 
-.rate-read-more:hover { background: var(--accent-orange); transform: translateY(-1px); }
+.rate-read-more:hover { background: var(--accent-orange); color: var(--rates-button-text); transform: translateY(-1px); }
 .rate-card.is-suspended .rate-read-more { pointer-events: none; opacity: 0.5; }
 
 .suspended-overlay {
@@ -170,10 +171,12 @@
 }
 
 .rate-info-modal.is-open { display: flex; }
-.rate-modal-content { position: relative; width: min(650px, 100%); max-height: calc(100vh - 40px); overflow: auto; padding: 38px; border-radius: 8px; background: #fff; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35); }
-.rate-modal-content h2 { margin: 0; padding-right: 44px; color: var(--primary-blue); }
-.rate-modal-body { margin: 20px 0; color: #444; font-size: 1.05rem; line-height: 1.7; }
-.rate-modal-close { position: absolute; top: 18px; right: 18px; display: grid; width: 38px; height: 38px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: #eef2f6; color: #334155; font-size: 1.4rem; cursor: pointer; }
+.rate-modal-content { position: relative; width: min(650px, 100%); max-height: calc(100vh - 40px); overflow: auto; padding: 38px; border-radius: 8px; background: var(--rates-modal-background); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35); }
+.rate-modal-content h2 { margin: 0; padding-right: 44px; color: var(--rates-card-text); }
+.rate-modal-body { margin: 20px 0; color: var(--rates-modal-text); font-size: 1.05rem; line-height: 1.7; }
+.rate-modal-body p, .rate-modal-body li, .rate-modal-body span { color: var(--rates-modal-text); }
+.rate-modal-body small, .rate-modal-body em, .rate-modal-body strong + small { color: var(--rates-modal-muted); }
+.rate-modal-close { position: absolute; top: 18px; right: 18px; display: grid; width: 38px; height: 38px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--rates-modal-close-background); color: var(--rates-modal-close-text); font-size: 1.4rem; cursor: pointer; }
 .rate-modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .rate-modal-actions .rate-read-more { width: 100%; margin: 0; box-sizing: border-box; }
 
@@ -191,7 +194,7 @@
   .rate-option { padding: 20px 0; }
   .rate-option:first-child { padding-top: 0; }
   .rate-option:last-child { padding-bottom: 0; }
-  .rate-option + .rate-option { border-top: 1px solid #d1d5db; border-left: 0; }
+  .rate-option + .rate-option { border-top: 1px solid var(--rates-card-divider); border-left: 0; }
   .rate-option-title { min-height: 0; }
   .rate-option-price { white-space: normal; }
   .rate-options[data-option-count="3"] .rate-option { padding: 20px 0; }

@@ -146,6 +146,7 @@ p.article-gap.card a:hover {
 
 .content-card-body {
   min-width: 0;
+  flex: 1 1 auto;
   text-align: var(--content-card-text-align, justify);
   text-align-last: var(--content-card-text-align-last, left);
   text-justify: inter-word;
@@ -193,6 +194,12 @@ p.article-gap.card a:hover {
     line-height: 1.65;
   }
 
+  p.article-gap.card.is-managed-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   p.article-gap.card::before {
     inset: 0 0 auto 0;
     width: 100%;
@@ -214,9 +221,15 @@ p.article-gap.card a:hover {
   }
 
   .content-card-actions {
-    justify-content: flex-start;
+    justify-content: center;
+    width: 100%;
     min-width: 0;
     margin-top: 18px;
+  }
+
+  .content-card-body {
+    text-align: var(--content-card-mobile-text-align, var(--content-card-text-align, justify));
+    text-align-last: var(--content-card-mobile-text-align-last, var(--content-card-text-align-last, left));
   }
 }
 
@@ -771,11 +784,12 @@ section.article-gap .faq + .faq {
 
 .review-card {
     break-inside: avoid;
-    background: #fffaf5; /* Matches your modal cream */
-    border: 1px solid #ddd;
+    background: var(--testimonials-card-background);
+    border: 1px solid color-mix(in srgb, var(--testimonials-card-muted) 22%, transparent);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
+    color: var(--testimonials-card-text);
 }
 
 .review-header {
@@ -801,11 +815,11 @@ section.article-gap .faq + .faq {
 .review-meta h3 {
     font-size: 0.95rem;
     margin: 0;
-    color: #062940;
+    color: var(--testimonials-card-text);
 }
 
-.v-check { color: #2b6777; font-size: 0.8rem; }
-.review-date { font-size: 0.75rem; color: #777; }
+.v-check { color: var(--testimonials-accent); font-size: 0.8rem; }
+.review-date { font-size: 0.75rem; color: var(--testimonials-card-muted); }
 
 .review-stars { color: #ff9900; margin-bottom: 8px; }
 
@@ -813,7 +827,7 @@ section.article-gap .faq + .faq {
 .review-subject {
     font-size: 1rem;
     font-weight: bold;
-    color: #062940;
+    color: var(--testimonials-card-text);
     margin: 5px 0 10px 0;
 }
 
@@ -832,14 +846,14 @@ section.article-gap .faq + .faq {
 .review-body {
     font-size: 0.9rem;
     line-height: 1.5;
-    color: #444;
+    color: var(--testimonials-card-muted);
     margin: 0;
 }
 
 .read-more-btn {
     background: none;
     border: none;
-    color: #2b6777;
+    color: var(--testimonials-accent);
     font-weight: bold;
     cursor: pointer;
     padding: 5px 0;
@@ -867,7 +881,7 @@ section.article-gap .faq + .faq {
 /* Ensure images don't get squashed */
 .review-photo-grid {
     margin-top: 15px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid color-mix(in srgb, var(--testimonials-card-muted) 22%, transparent);
     padding-top: 15px;
 }
 /* Ensure the container is ready for the absolute-positioned fade */
@@ -927,7 +941,7 @@ section.article-gap .faq + .faq {
     left: 0;
     width: 100%;
     height: 25px; /* Subtle fade at the bottom of the 3rd line */
-    background: linear-gradient(to bottom, rgba(255,250,245,0), #fffaf5); 
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--testimonials-card-background) 0%, transparent), var(--testimonials-card-background)); 
     pointer-events: none;
 }
 
@@ -947,7 +961,7 @@ section.article-gap .faq + .faq {
     grid-template-columns: 1fr 1fr;
     gap: 6px;
     margin-top: 15px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid color-mix(in srgb, var(--testimonials-card-muted) 22%, transparent);
     padding-top: 15px;
     max-height: 220px; /* Limits the total size of the grid */
     overflow: hidden;
@@ -988,7 +1002,7 @@ section.article-gap .faq + .faq {
   left: 0;
   width: 100%;
   height: 50px;
-  background: linear-gradient(transparent, #ffffff); /* Match card background color */
+  background: linear-gradient(transparent, var(--testimonials-card-background));
   pointer-events: none;
   transition: opacity 0.3s;
 }
