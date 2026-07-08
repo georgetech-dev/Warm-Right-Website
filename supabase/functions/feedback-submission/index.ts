@@ -27,6 +27,8 @@ Deno.serve(async (req) => {
         'feedback_customer_email_subject',
         'feedback_customer_email_logo_url',
         'feedback_customer_email_body_html',
+        'feedback_redirect_site_url',
+        'feedback_redirect_testimonial_url',
         'public_site_base_url',
       ]);
     const settings = Object.fromEntries((settingsRows || []).map(row => [row.setting_key, row.setting_value]));
@@ -40,7 +42,12 @@ Deno.serve(async (req) => {
     try { await triggerEmailOutbox(); }
     catch (triggerError) { console.error('Could not trigger email outbox workflow:', triggerError); }
 
-    return json({ ok: true, id: inserted.id });
+    return json({
+      ok: true,
+      id: inserted.id,
+      redirect_url: configuredRedirectUrl(settings.feedback_redirect_site_url, publicSiteBaseUrl),
+      testimonial_redirect_url: configuredRedirectUrl(settings.feedback_redirect_testimonial_url, `${publicSiteBaseUrl}/testimonial-submit.html`),
+    });
   } catch (error) {
     console.error(error);
     return json({ error: error.message || 'Unexpected error.' }, error.status || 500);
@@ -50,6 +57,8 @@ Deno.serve(async (req) => {
 function normalizePayload(body: Record<string, unknown>) {
   const jobOrigin = cleanText(body.job_origin, 20) === 'referred' ? 'referred' : 'direct';
   const hasMainBody = jobOrigin === 'referred';
+  const privacyNoticeAccepted = toBoolean(body.privacy_notice_accepted);
+  if (!privacyNoticeAccepted) throw httpError('Please confirm that you have read the Privacy Notice before submitting feedback.', 400);
   const payload = {
     customer_name: cleanText(body.customer_name, 120),
     customer_email: cleanText(body.customer_email, 180).toLowerCase(),
@@ -69,12 +78,17 @@ function normalizePayload(body: Record<string, unknown>) {
     final_remarks: cleanText(body.final_remarks, 2000),
     wants_contact: toBoolean(body.wants_contact),
     pass_to_main_body: hasMainBody && toBoolean(body.pass_to_main_body),
+    pass_to_engineer: toBoolean(body.pass_to_engineer),
     wants_testimonial: toBoolean(body.wants_testimonial),
-    consent_publish_testimonial: toBoolean(body.consent_publish_testimonial),
-    consent_publish_photos: toBoolean(body.consent_publish_photos),
+    consent_publish_testimonial: false,
+    consent_publish_photos: false,
     consent_marketing: toBoolean(body.consent_marketing),
-    consent_share_job_feedback: toBoolean(body.consent_share_job_feedback),
+    consent_share_job_feedback: hasMainBody && toBoolean(body.pass_to_main_body) && toBoolean(body.consent_share_job_feedback),
     consent_recorded_at: new Date().toISOString(),
+    feedback_permission_wording_version: cleanText(body.feedback_permission_wording_version, 80) || 'feedback-permissions-v1.0-2026-07',
+    privacy_notice_accepted: privacyNoticeAccepted,
+    privacy_notice_version: cleanText(body.privacy_notice_version, 80) || 'privacy-notice-v1.0-2026-07',
+    privacy_notice_accepted_at: new Date().toISOString(),
     source: cleanText(body.source, 80) || 'direct',
   };
 
@@ -100,13 +114,15 @@ async function queueTeamEmail(db: ReturnType<typeof createClient>, to: string, s
     `Phone: ${payload.customer_phone || 'Not provided'}`, `Job number: ${payload.job_number || 'Not provided'}`,
     `Address: ${payload.customer_address || 'Not provided'}`, `Engineer: ${payload.engineer_name || 'Not provided'}`,
     `Engineer communication: ${payload.engineer_communication}/5`, `Engineer experience: ${payload.engineer_experience}/5`,
-    `Engineer comments: ${payload.engineer_comments || 'None'}`, '', ...organisationLines, '',
+    `Engineer comments: ${payload.engineer_comments || 'None'}`,
+    `Pass feedback to engineer: ${payload.pass_to_engineer ? 'Yes' : 'No'}`, '', ...organisationLines, '',
     `Final remarks: ${payload.final_remarks || 'None'}`, `Customer service contact requested: ${payload.wants_contact ? 'Yes' : 'No'}`,
     `Would like to leave a website review: ${payload.wants_testimonial ? 'Yes' : 'No'}`,
-    `Publish testimonial, display name and rating: ${payload.consent_publish_testimonial ? 'Yes' : 'No'}`,
-    `Publish uploaded photographs: ${payload.consent_publish_photos ? 'Yes' : 'No'}`,
-    `Use testimonial and photographs in wider marketing: ${payload.consent_marketing ? 'Yes' : 'No'}`,
+    `Use feedback comments elsewhere: ${payload.consent_marketing ? 'Yes' : 'No'}`,
     `Share job feedback with connected organisation: ${payload.consent_share_job_feedback ? 'Yes' : 'No'}`,
+    `Privacy notice accepted: ${payload.privacy_notice_accepted ? 'Yes' : 'No'}`,
+    `Privacy notice version: ${payload.privacy_notice_version}`,
+    `Permission wording version: ${payload.feedback_permission_wording_version}`,
     '', `Admin: ${adminUrl}`,
   ].join('\n');
 
@@ -195,6 +211,17 @@ function configuredSiteBaseUrl(settings: Record<string, string>) {
   return 'https://warmright.uk';
 }
 
+function configuredRedirectUrl(value: string | undefined, fallback: string) {
+  const candidate = cleanText(value, 400) || fallback;
+  try {
+    const parsed = new URL(candidate);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return fallback;
+    return candidate;
+  } catch {
+    return fallback;
+  }
+}
+
 function isLocalHostname(hostname: string) {
   return ['localhost', '127.0.0.1', '::1'].includes(hostname.toLowerCase());
 }
@@ -234,10 +261,12 @@ function buildTeamHtml(payload: ReturnType<typeof normalizePayload>, adminUrl: s
   rows.push(
     ['Customer service contact requested', payload.wants_contact ? 'Yes' : 'No'],
     ['Website review requested', payload.wants_testimonial ? 'Yes' : 'No'],
-    ['Publish testimonial', payload.consent_publish_testimonial ? 'Yes' : 'No'],
-    ['Publish photographs', payload.consent_publish_photos ? 'Yes' : 'No'],
-    ['Wider marketing use', payload.consent_marketing ? 'Yes' : 'No'],
+    ['Pass feedback to engineer', payload.pass_to_engineer ? 'Yes' : 'No'],
+    ['Use feedback comments elsewhere', payload.consent_marketing ? 'Yes' : 'No'],
     ['Share with connected organisation', payload.consent_share_job_feedback ? 'Yes' : 'No'],
+    ['Privacy notice accepted', payload.privacy_notice_accepted ? 'Yes' : 'No'],
+    ['Privacy notice version', payload.privacy_notice_version],
+    ['Permission wording version', payload.feedback_permission_wording_version],
   );
   return `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#10233f;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:28px 12px;"><tr><td align="center">

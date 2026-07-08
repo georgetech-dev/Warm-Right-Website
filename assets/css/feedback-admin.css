@@ -10,9 +10,10 @@ body { margin: 0; padding: 40px; visibility: hidden; background: #f4f7f6; }
 .metric span { display: block; color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
 .metric strong { display: block; margin-top: 7px; color: #123b75; font-size: 1.8rem; }
 .settings-panel { margin-bottom: 22px; }
-.settings-grid { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) auto; align-items: end; gap: 18px; }
+.settings-grid { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)) auto; align-items: end; gap: 18px; }
 .settings-grid label { color: #123b75; font-weight: 700; }
-.settings-grid input[type="email"] { width: 100%; margin-top: 7px; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.settings-grid input[type="email"],
+.settings-grid input[type="url"] { width: 100%; margin-top: 7px; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
 .toggle-label { display: flex; min-height: 44px; align-items: center; gap: 10px; }
 .toggle-label input { width: 19px; height: 19px; }
 .admin-button { min-height: 42px; padding: 0 16px; border: 0; border-radius: 6px; background: #123b75; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }

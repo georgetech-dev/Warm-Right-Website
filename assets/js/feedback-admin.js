@@ -22,19 +22,26 @@
   }
 
   async function loadSettings() {
-    const { data, error } = await db.from('site_settings').select('setting_key, setting_value').in('setting_key', ['feedback_team_email', 'feedback_send_customer_confirmation']);
+    const { data, error } = await db.from('site_settings').select('setting_key, setting_value').in('setting_key', ['feedback_team_email', 'feedback_send_customer_confirmation', 'feedback_redirect_site_url', 'feedback_redirect_testimonial_url']);
     if (error) return setSettingsStatus(error.message, true);
     const settings = Object.fromEntries((data || []).map(row => [row.setting_key, row.setting_value]));
     document.getElementById('feedback-team-email').value = settings.feedback_team_email || 'info@warmright.uk';
     document.getElementById('feedback-customer-confirmation').checked = String(settings.feedback_send_customer_confirmation || 'true') === 'true';
+    document.getElementById('feedback-redirect-site-url').value = settings.feedback_redirect_site_url || 'https://warmright.uk/';
+    document.getElementById('feedback-redirect-testimonial-url').value = settings.feedback_redirect_testimonial_url || 'https://warmright.uk/testimonial-submit.html';
   }
 
   async function saveSettings() {
     const email = document.getElementById('feedback-team-email').value.trim();
+    const redirectSiteUrl = document.getElementById('feedback-redirect-site-url').value.trim();
+    const redirectTestimonialUrl = document.getElementById('feedback-redirect-testimonial-url').value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email)) return setSettingsStatus('Enter a valid forwarding email address.', true);
+    if (!validUrl(redirectSiteUrl) || !validUrl(redirectTestimonialUrl)) return setSettingsStatus('Enter valid redirect URLs, including http:// or https://.', true);
     const rows = [
       { setting_key: 'feedback_team_email', setting_value: email, updated_at: new Date().toISOString() },
       { setting_key: 'feedback_send_customer_confirmation', setting_value: String(document.getElementById('feedback-customer-confirmation').checked), updated_at: new Date().toISOString() },
+      { setting_key: 'feedback_redirect_site_url', setting_value: redirectSiteUrl, updated_at: new Date().toISOString() },
+      { setting_key: 'feedback_redirect_testimonial_url', setting_value: redirectTestimonialUrl, updated_at: new Date().toISOString() },
     ];
     const { error } = await db.from('site_settings').upsert(rows);
     setSettingsStatus(error ? error.message : 'Feedback email settings saved.', Boolean(error));
@@ -81,13 +88,22 @@
       <section class="detail-section"><h3>Customer</h3><div class="detail-grid">${detailItem('Email', row.customer_email)}${detailItem('Phone', row.customer_phone)}${detailItem('Job number', row.job_number)}${detailItem('Address', row.customer_address, true)}${detailItem('Booking route', referred ? 'Insurer, agent or landlord' : 'Direct to Warm Right Ltd', true)}</div></section>
       <section class="detail-section"><h3>Engineer</h3><div class="detail-grid">${detailItem('Engineer name', row.engineer_name)}${detailItem('Communication', score(row.engineer_communication))}${detailItem('Overall experience', score(row.engineer_experience))}${detailItem('Comments or message', row.engineer_comments, true)}</div></section>
       ${referred ? `<section class="detail-section"><h3>Insurer, Agent or Landlord</h3><div class="detail-grid">${detailItem('Organisation', row.insurer_agent_name)}${detailItem('Communication', score(row.main_body_communication))}${detailItem('Overall experience', score(row.main_body_experience))}${detailItem('Pass information on', yesNo(row.pass_to_main_body))}${detailItem('Comments', row.main_body_comments, true)}</div></section>` : ''}
-      <section class="detail-section"><h3>Final Remarks</h3><div class="detail-grid">${detailItem('Final remarks', row.final_remarks, true)}${detailItem('Contact requested', yesNo(row.wants_contact))}${detailItem('Website review', yesNo(row.wants_testimonial))}${detailItem('Submitted', formatDate(row.created_at))}</div></section>
-      <section class="detail-section"><h3>Customer Permissions</h3><div class="detail-grid">${detailItem('Publish testimonial, display name and rating', yesNo(row.consent_publish_testimonial), true)}${detailItem('Publish uploaded photographs', yesNo(row.consent_publish_photos), true)}${detailItem('Wider marketing use', yesNo(row.consent_marketing), true)}${detailItem('Share with connected organisation', yesNo(row.consent_share_job_feedback), true)}${detailItem('Permission recorded', row.consent_recorded_at ? formatDate(row.consent_recorded_at) : 'Not recorded', true)}</div></section>`;
+      <section class="detail-section"><h3>Final Remarks</h3><div class="detail-grid">${detailItem('Final remarks', row.final_remarks, true)}${detailItem('Contact requested', yesNo(row.wants_contact))}${detailItem('Website review', yesNo(row.wants_testimonial))}${detailItem('Pass feedback to engineer', yesNo(row.pass_to_engineer))}${detailItem('Submitted', formatDate(row.created_at))}</div></section>
+      <section class="detail-section"><h3>Customer Permissions</h3><div class="detail-grid">${detailItem('Use feedback comments elsewhere', yesNo(row.consent_marketing), true)}${detailItem('Share with connected organisation', yesNo(row.consent_share_job_feedback), true)}${detailItem('Permission wording version', row.feedback_permission_wording_version || 'Not recorded', true)}${detailItem('Permission recorded', row.consent_recorded_at ? formatDate(row.consent_recorded_at) : 'Not recorded', true)}</div></section>
+      <section class="detail-section"><h3>Privacy Notice</h3><div class="detail-grid">${detailItem('Privacy notice accepted', yesNo(row.privacy_notice_accepted), true)}${detailItem('Privacy notice version', row.privacy_notice_version || 'Not recorded', true)}${detailItem('Accepted at', row.privacy_notice_accepted_at ? formatDate(row.privacy_notice_accepted_at) : 'Not recorded', true)}</div></section>`;
     document.getElementById('feedback-modal').classList.add('open');
   }
 
   function closeModal() { document.getElementById('feedback-modal').classList.remove('open'); }
   function setSettingsStatus(message, isError = false) { const status = document.getElementById('settings-status'); status.textContent = message; status.style.color = isError ? '#b42318' : '#166534'; }
+  function validUrl(value) {
+    try {
+      const url = new URL(value);
+      return ['http:', 'https:'].includes(url.protocol);
+    } catch {
+      return false;
+    }
+  }
 
   async function getFunctionErrorMessage(error) {
     const fallback = error?.message || 'Could not start the email sender.';

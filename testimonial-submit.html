@@ -1061,7 +1061,32 @@
       if (event.currentTarget.value.trim()) setPhotoTipVisibility(true);
     });
 
+    function applyFeedbackPrefill() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('from') !== 'feedback') return;
+      const fieldMap = {
+        name: 'customer_name',
+        email: 'customer_email',
+        phone: 'customer_phone',
+        job: 'job_number',
+        address: 'customer_address',
+        content: 'content',
+      };
+      Object.entries(fieldMap).forEach(([queryKey, fieldId]) => {
+        const value = params.get(queryKey);
+        const field = document.getElementById(fieldId);
+        if (value && field) field.value = value;
+      });
+      const content = document.getElementById('content');
+      if (content.value.trim()) {
+        testimonialIsBeingEdited = true;
+        content.dispatchEvent(new Event('input', { bubbles: true }));
+        setTimeout(finishTestimonialEditing, 100);
+      }
+    }
+
     updateTitleAvailability();
+    applyFeedbackPrefill();
 
     async function generateShortTitle(forceRegenerate = false) {
       const content = document.getElementById('content').value.trim();

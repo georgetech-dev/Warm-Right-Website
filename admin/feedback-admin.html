@@ -6,7 +6,7 @@
   <title>Feedback | Warm Right Admin</title>
   <link rel="icon" href="../assets/images/favicon.png">
   <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
-  <link rel="stylesheet" href="../assets/css/feedback-admin.css?v=1">
+  <link rel="stylesheet" href="../assets/css/feedback-admin.css?v=2">
   <link rel="stylesheet" href="../assets/css/customer-email-editor.css?v=1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.adminPageTitle = 'Feedback';</script>
@@ -28,6 +28,8 @@
       <div class="settings-grid">
         <label>Forward completed feedback to<input id="feedback-team-email" type="email" placeholder="info@warmright.uk"></label>
         <label class="toggle-label"><input id="feedback-customer-confirmation" type="checkbox"> Send a completion email to the customer</label>
+        <label>After feedback, send customers to<input id="feedback-redirect-site-url" type="url" placeholder="https://warmright.uk/"></label>
+        <label>Review redirect URL<input id="feedback-redirect-testimonial-url" type="url" placeholder="https://warmright.uk/testimonial-submit.html"></label>
         <div class="settings-actions"><button class="admin-button" type="button" id="save-settings">Save Settings</button> <button class="admin-button secondary" type="button" id="customise-feedback-email">Customise Email</button> <button class="admin-button secondary" type="button" id="send-queued">Send Queued Emails</button></div>
       </div>
       <p id="settings-status" class="settings-status" role="status"></p>
@@ -52,6 +54,6 @@
   </div>
   <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
   <script src="../assets/js/customer-email-editor.js?v=1"></script>
-  <script src="../assets/js/feedback-admin.js?v=4"></script>
+  <script src="../assets/js/feedback-admin.js?v=6"></script>
 </body>
 </html>
