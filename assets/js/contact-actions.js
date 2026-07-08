@@ -1,164 +1,200 @@
 (function () {
-  const PHONE_DISPLAY = '0800 756 6748';
-  const PHONE_TEL = 'tel:08007566748';
-  const EMERGENCY_TEL = 'tel:08007566748,0';
-  const TEXT_TEL = 'sms:07985292527';
-  const EMAIL = 'mailto:info@warmright.uk';
-  const WHATSAPP = 'https://wa.me/+448007566748';
+  if (window.__warmRightContactOptionsLoaded) return;
+  window.__warmRightContactOptionsLoaded = true;
 
-  const actions = {
-    emergency: {
-      title: 'Emergencies',
-      body: 'For urgent assistance, call 0800 756 6748. On connection, press 0.',
-      button: 'Call Emergency Line',
-      href: EMERGENCY_TEL
-    },
-    text: {
-      title: 'Text Us',
-      body: 'Send us a text message and we will respond as soon as we can during office hours.',
-      button: 'Text 07985 292527',
-      href: TEXT_TEL
-    },
-    whatsapp: {
-      title: 'WhatsApp Us',
-      body: 'Send us a WhatsApp message at +44 800 756 6748.',
-      button: 'Open WhatsApp',
-      href: WHATSAPP,
-      logo: 'assets/images/WhatsApp Logos.svg'
-    },
-    email: {
-      title: 'Email Us',
-      body: 'Email us at info@warmright.uk and we will reply by the next working day.',
-      button: 'Email info@warmright.uk',
-      href: EMAIL
-    },
-    fax: {
-      title: 'Fax',
-      body: 'You can send faxes to 0870 705 24 32.',
-      button: 'Close',
-      href: null
-    },
-    general: {
-      title: 'General Enquiries',
-      body: `Contact us on ${PHONE_DISPLAY}.`,
-      button: `Call ${PHONE_DISPLAY}`,
-      href: PHONE_TEL
-    }
+  const OPTIONS_TABLE = 'site_contact_options';
+  const SETTINGS_TABLE = 'site_contact_settings';
+  const DEFAULT_OPTIONS = [
+    option('general', 'General Enquiries', '<strong>0800 756 6748</strong>', 'Call to Book', 'Contact us to arrange your visit.<br><strong>0800 756 6748</strong>', 'Call Us', 'general', 'tel:08007566748', 'assets/images/phone.jpg', true, true, true, 10),
+    option('text', 'Text Us', 'Text anytime. Our usual response is during office hours.<br><strong>07985 292527</strong>', '', '', 'Text Us', 'direct', 'sms:07985292527', 'assets/images/text-message.png', true, false, false, 20),
+    option('whatsapp', 'WhatsApp Us', 'Send us a WhatsApp message at any time.<br><strong>0800 756 6748</strong>', '', '', 'WhatsApp Us', 'direct', 'https://wa.me/448007566748', 'assets/images/WhatsApp Logos.svg', true, false, false, 30),
+    option('emergency', 'Emergencies (24/7)', 'Call us at any time for urgent assistance.<br><strong>0800 756 6748</strong>', 'Emergencies (24/7)', 'Call us at any time for urgent assistance.', 'Emergency Call', 'direct', 'tel:08007566748,0', 'assets/images/water-damage.jpg', true, true, false, 40),
+    option('email', 'Email Us', 'Send an email and we will reply by the next working day.<br><strong>info@warmright.uk</strong>', 'Book via Email', 'Email us at any time to request an appointment.', 'Email Us', 'direct', 'mailto:info@warmright.uk', 'assets/images/email-2.png', true, true, false, 50),
+    option('callback', 'Request a Callback', 'Leave your details and we will call you back at a convenient time.', 'Request a Callback', 'Leave your details and we will call you back at a convenient time.', 'Request a Callback', 'callback', '', 'assets/images/contact.jpg', true, true, false, 60),
+    option('fax', 'Fax', 'Send documents by fax.<br><strong>0870 705 24 32</strong>', '', '', 'Fax', 'direct', '', 'assets/images/fax.png', true, false, false, 70),
+  ];
+  const DEFAULT_SETTINGS = {
+    closed_title: 'Sorry our office is currently closed',
+    closed_body_html: 'You can still request a callback, or contact our emergency line for urgent assistance.',
+    emergency_label: 'Emergency Call Out',
+    emergency_url: 'tel:08007566748,0',
+    callback_label: 'Request a Callback',
+    mobile_button_background: '#28a745',
+    mobile_button_text: '#ffffff',
+    mobile_button_hover: '#218838',
   };
 
-  function isMobile() {
-    return window.matchMedia('(max-width: 768px)').matches;
+  function option(key, contactTitle, contactBody, bookingTitle, bookingBody, menuLabel, actionType, actionUrl, imageUrl, contact, booking, menu, order) {
+    return {
+      option_key: key, contact_title: contactTitle, contact_body_html: contactBody,
+      booking_title: bookingTitle, booking_body_html: bookingBody, menu_label: menuLabel,
+      action_type: actionType, action_url: actionUrl, image_url: imageUrl,
+      image_position_x: 50, image_position_y: 50, image_zoom: 100,
+      mobile_image_position_x: 50, mobile_image_position_y: 50, mobile_image_zoom: 100,
+      show_on_contact: contact, show_on_booking: booking, show_in_mobile_menu: menu,
+      is_active: true, sort_order: order,
+    };
   }
 
-  function ensureModal() {
-    let modal = document.getElementById('contact-action-modal');
-    if (modal) return modal;
-
-    modal = document.createElement('div');
-    modal.id = 'contact-action-modal';
-    modal.className = 'contact-action-modal';
-    modal.innerHTML = `
-      <div class="contact-action-modal-content">
-        <button class="contact-action-close" type="button" aria-label="Close">&times;</button>
-        <div id="contact-action-logo"></div>
-        <h2 id="contact-action-title"></h2>
-        <p id="contact-action-body"></p>
-        <div class="contact-action-buttons">
-          <a id="contact-action-link" class="btn primary" href="#"></a>
-          <button id="contact-action-dismiss" class="btn secondary" type="button">Close</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', event => {
-      if (
-        event.target === modal ||
-        event.target.classList.contains('contact-action-close') ||
-        event.target.id === 'contact-action-dismiss'
-      ) {
-        closeModal();
-      }
-    });
-    return modal;
-  }
-
-  function openActionModal(actionKey) {
-    const action = actions[actionKey];
-    if (!action) return;
-
-    const modal = ensureModal();
-    const logo = modal.querySelector('#contact-action-logo');
-    const link = modal.querySelector('#contact-action-link');
-
-    modal.querySelector('#contact-action-title').textContent = action.title;
-    modal.querySelector('#contact-action-body').textContent = action.body;
-    logo.innerHTML = action.logo ? `<img src="${action.logo}" alt="" class="contact-action-logo">` : '';
-
-    if (action.href) {
-      link.hidden = false;
-      link.href = action.href;
-      link.textContent = action.button;
-    } else {
-      link.hidden = true;
-      link.removeAttribute('href');
+  async function loadContactData() {
+    if (!window.db) return { options: DEFAULT_OPTIONS, settings: DEFAULT_SETTINGS };
+    try {
+      const [optionsResult, settingsResult] = await Promise.all([
+        window.db.from(OPTIONS_TABLE).select('*').eq('is_active', true).order('sort_order'),
+        window.db.from(SETTINGS_TABLE).select('*').eq('settings_key', 'default').maybeSingle(),
+      ]);
+      if (optionsResult.error) throw optionsResult.error;
+      return {
+        options: optionsResult.data?.length ? optionsResult.data : DEFAULT_OPTIONS,
+        settings: settingsResult.error || !settingsResult.data ? DEFAULT_SETTINGS : settingsResult.data,
+      };
+    } catch (error) {
+      console.warn('Contact options are unavailable; using the built-in options.', error);
+      return { options: DEFAULT_OPTIONS, settings: DEFAULT_SETTINGS };
     }
-
-    modal.style.display = 'flex';
-    document.body.classList.add('modal-open');
   }
 
-  function closeModal() {
-    const modal = document.getElementById('contact-action-modal');
-    if (modal) modal.style.display = 'none';
-    document.body.classList.remove('modal-open');
-  }
-
-  async function initContactActions() {
-    if (window.contactActionsReady) return;
-    window.contactActionsReady = true;
-    const status = window.getOpeningStatus ? await window.getOpeningStatus() : { isOpen: true };
-
-    document.querySelectorAll('[data-contact-action]').forEach(tile => {
-      const actionKey = tile.dataset.contactAction;
-      const action = actions[actionKey];
-      if (!action) return;
-
-      if (isMobile() && ['emergency', 'text', 'whatsapp', 'email'].includes(actionKey)) {
-        tile.href = action.href;
-        return;
-      }
-
-      if (actionKey === 'general') {
-        if (status.isOpen) {
-          tile.href = PHONE_TEL;
-          tile.addEventListener('click', event => {
-            if (isMobile()) return;
-            event.preventDefault();
-            openActionModal('general');
-          });
-        }
-        return;
-      }
-
-      tile.href = action.href || 'javascript:void(0)';
-      tile.addEventListener('click', event => {
-        event.preventDefault();
-        openActionModal(actionKey);
-      });
+  function renderPageOptions(options) {
+    document.querySelectorAll('[data-contact-options-page]').forEach(container => {
+      const page = container.dataset.contactOptionsPage;
+      const visibilityKey = page === 'booking' ? 'show_on_booking' : 'show_on_contact';
+      container.replaceChildren(...options.filter(row => row[visibilityKey]).map(row => createTile(row, page)));
+      if (typeof window.observeRevealCards === 'function') window.observeRevealCards(container);
+      else container.querySelectorAll('.card').forEach(card => card.classList.add('visible'));
     });
   }
 
-  function scheduleInit() {
-    const waitForHours = setInterval(() => {
-      if (window.getOpeningStatus) {
-        clearInterval(waitForHours);
-        initContactActions();
-      }
-    }, 50);
+  function createTile(row, page) {
+    const actionUrl = safeActionUrl(row.action_url);
+    const clickable = row.action_type !== 'direct' || Boolean(actionUrl);
+    const tile = document.createElement(clickable ? 'a' : 'article');
+    tile.className = `info-tile card contact-option-tile${clickable ? '' : ' contact-option-static'}`;
+    if (row.option_key === 'general') tile.id = 'call-to-book';
+    tile.dataset.contactBehavior = row.action_type || 'direct';
+    tile.dataset.contactOption = row.option_key;
+    if (clickable) tile.href = row.action_type === 'callback' ? '#' : actionUrl || '#';
+    setCropVariables(tile, row);
+
+    const titleText = page === 'booking' ? row.booking_title || row.contact_title : row.contact_title;
+    const bodyHtml = page === 'booking' ? row.booking_body_html || row.contact_body_html : row.contact_body_html;
+    const frame = document.createElement('span');
+    frame.className = 'contact-option-image-frame';
+    const image = document.createElement('img');
+    image.alt = titleText || '';
+    setImage(image, row.image_url);
+    frame.appendChild(image);
+    const title = document.createElement('h3');
+    title.textContent = titleText || '';
+    const body = document.createElement('p');
+    body.innerHTML = sanitizeHtml(bodyHtml);
+    tile.append(frame, title, body);
+    return tile;
   }
 
-  document.addEventListener('includesLoaded', scheduleInit);
-  if (document.readyState !== 'loading') {
-    setTimeout(scheduleInit, 0);
+  function setCropVariables(tile, row) {
+    tile.style.setProperty('--contact-image-x', `${number(row.image_position_x, 50)}%`);
+    tile.style.setProperty('--contact-image-y', `${number(row.image_position_y, 50)}%`);
+    tile.style.setProperty('--contact-image-zoom', number(row.image_zoom, 100) / 100);
+    tile.style.setProperty('--contact-mobile-image-x', `${number(row.mobile_image_position_x, 50)}%`);
+    tile.style.setProperty('--contact-mobile-image-y', `${number(row.mobile_image_position_y, 50)}%`);
+    tile.style.setProperty('--contact-mobile-image-zoom', number(row.mobile_image_zoom, 100) / 100);
   }
+
+  function renderMobileActions(options) {
+    const container = document.getElementById('mobile-contact-actions');
+    if (!container) return;
+    const rows = options.filter(row => row.show_in_mobile_menu && (row.action_type !== 'direct' || safeActionUrl(row.action_url)));
+    container.replaceChildren(...rows.map(row => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'mobile-item mobile-contact-item';
+      const link = document.createElement('a');
+      link.className = 'call-btn mobile-contact-btn';
+      link.textContent = row.menu_label || row.contact_title;
+      link.dataset.contactBehavior = row.action_type || 'direct';
+      link.dataset.contactOption = row.option_key;
+      link.style.setProperty('--mobile-contact-button-background', safeColour(row.mobile_button_background, getComputedStyle(document.documentElement).getPropertyValue('--mobile-contact-button-background') || DEFAULT_SETTINGS.mobile_button_background));
+      link.style.setProperty('--mobile-contact-button-text', safeColour(row.mobile_button_text, getComputedStyle(document.documentElement).getPropertyValue('--mobile-contact-button-text') || DEFAULT_SETTINGS.mobile_button_text));
+      link.style.setProperty('--mobile-contact-button-hover', safeColour(row.mobile_button_hover, getComputedStyle(document.documentElement).getPropertyValue('--mobile-contact-button-hover') || DEFAULT_SETTINGS.mobile_button_hover));
+      link.href = row.action_type === 'callback' ? '#' : safeActionUrl(row.action_url) || '#';
+      wrapper.appendChild(link);
+      return wrapper;
+    }));
+  }
+
+  function applyClosedSettings(settings) {
+    const modal = document.getElementById('modal-initial-actions');
+    if (!modal) return;
+    const title = modal.querySelector('.modal-title-single');
+    const body = modal.querySelector('.modal-left-text');
+    const callback = document.getElementById('btn-request-callback');
+    const emergency = modal.querySelector('.call-modal-actions a.danger');
+    if (title) title.textContent = settings.closed_title || DEFAULT_SETTINGS.closed_title;
+    if (body) {
+      const configuredBody = sanitizeHtml(settings.closed_body_html || DEFAULT_SETTINGS.closed_body_html);
+      body.dataset.closedBody = configuredBody;
+      body.innerHTML = configuredBody;
+    }
+    if (callback) callback.textContent = settings.callback_label || DEFAULT_SETTINGS.callback_label;
+    if (emergency) {
+      emergency.textContent = settings.emergency_label || DEFAULT_SETTINGS.emergency_label;
+      emergency.href = safeActionUrl(settings.emergency_url) || DEFAULT_SETTINGS.emergency_url;
+    }
+    document.documentElement.style.setProperty('--mobile-contact-button-background', safeColour(settings.mobile_button_background, DEFAULT_SETTINGS.mobile_button_background));
+    document.documentElement.style.setProperty('--mobile-contact-button-text', safeColour(settings.mobile_button_text, DEFAULT_SETTINGS.mobile_button_text));
+    document.documentElement.style.setProperty('--mobile-contact-button-hover', safeColour(settings.mobile_button_hover, DEFAULT_SETTINGS.mobile_button_hover));
+  }
+
+  function safeColour(value, fallback) {
+    const colour = String(value || '').trim();
+    return /^#[0-9a-f]{6}$/i.test(colour) ? colour : fallback;
+  }
+
+  function safeActionUrl(value) {
+    const url = String(value || '').trim();
+    if (!url || /^javascript:/i.test(url)) return '';
+    if (/^(tel:|sms:|mailto:|https?:\/\/|\/|#)/i.test(url)) return url;
+    return window.WarmRightImages?.publicUrl(url) || `/${url.replace(/^(\.\.\/|\.\/)+/, '')}`;
+  }
+
+  function setImage(image, path) {
+    const fallback = 'assets/images/no-image.jpg';
+    if (window.WarmRightImages?.withImageFallback) window.WarmRightImages.withImageFallback(image, path, fallback);
+    else image.src = path || fallback;
+  }
+
+  function sanitizeHtml(html) {
+    const template = document.createElement('template');
+    template.innerHTML = String(html || '');
+    const allowed = new Set(['B', 'STRONG', 'EM', 'I', 'U', 'BR', 'A']);
+    [...template.content.querySelectorAll('*')].forEach(element => {
+      if (!allowed.has(element.tagName)) {
+        element.replaceWith(...element.childNodes);
+        return;
+      }
+      [...element.attributes].forEach(attribute => {
+        if (element.tagName !== 'A' || attribute.name !== 'href') element.removeAttribute(attribute.name);
+      });
+      if (element.tagName === 'A') {
+        const href = safeActionUrl(element.getAttribute('href'));
+        if (href) element.setAttribute('href', href);
+        else element.removeAttribute('href');
+      }
+    });
+    return template.innerHTML;
+  }
+
+  function number(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  async function initialise() {
+    const data = await loadContactData();
+    applyClosedSettings(data.settings);
+    renderPageOptions(data.options);
+    renderMobileActions(data.options);
+    document.dispatchEvent(new CustomEvent('contactOptionsLoaded'));
+  }
+
+  document.addEventListener('includesLoaded', initialise, { once: true });
 })();

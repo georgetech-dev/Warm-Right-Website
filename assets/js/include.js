@@ -16,6 +16,12 @@ function loadScriptOnce(src) {
   });
 }
 
+function loadOptionalScript(src) {
+  return loadScriptOnce(src).catch(error => {
+    console.warn(`Optional site script could not be loaded: ${src}`, error);
+  });
+}
+
 async function initPublicDatabase() {
   if (typeof supabase === 'undefined') {
     await loadScriptOnce('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
@@ -28,7 +34,10 @@ async function initPublicDatabase() {
 
 function loadHTML(id, file) {
   return fetch(file, { cache: 'no-store' })
-    .then(res => res.text())
+    .then(res => {
+      if (!res.ok) throw new Error(`Could not load ${file} (${res.status})`);
+      return res.text();
+    })
     .then(data => {
       const el = document.getElementById(id);
       if (el) el.innerHTML = data;
@@ -40,18 +49,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const siteRoot = isGitHub ? "/Warm-Right-Website/" : "/";
   const partialsPath = siteRoot + "partials/";
 
-  Promise.all([
+  Promise.allSettled([
     initPublicDatabase(),
     loadScriptOnce(siteRoot + "assets/js/public-image-resolver.js?v=1"),
-    loadScriptOnce(siteRoot + "assets/js/site-theme.js?v=1"),
+    loadScriptOnce(siteRoot + "assets/js/site-theme.js?v=3"),
     loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=8"),
     loadScriptOnce(siteRoot + "assets/js/hero-management-public.js?v=9"),
-    loadScriptOnce(siteRoot + "assets/js/content-cards.js?v=9"),
-    loadScriptOnce(siteRoot + "assets/js/feature-lists.js?v=1"),
-    loadScriptOnce(siteRoot + "assets/js/site-analytics.js?v=3"),
+    loadScriptOnce(siteRoot + "assets/js/content-cards.js?v=10"),
+    loadScriptOnce(siteRoot + "assets/js/feature-lists.js?v=2"),
+    loadScriptOnce(siteRoot + "assets/js/contact-actions.js?v=20260706buttons"),
+    loadOptionalScript(siteRoot + "assets/js/site-analytics.js?v=4"),
     loadHTML("header", partialsPath + "header.html"),
     loadHTML("footer", partialsPath + "footer.html")
-  ]).then(() => {
+  ]).then(results => {
+    results.filter(result => result.status === 'rejected').forEach(result => {
+      console.error('A shared site resource could not be loaded.', result.reason);
+    });
     if (typeof window.initSiteTheme === "function") window.initSiteTheme();
     const header = document.getElementById("header");
     if (header) {

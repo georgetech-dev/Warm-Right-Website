@@ -146,6 +146,9 @@ p.article-gap.card a:hover {
 
 .content-card-body {
   min-width: 0;
+  text-align: var(--content-card-text-align, justify);
+  text-align-last: var(--content-card-text-align-last, left);
+  text-justify: inter-word;
 }
 
 .content-card-actions {

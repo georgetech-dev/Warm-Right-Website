@@ -166,6 +166,197 @@
       font-weight: 700;
       color: #0a2c66;
     }
+    .consent-section {
+      margin: 26px 0 4px;
+      padding: 20px;
+      border: 1px solid #d8e2ee;
+      border-radius: 8px;
+      background: #f8fbff;
+    }
+    .consent-section legend {
+      padding: 0 6px;
+      color: #062940;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .consent-intro {
+      margin: 0 0 14px;
+      color: #526174;
+      font-size: 0.9rem;
+    }
+    .consent-option {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      margin: 0;
+      padding: 11px 0;
+      border-top: 1px solid #e2e8f0;
+      color: #24364f;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+    .consent-option input {
+      width: 18px;
+      height: 18px;
+      margin: 3px 0 0;
+      accent-color: #123b75;
+    }
+    .consent-option-title {
+      display: block;
+      color: #062940;
+      font-weight: 800;
+    }
+    .consent-option-copy {
+      display: block;
+      margin-top: 3px;
+      color: #344054;
+      font-weight: 500;
+    }
+    .photo-consent-option.is-hidden {
+      display: none;
+    }
+    .permission-note {
+      margin: 16px 0 0;
+      padding: 13px 15px;
+      border: 1px solid #d8e2ee;
+      border-radius: 8px;
+      background: #f8fbff;
+      color: #344054;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    .permission-note a {
+      color: #123b75;
+      font-weight: 800;
+      text-decoration-color: #ffd166;
+      text-underline-offset: 3px;
+    }
+    .photo-declaration-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10020;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(6, 41, 64, 0.68);
+    }
+    .photo-declaration-modal.open {
+      display: flex;
+    }
+    .photo-declaration-card {
+      width: min(560px, 100%);
+      padding: 26px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+    }
+    .photo-declaration-card h2 {
+      margin: 0 0 12px;
+      color: #062940;
+    }
+    .photo-declaration-card p {
+      margin: 0;
+      color: #334155;
+      line-height: 1.65;
+    }
+    .photo-declaration-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .testimonial-field {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 18px;
+      align-items: start;
+      margin-top: 8px;
+    }
+    .testimonial-field:focus-within {
+      z-index: 20;
+    }
+    .testimonial-field > label {
+      grid-column: 1 / -1;
+      margin-top: 0;
+    }
+    .field-control {
+      grid-column: 1;
+      min-width: 0;
+      width: 100%;
+    }
+    .field-tip {
+      position: absolute;
+      top: 25px;
+      right: 0;
+      z-index: 10;
+      box-sizing: border-box;
+      width: calc(50% - 9px);
+      max-height: 0;
+      margin: 0;
+      padding: 0 14px;
+      overflow: hidden;
+      border: 0 solid transparent;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-8px);
+      transition: max-height 280ms ease, margin 280ms ease, padding 280ms ease,
+                  border-width 280ms ease, opacity 180ms ease, transform 280ms ease;
+    }
+    .testimonial-field:focus-within > .field-tip:not(.field-tip-deferred),
+    .field-tip.is-visible {
+      max-height: 260px;
+      padding: 11px 14px;
+      border-width: 1px;
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+    .field-tip strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 0.86rem;
+    }
+    .field-tip span {
+      display: block;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .field-tip-private {
+      border-color: #c8dfcf;
+      background: #f4faf6;
+      color: #315d3d;
+    }
+    .field-tip-public {
+      border-color: #e5cec7;
+      background: #fff8f6;
+      color: #67433a;
+    }
+    .field-tip-public strong {
+      color: #8a4938;
+    }
+    .field-tip-private strong {
+      color: #2e6b3f;
+    }
+    .testimonial-field > .ai-title-error {
+      grid-column: 1;
+    }
+    .testimonial-field > .preview-list {
+      grid-column: 1 / -1;
+    }
+    .testimonial-field-wide {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .testimonial-field-wide > .field-control {
+      grid-column: 1;
+    }
+    .testimonial-field-wide > .field-tip {
+      top: calc(100% + 6px);
+      width: 50%;
+    }
     .address-finder-wrap {
       position: relative;
     }
@@ -333,6 +524,36 @@
       .preview-list {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+      .photo-declaration-actions {
+        flex-direction: column-reverse;
+      }
+      .photo-declaration-actions .photo-picker-btn {
+        width: 100%;
+      }
+      .testimonial-field:focus-within > .field-tip:not(.field-tip-deferred),
+      .field-tip.is-visible {
+        max-height: 360px;
+      }
+      .testimonial-field {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .field-control,
+      .field-tip,
+      .testimonial-field > .ai-title-error,
+      .testimonial-field > .preview-list {
+        grid-column: 1;
+      }
+      .field-tip {
+        top: calc(100% + 6px);
+        left: 0;
+        right: auto;
+        width: 100%;
+        transform: translateY(-8px);
+      }
+      .testimonial-field:focus-within > .field-tip:not(.field-tip-deferred),
+      .field-tip.is-visible {
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
@@ -345,31 +566,58 @@
     <h2 class="section-heading card">Share Your Experience</h2>
     <section class="testimonial-submit-panel">
       <form id="testimonial-submit-form" novalidate autocomplete="off">
-        <label for="customer_name">Your name</label>
-        <input id="customer_name" name="customer_name" required autocomplete="name">
-
-        <label for="customer_email">Email address</label>
-        <input id="customer_email" name="customer_email" type="email" required autocomplete="email">
-
-        <label for="customer_phone">Phone number</label>
-        <input id="customer_phone" name="customer_phone" autocomplete="tel">
-
-        <label for="job_number">Job number <span style="color:#64748b;font-weight:500;">(if applicable)</span></label>
-        <input id="job_number" name="job_number" autocomplete="off">
-
-        <label for="customer_address">Address</label>
-        <div class="address-finder-wrap">
-          <input id="customer_address" name="wr_visit_location" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="Start typing and choose your address from the suggestions" aria-controls="address-suggestions" aria-expanded="false">
-          <div id="address-suggestions" class="address-suggestions" role="listbox"></div>
+        <div class="testimonial-field">
+          <label for="customer_name">Your name</label>
+          <input id="customer_name" class="field-control" name="customer_name" required autocomplete="name" aria-describedby="customer-name-tip">
+          <p id="customer-name-tip" class="field-tip field-tip-public" role="note">
+            <strong>Displayed on our website</strong>
+            <span>Your name will be displayed with your testimonial. Please feel free to use only your first name if that is more comfortable.</span>
+          </p>
         </div>
 
-        <label>Rating</label>
-        <svg style="display:none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <symbol id="rating-star" viewBox="0 0 32 32">
-            <path d="M12.224 11.623L16 0l3.776 11.623H32l-9.888 6.865 3.776 11.417L16 22.668 6.112 29.85l3.776-11.362L0 11.623h12.224"></path>
-          </symbol>
-        </svg>
-        <div class="rating-picker" id="rating-picker" aria-label="Rating out of 5">
+        <div class="testimonial-field">
+          <label for="customer_email">Email address</label>
+          <input id="customer_email" class="field-control" name="customer_email" type="email" required autocomplete="email" aria-describedby="customer-email-tip">
+          <p id="customer-email-tip" class="field-tip field-tip-private" role="note">
+            <strong>Kept private</strong>
+            <span>We use your email address to confirm that your submission was successful. We may also contact you about your testimonial if you have asked us to. Your email address is not displayed on our website.</span>
+          </p>
+        </div>
+
+        <div class="testimonial-field">
+          <label for="customer_phone">Phone number</label>
+          <input id="customer_phone" class="field-control" name="customer_phone" autocomplete="tel" aria-describedby="customer-phone-tip">
+          <p id="customer-phone-tip" class="field-tip field-tip-private" role="note">
+            <strong>Optional and kept private</strong>
+            <span>We use your phone number only if you have asked us to contact you. You may leave this blank. If provided, it is not displayed on our website.</span>
+          </p>
+        </div>
+
+        <div class="testimonial-field">
+          <label for="job_number">Job number <span style="color:#64748b;font-weight:500;">(if applicable)</span></label>
+          <input id="job_number" name="job_number" autocomplete="off">
+        </div>
+
+        <div class="testimonial-field">
+          <label for="customer_address">Address</label>
+          <div class="address-finder-wrap field-control">
+            <input id="customer_address" name="wr_visit_location" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="Start typing and choose your address from the suggestions" aria-controls="address-suggestions" aria-expanded="false" aria-describedby="customer-address-tip">
+            <div id="address-suggestions" class="address-suggestions" role="listbox"></div>
+          </div>
+          <p id="customer-address-tip" class="field-tip field-tip-private" role="note">
+            <strong>Kept private</strong>
+            <span>We use your address only to locate your visit in our records. It is not displayed on our website.</span>
+          </p>
+        </div>
+
+        <div class="testimonial-field">
+          <label>Rating</label>
+          <svg style="display:none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <symbol id="rating-star" viewBox="0 0 32 32">
+              <path d="M12.224 11.623L16 0l3.776 11.623H32l-9.888 6.865 3.776 11.417L16 22.668 6.112 29.85l3.776-11.362L0 11.623h12.224"></path>
+            </symbol>
+          </svg>
+          <div class="rating-picker field-control" id="rating-picker" aria-label="Rating out of 5" aria-describedby="rating-tip">
           <input type="radio" id="rating-5" name="rating" value="5" checked>
           <label class="rating-label rating-sparks" for="rating-5" aria-label="5 stars">
             <svg class="rating-label-icon"><use href="#rating-star"></use></svg>
@@ -394,38 +642,101 @@
           <label class="rating-label" for="rating-1" aria-label="1 star">
             <svg class="rating-label-icon"><use href="#rating-star"></use></svg>
           </label>
-        </div>
-
-        <label for="content">Your testimonial</label>
-        <textarea id="content" name="content" rows="7" required maxlength="1800"></textarea>
-
-        <label for="subject">Short title</label>
-        <div class="ai-title-row">
-          <div id="ai-title-field" class="ai-title-field">
-            <input id="subject" name="subject" maxlength="90" placeholder="Write your testimonial first" required disabled>
-            <span class="ai-title-input-spinner" aria-hidden="true"></span>
           </div>
-          <button type="button" id="regenerate-title-btn" class="ai-title-action">Regenerate Title</button>
+          <p id="rating-tip" class="field-tip field-tip-public" role="note">
+            <strong>Displayed on our website</strong>
+            <span>Please rate your overall experience with Warm Right Ltd, considering our service rather than your agent, insurer or landlord. You can tell us more about them in the short customer service survey offered at the end.</span>
+          </p>
         </div>
-        <p id="ai-title-error" class="ai-title-error" aria-live="polite"></p>
 
-        <label for="testimonial_images">Photos</label>
-        <p style="margin:0 0 8px;color:#64748b;font-size:14px;">You can add up to 4 photos.</p>
-        <input id="testimonial_images" name="testimonial_images" type="file" accept="image/*" multiple style="display:none;">
-        <input id="testimonial_camera" name="testimonial_camera" type="file" accept="image/*" capture="environment" style="display:none;">
-        <div class="photo-picker-actions">
-          <button type="button" class="photo-picker-btn" onclick="openPhotoPicker()">Choose Photos</button>
-          <button type="button" class="photo-picker-btn" onclick="openCameraPicker()">Take Photo</button>
+        <div class="testimonial-field testimonial-field-wide">
+          <label for="content">Your testimonial</label>
+          <textarea id="content" class="field-control" name="content" rows="7" required maxlength="1800" aria-describedby="testimonial-content-tip"></textarea>
+          <p id="testimonial-content-tip" class="field-tip field-tip-public" role="note">
+            <strong>Displayed on our website</strong>
+            <span>Please tell us about your experience with Warm Right Ltd. If your testimonial contains more than seven words, a short title will be generated automatically when you leave this field.</span>
+          </p>
         </div>
-        <div id="image-preview" class="preview-list"></div>
 
+        <div class="testimonial-field">
+          <label for="subject">Short title</label>
+          <div class="ai-title-row field-control">
+            <div id="ai-title-field" class="ai-title-field">
+              <input id="subject" name="subject" maxlength="90" placeholder="Write your testimonial first" required disabled aria-describedby="testimonial-title-tip">
+              <span class="ai-title-input-spinner" aria-hidden="true"></span>
+            </div>
+            <button type="button" id="regenerate-title-btn" class="ai-title-action">Regenerate Title</button>
+          </div>
+          <p id="testimonial-title-tip" class="field-tip field-tip-public" role="note">
+            <strong>Displayed on our website</strong>
+            <span>This title is generated by Gemini AI. You can highlight and replace it, or regenerate it. A short testimonial may produce a similar title each time.</span>
+          </p>
+          <p id="ai-title-error" class="ai-title-error" aria-live="polite"></p>
+        </div>
+
+        <div class="testimonial-field">
+          <label for="testimonial_images">Photos</label>
+          <div class="field-control">
+            <p style="margin:0 0 8px;color:#64748b;font-size:14px;">You can add up to 4 photos.</p>
+            <input id="testimonial_images" name="testimonial_images" type="file" accept="image/*" multiple style="display:none;" aria-describedby="testimonial-photos-tip">
+            <input id="testimonial_camera" name="testimonial_camera" type="file" accept="image/*" capture="environment" style="display:none;" aria-describedby="testimonial-photos-tip">
+            <div class="photo-picker-actions">
+              <button type="button" class="photo-picker-btn" onclick="openPhotoPicker()" aria-describedby="testimonial-photos-tip">Choose Photos</button>
+              <button type="button" class="photo-picker-btn" onclick="openCameraPicker()" aria-describedby="testimonial-photos-tip">Take Photo</button>
+            </div>
+          </div>
+          <p id="testimonial-photos-tip" class="field-tip field-tip-public field-tip-deferred" role="note" aria-hidden="true">
+            <strong>May be displayed publicly</strong>
+            <span>If possible, please add photos of your repair. All photos are reviewed by our team. For information about how uploaded photos may be used, please read our <a href="/privacy.html">privacy policy</a>.</span>
+          </p>
+          <div id="image-preview" class="preview-list"></div>
+        </div>
+
+        <fieldset class="consent-section">
+          <legend>Publication and sharing permissions</legend>
+          <p class="consent-intro">These permissions are optional. Leave any option unchecked if you do not agree.</p>
+          <label class="consent-option">
+            <input id="publish_testimonial" name="publish_testimonial" type="checkbox">
+            <span><span class="consent-option-title">Publish my testimonial</span><span class="consent-option-copy">I agree that WarmRight Ltd may publish my written testimonial, testimonial title, chosen display name and star rating on its testimonials page.</span></span>
+          </label>
+          <label class="consent-option photo-consent-option is-hidden">
+            <input id="publish_photos" name="publish_photos" type="checkbox">
+            <span><span class="consent-option-title">Publish my photographs</span><span class="consent-option-copy">I agree that WarmRight Ltd may publish the photographs I have uploaded on its testimonials page.</span></span>
+          </label>
+          <label class="consent-option">
+            <input id="wider_use_testimonial" name="wider_use_testimonial" type="checkbox">
+            <span><span class="consent-option-title">Use my testimonial elsewhere</span><span class="consent-option-copy">I agree that WarmRight Ltd may also use my written testimonial, testimonial title, chosen display name and star rating on other WarmRight-owned websites, Google Business, Facebook, online advertisements, quotations, brochures and printed promotional materials.</span></span>
+          </label>
+          <label class="consent-option photo-consent-option is-hidden">
+            <input id="wider_use_photos" name="wider_use_photos" type="checkbox">
+            <span><span class="consent-option-title">Use my photographs elsewhere</span><span class="consent-option-copy">I agree that WarmRight Ltd may also use my approved photographs on other WarmRight-owned websites, Google Business, Facebook, online advertisements, quotations, brochures and printed promotional materials.</span></span>
+          </label>
+          <label class="consent-option">
+            <input id="share_feedback_with_job_organisation" name="share_feedback_with_job_organisation" type="checkbox">
+            <span><span class="consent-option-title">Share my feedback with the organisation connected with the job</span><span class="consent-option-copy">I agree that WarmRight Ltd may share my feedback, rating, job reference and relevant contact information with the landlord, managing agent, estate agent or insurer connected with this job, so that they can review or follow up my feedback.</span></span>
+          </label>
+        </fieldset>
+
+        <p class="permission-note">You can withdraw publication permission at any time. Please see our <a href="/privacy.html">Privacy Notice</a> for further information.</p>
         <button type="submit" style="margin-top:18px;">Submit Testimonial</button>
+        <p class="permission-note" style="margin-top:12px;">Submitting this form does not automatically make your testimonial public. Warm Right will review all submissions before publication.</p>
         <p id="submit-status" class="submit-status" role="status"></p>
       </form>
     </section>
   </main>
 
   <footer id="footer"></footer>
+  <div id="photo-declaration-modal" class="photo-declaration-modal" role="dialog" aria-modal="true" aria-labelledby="photo-declaration-title" aria-hidden="true">
+    <div class="photo-declaration-card">
+      <h2 id="photo-declaration-title">Before uploading a photograph</h2>
+      <p>Before uploading a photograph, please check that it does not show children, confidential documents, payment information, access codes, security details or other information that you do not want Warm Right to store or publish.</p>
+      <p style="margin-top:14px;">Confirm that you are entitled to provide the photographs you have uploaded, that you have permission from any identifiable people shown and that the photographs do not contain information you are not entitled to share.</p>
+      <div class="photo-declaration-actions">
+        <button type="button" class="photo-picker-btn" id="reject-photo-declaration">Do Not Upload</button>
+        <button type="button" class="photo-picker-btn" id="accept-photo-declaration">I Agree</button>
+      </div>
+    </div>
+  </div>
   <div id="submit-overlay" class="submit-overlay" aria-live="polite" aria-hidden="true">
     <div class="submit-card">
       <div class="spinner"></div>
@@ -447,6 +758,9 @@
     let selectedPhotos = [];
     let lastSubmittedTestimonial = null;
     let testimonialAddressTimer = null;
+    let photoUploadDeclarationAccepted = false;
+    let pendingPhotoInputId = '';
+    const TESTIMONIAL_PERMISSION_WORDING_VERSION = 'testimonial-permissions-v1.0-2026-07';
 
     document.querySelectorAll('#rating-picker input[name="rating"]').forEach((input) => {
       input.addEventListener('change', () => {
@@ -455,12 +769,60 @@
     });
 
     function openPhotoPicker() {
-      document.getElementById('testimonial_images').click();
+      requestPhotoUpload('testimonial_images');
     }
 
     function openCameraPicker() {
-      document.getElementById('testimonial_camera').click();
+      requestPhotoUpload('testimonial_camera');
     }
+
+    function requestPhotoUpload(inputId) {
+      if (photoUploadDeclarationAccepted) {
+        document.getElementById(inputId).click();
+        return;
+      }
+      pendingPhotoInputId = inputId;
+      const modal = document.getElementById('photo-declaration-modal');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.getElementById('accept-photo-declaration').focus();
+    }
+
+    function closePhotoDeclaration() {
+      const modal = document.getElementById('photo-declaration-modal');
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('accept-photo-declaration').addEventListener('click', () => {
+      photoUploadDeclarationAccepted = true;
+      const inputId = pendingPhotoInputId;
+      pendingPhotoInputId = '';
+      closePhotoDeclaration();
+      if (inputId) document.getElementById(inputId).click();
+    });
+
+    document.getElementById('reject-photo-declaration').addEventListener('click', () => {
+      pendingPhotoInputId = '';
+      closePhotoDeclaration();
+      document.getElementById('content').focus();
+    });
+
+    document.getElementById('photo-declaration-modal').addEventListener('click', (event) => {
+      if (event.target === event.currentTarget) {
+        pendingPhotoInputId = '';
+        closePhotoDeclaration();
+        document.getElementById('content').focus();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && document.getElementById('photo-declaration-modal').classList.contains('open')) {
+        pendingPhotoInputId = '';
+        closePhotoDeclaration();
+        document.getElementById('content').focus();
+      }
+    });
 
     function bindTestimonialAddressFinder() {
       const input = document.getElementById('customer_address');
@@ -572,6 +934,17 @@
       renderPhotoPreview();
     }
 
+    function updatePhotoPermissionVisibility() {
+      const hasPhotos = selectedPhotos.length > 0;
+      document.querySelectorAll('.photo-consent-option').forEach((row) => {
+        row.classList.toggle('is-hidden', !hasPhotos);
+        if (!hasPhotos) {
+          const input = row.querySelector('input[type="checkbox"]');
+          if (input) input.checked = false;
+        }
+      });
+    }
+
     function renderPhotoPreview() {
       const preview = document.getElementById('image-preview');
       preview.innerHTML = '';
@@ -594,6 +967,7 @@
         item.appendChild(remove);
         preview.appendChild(item);
       });
+      updatePhotoPermissionVisibility();
     }
 
     document.getElementById('testimonial_images').addEventListener('change', (event) => {
@@ -612,6 +986,12 @@
     const titlePlaceholder = 'e.g. Brilliant boiler service';
     const titleWaitingPlaceholder = 'Write your testimonial first';
     const minimumTitleWords = 8;
+
+    function setPhotoTipVisibility(visible) {
+      const photoTip = document.getElementById('testimonial-photos-tip');
+      photoTip.classList.toggle('is-visible', visible);
+      photoTip.setAttribute('aria-hidden', String(!visible));
+    }
 
     function getTestimonialWordCount() {
       return document.getElementById('content').value.trim().split(/\s+/).filter(Boolean).length;
@@ -633,6 +1013,7 @@
         if (!wordCount) {
           titleGenerationStarted = false;
           titleHasGenerated = false;
+          setPhotoTipVisibility(false);
           errorMessage.textContent = '';
           errorMessage.classList.remove('active');
         }
@@ -674,6 +1055,10 @@
 
     document.getElementById('regenerate-title-btn').addEventListener('click', () => {
       generateShortTitle(true);
+    });
+
+    document.getElementById('subject').addEventListener('focusout', (event) => {
+      if (event.currentTarget.value.trim()) setPhotoTipVisibility(true);
     });
 
     updateTitleAvailability();
@@ -720,6 +1105,7 @@
         subject.placeholder = titlePlaceholder;
         subject.disabled = false;
         regenerateButton.disabled = false;
+        setPhotoTipVisibility(true);
       }
     }
 
@@ -821,6 +1207,7 @@
       const submitButton = form.querySelector('button[type="submit"]');
       submitButton.disabled = true;
       const images = await Promise.all(selectedPhotos.map(fileToPayload));
+      const hasPhotos = images.length > 0;
       const payload = {
         customer_name: document.getElementById('customer_name').value.trim(),
         customer_email: document.getElementById('customer_email').value.trim(),
@@ -831,6 +1218,13 @@
         subject: document.getElementById('subject').value.trim(),
         content: document.getElementById('content').value.trim(),
         images,
+        permission_wording_version: TESTIMONIAL_PERMISSION_WORDING_VERSION,
+        publish_testimonial: document.getElementById('publish_testimonial').checked,
+        publish_photos: hasPhotos && document.getElementById('publish_photos').checked,
+        wider_use_testimonial: document.getElementById('wider_use_testimonial').checked,
+        wider_use_photos: hasPhotos && document.getElementById('wider_use_photos').checked,
+        share_feedback_with_job_organisation: document.getElementById('share_feedback_with_job_organisation').checked,
+        photo_rights_confirmed: hasPhotos && photoUploadDeclarationAccepted,
       };
 
       const { error } = await window.db.functions.invoke('testimonial-submission', { body: payload });
@@ -848,6 +1242,7 @@
       lastSubmittedTestimonial = payload;
       selectedPhotos = [];
       document.getElementById('image-preview').innerHTML = '';
+      updatePhotoPermissionVisibility();
       document.getElementById('submit-overlay-title').textContent = 'Thank you';
       overlayMessage.textContent = 'Would you like to answer a few additional questions about your experience, engineer and insurer or agent? This really helps us improve customer service, development and training.';
       document.querySelector('#submit-overlay .spinner').style.display = 'none';

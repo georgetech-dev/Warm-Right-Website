@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.adminPageTitle = "WarmHub - File Explorer";</script>
 <script src="../assets/js/admin-include.js?v=20260705theme"></script>
-  <script src="../assets/js/admin-image-library.js?v=20260625b"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
   <style>
     :root {
       --primary-blue: #004a99;
@@ -20,7 +20,7 @@
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: "Poppins", Inter, Arial, Helvetica, sans-serif;
       margin: 0;
       background: var(--light-gray);
       padding: 40px;
@@ -36,7 +36,7 @@
     h2 { color: var(--primary-blue); margin: 0; }
     p { color: var(--muted); }
     label { font-weight: 600; color: var(--primary-blue); }
-    button { padding: 10px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
+    button { min-height: 42px; padding: 0 16px; border-radius: 6px; border: none; font: inherit; font-weight: 700; cursor: pointer; }
     .btn-accent { background: var(--accent-orange); color: white; }
     .btn-outline { background: #fff; color: var(--primary-blue); border: 1px solid var(--border); }
     .btn-danger { background: #ef4444; color: #fff; }
@@ -49,8 +49,8 @@
     .file-name { font-weight: 700; color: var(--primary-blue); word-break: break-word; font-size: 14px; }
     .file-meta { color: var(--muted); font-size: 12px; }
     .file-path { background: #f9fafb; border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-family: Consolas, monospace; font-size: 12px; word-break: break-all; }
-    .card-actions { display: flex; gap: 8px; margin-top: auto; }
-    .card-actions button { flex: 1; padding: 8px; }
+    .card-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: auto; }
+    .card-actions button { min-height: 36px; padding: 0 8px; font-size: 12px; }
     input[type="search"] { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; min-width: 260px; font: inherit; }
 
     @media (max-width: 768px) {
@@ -159,6 +159,27 @@
       }
     }
 
+    async function renameImage(name) {
+      const file = imageFiles.find(item => item.name === name);
+      if (!file) return;
+      const nextName = prompt('Enter the new image file name:', file.name);
+      if (nextName === null) return;
+      const cleanName = makeSafeFileName(nextName, file.name);
+      if (!cleanName || cleanName === file.name) return;
+
+      try {
+        await callImageFunction('rename', {
+          path: file.path,
+          newName: cleanName,
+          message: `Rename image ${file.name} to ${cleanName}`,
+        }, 'POST');
+        setStatus(`${file.name} renamed to ${cleanName}.`);
+        await refreshFiles();
+      } catch (err) {
+        setStatus(`Unable to rename ${name}: ${err.message}`);
+      }
+    }
+
     async function copyPath(name) {
       const file = imageFiles.find(item => item.name === name);
       const path = file?.webPath || `assets/images/${name}`;
@@ -178,16 +199,18 @@
           <img src="${escapeAttr(item.downloadUrl || '../assets/images/no-image.jpg')}" alt="${escapeAttr(item.name)}">
           <div class="body">
             <div class="file-name">${escapeHtml(item.name)}</div>
-            <div class="file-meta">${formatBytes(item.size)} - GitHub repo file</div>
+            <div class="file-meta" data-size="${escapeAttr(formatBytes(item.size))}">${formatBytes(item.size)} - checking resolution...</div>
             <div class="file-path">${escapeHtml(item.webPath || `assets/images/${item.name}`)}</div>
             <div class="card-actions">
               <button class="btn-outline" onclick="copyPath(decodeURIComponent('${encodedName}'))">Copy Path</button>
+              <button class="btn-outline" onclick="renameImage(decodeURIComponent('${encodedName}'))">Edit Name</button>
               <button class="btn-danger" onclick="deleteImage(decodeURIComponent('${encodedName}'))">Delete</button>
             </div>
           </div>
         </article>
       `;
       }).join('');
+      loadImageMetadata();
     }
 
     async function callImageFunction(action, body = null, method = 'GET') {
@@ -211,6 +234,34 @@
       if (bytes < 1024) return `${bytes} B`;
       if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
       return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    function loadImageMetadata() {
+      document.querySelectorAll('.file-card img').forEach(image => {
+        const meta = image.closest('.file-card')?.querySelector('.file-meta');
+        if (!meta) return;
+        const update = () => {
+          const dimensions = image.naturalWidth && image.naturalHeight ? `${image.naturalWidth} x ${image.naturalHeight}px` : 'resolution unavailable';
+          meta.textContent = `${meta.dataset.size || 'Size unknown'} - ${dimensions}`;
+        };
+        if (image.complete) update();
+        else {
+          image.addEventListener('load', update, { once: true });
+          image.addEventListener('error', () => { meta.textContent = `${meta.dataset.size || 'Size unknown'} - preview unavailable`; }, { once: true });
+        }
+      });
+    }
+
+    function makeSafeFileName(name, fallback) {
+      const trimmed = String(name || '').trim();
+      const fallbackExt = String(fallback || '').match(/(\.[a-z0-9]{2,5})$/i)?.[1] || '.jpg';
+      const withExtension = /\.[a-z0-9]{2,5}$/i.test(trimmed) ? trimmed : `${trimmed}${fallbackExt}`;
+      return withExtension
+        .split(/[\\/]/)
+        .pop()
+        .replace(/[^a-zA-Z0-9._-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/(^-|-$)/g, '');
     }
 
     function setStatus(message) {

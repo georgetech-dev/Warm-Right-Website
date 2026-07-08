@@ -259,6 +259,27 @@
   }
 }
 
+#mobile-nav-bar .mobile-contact-actions { padding: 0 14px 18px; }
+#mobile-nav-bar .mobile-contact-item { border-bottom: 0; padding: 0; }
+#mobile-nav-bar .mobile-contact-item + .mobile-contact-item { margin-top: 9px; }
+#mobile-nav-bar .mobile-contact-item .mobile-contact-btn {
+  display: block;
+  box-sizing: border-box;
+  margin-top: 0;
+  border: 1px solid color-mix(in srgb, var(--mobile-contact-button-background, #28a745) 75%, #000);
+  background: var(--mobile-contact-button-background, #28a745);
+  color: var(--mobile-contact-button-text, #fff);
+  text-align: center;
+  text-decoration: none;
+  transition: background-color .18s ease, transform .18s ease;
+}
+#mobile-nav-bar .mobile-contact-item .mobile-contact-btn:hover,
+#mobile-nav-bar .mobile-contact-item .mobile-contact-btn:focus-visible {
+  background: var(--mobile-contact-button-hover, #218838);
+  color: var(--mobile-contact-button-text, #fff);
+  transform: translateY(-1px);
+}
+
 #mobile-nav-bar .mobile-item a.active,
 #mobile-nav-bar .mobile-dropdown-button.active,
 #mobile-nav-bar .mobile-dropdown-menu a.active {

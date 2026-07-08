@@ -1,24 +1,37 @@
 (function () {
-  if (window.__warmRightAnalyticsLoaded || navigator.doNotTrack === '1') return;
+  if (window.__warmRightAnalyticsLoaded) return;
   window.__warmRightAnalyticsLoaded = true;
 
   const functionUrl = 'https://axampuprcnauxbbijmmt.supabase.co/functions/v1/site-analytics?action=collect';
   const publicKey = 'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM';
-  const storageKey = 'warmright_analytics_session';
+  const optOutKey = 'warmright_analytics_opt_out';
+  let pageViewSent = false;
 
-  function sessionId() {
+  function hasDoNotTrack() {
+    return navigator.doNotTrack === '1' || window.doNotTrack === '1';
+  }
+
+  function hasOptedOut() {
     try {
-      let id = sessionStorage.getItem(storageKey);
-      if (!id) {
-        id = typeof crypto.randomUUID === 'function'
-          ? crypto.randomUUID().replace(/-/g, '')
-          : `${Date.now()}_${Math.random().toString(36).slice(2)}_${Math.random().toString(36).slice(2)}`;
-        sessionStorage.setItem(storageKey, id);
-      }
-      return id;
+      return localStorage.getItem(optOutKey) === 'true';
     } catch {
-      return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      return false;
     }
+  }
+
+  function analyticsEnabled() {
+    return !hasDoNotTrack() && !hasOptedOut();
+  }
+
+  function setAnalyticsEnabled(enabled) {
+    try {
+      if (enabled) localStorage.removeItem(optOutKey);
+      else localStorage.setItem(optOutKey, 'true');
+    } catch {
+      // Analytics remains best-effort when browser storage is unavailable.
+    }
+    syncPreferenceControl();
+    if (enabled && analyticsEnabled()) sendPageView();
   }
 
   function deviceType() {
@@ -30,32 +43,29 @@
     return 'desktop';
   }
 
-  function externalReferrer() {
+  function externalReferrerHost() {
     if (!document.referrer) return '';
     try {
-      const url = new URL(document.referrer);
-      return url.hostname === window.location.hostname ? '' : url.toString();
+      const host = new URL(document.referrer).hostname.toLowerCase().replace(/^www\./, '');
+      const currentHost = window.location.hostname.toLowerCase().replace(/^www\./, '');
+      return host === currentHost ? '' : host;
     } catch {
       return '';
     }
   }
 
-  function basePayload(eventName) {
-    const params = new URLSearchParams(window.location.search);
+  function payload(eventName) {
     return {
-      session_id: sessionId(),
       event_name: eventName,
       page_path: window.location.pathname || '/',
       page_title: document.title || '',
-      referrer: externalReferrer(),
-      utm_source: params.get('utm_source') || '',
-      utm_medium: params.get('utm_medium') || '',
-      utm_campaign: params.get('utm_campaign') || '',
+      referrer_host: externalReferrerHost(),
       device_type: deviceType(),
     };
   }
 
   function send(eventName) {
+    if (!analyticsEnabled()) return;
     fetch(functionUrl, {
       method: 'POST',
       keepalive: true,
@@ -64,7 +74,7 @@
         Authorization: `Bearer ${publicKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(basePayload(eventName)),
+      body: JSON.stringify(payload(eventName)),
     }).then(response => {
       if (!response.ok && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
         console.warn(`Warm Right analytics returned ${response.status}.`);
@@ -76,6 +86,12 @@
     });
   }
 
+  function sendPageView() {
+    if (pageViewSent || !analyticsEnabled()) return;
+    pageViewSent = true;
+    send('page_view');
+  }
+
   function eventForLink(link) {
     const href = (link.getAttribute('href') || '').toLowerCase();
     if (href.includes('book-a-visit')) return 'book_visit_click';
@@ -85,6 +101,15 @@
     return '';
   }
 
+  function syncPreferenceControl() {
+    const checkbox = document.getElementById('analytics-preference');
+    const note = document.getElementById('analytics-preference-note');
+    if (!checkbox) return;
+    checkbox.checked = analyticsEnabled();
+    checkbox.disabled = hasDoNotTrack();
+    if (note && hasDoNotTrack()) note.textContent = 'Your browser Do Not Track setting has disabled analytics.';
+  }
+
   document.addEventListener('click', event => {
     const link = event.target.closest('a[href]');
     if (!link) return;
@@ -92,5 +117,14 @@
     if (eventName) send(eventName);
   }, { capture: true });
 
-  send('page_view');
+  document.addEventListener('change', event => {
+    if (event.target.id !== 'analytics-preference') return;
+    setAnalyticsEnabled(event.target.checked);
+  });
+
+  document.addEventListener('includesLoaded', syncPreferenceControl);
+  window.setWarmRightAnalyticsEnabled = setAnalyticsEnabled;
+  window.getWarmRightAnalyticsEnabled = analyticsEnabled;
+
+  sendPageView();
 })();

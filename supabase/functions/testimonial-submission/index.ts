@@ -12,6 +12,8 @@ type SubmittedImage = {
   base64: string;
 };
 
+const PERMISSION_WORDING_VERSION = 'testimonial-permissions-v1.0-2026-07';
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -50,7 +52,22 @@ Deno.serve(async (req) => {
       subject: payload.subject,
       content: payload.content,
       image_urls: imageUrls,
+      permission_wording_version: payload.permission_wording_version,
+      permission_recorded_at: payload.permission_recorded_at,
+      publish_testimonial: payload.publish_testimonial,
+      publish_photos: payload.publish_photos,
+      wider_use_testimonial: payload.wider_use_testimonial,
+      wider_use_photos: payload.wider_use_photos,
+      share_feedback_with_job_organisation: payload.share_feedback_with_job_organisation,
+      photo_rights_confirmed: payload.photo_rights_confirmed,
+      consent_publish_testimonial: payload.publish_testimonial,
+      consent_publish_photos: payload.publish_photos,
+      consent_marketing: payload.wider_use_testimonial || payload.wider_use_photos,
+      consent_share_job_feedback: payload.share_feedback_with_job_organisation,
+      photo_upload_declaration_accepted: payload.photo_rights_confirmed,
+      consent_recorded_at: payload.permission_recorded_at,
       status: 'pending',
+      publication_status: 'awaiting_review',
     }).select('id').single();
 
     if (error) throw error;
@@ -79,14 +96,30 @@ function normalizePayload(body: Record<string, unknown>) {
   const subject = cleanText(body.subject, 120);
   const content = cleanText(body.content, 1800);
   const rating = Math.max(1, Math.min(5, Number(body.rating) || 5));
-  const images = Array.isArray(body.images) ? body.images.slice(0, 6) as SubmittedImage[] : [];
+  const images = Array.isArray(body.images) ? body.images.slice(0, 4) as SubmittedImage[] : [];
+  const permission_wording_version = cleanText(body.permission_wording_version, 80) || PERMISSION_WORDING_VERSION;
+  const permission_recorded_at = new Date().toISOString();
+  const publish_testimonial = toBoolean(body.publish_testimonial ?? body.consent_publish_testimonial);
+  const publish_photos = images.length ? toBoolean(body.publish_photos ?? body.consent_publish_photos) : false;
+  const wider_use_testimonial = toBoolean(body.wider_use_testimonial ?? body.consent_marketing);
+  const wider_use_photos = images.length ? toBoolean(body.wider_use_photos ?? body.consent_marketing) : false;
+  const share_feedback_with_job_organisation = toBoolean(body.share_feedback_with_job_organisation ?? body.consent_share_job_feedback);
+  const photo_rights_confirmed = images.length ? toBoolean(body.photo_rights_confirmed ?? body.photo_upload_declaration_accepted) : false;
 
   if (!customer_name) throw httpError('Customer name is required.', 400);
   if (!customer_email || !customer_email.includes('@')) throw httpError('A valid email is required.', 400);
   if (!subject) throw httpError('Short title is required.', 400);
   if (!content) throw httpError('Testimonial content is required.', 400);
+  if (images.length && !photo_rights_confirmed) {
+    throw httpError('The photograph upload declaration must be accepted before photos can be submitted.', 400);
+  }
 
-  return { customer_name, customer_email, customer_phone, job_number, customer_address, subject, content, rating, images };
+  return {
+    customer_name, customer_email, customer_phone, job_number, customer_address,
+    subject, content, rating, images, permission_wording_version, permission_recorded_at,
+    publish_testimonial, publish_photos, wider_use_testimonial, wider_use_photos,
+    share_feedback_with_job_organisation, photo_rights_confirmed,
+  };
 }
 
 async function uploadImages(db: ReturnType<typeof createClient>, images: SubmittedImage[]) {
@@ -138,6 +171,14 @@ async function queueTeamEmail(
     `Address: ${payload.customer_address || 'Not provided'}`,
     `Rating: ${payload.rating}/5`,
     `Subject: ${payload.subject || 'Not provided'}`,
+    `Permission wording version: ${payload.permission_wording_version}`,
+    `Permission recorded at: ${payload.permission_recorded_at}`,
+    `Publish testimonial, title, display name and rating: ${yesNo(payload.publish_testimonial)}`,
+    `Publish uploaded photographs: ${yesNo(payload.publish_photos)}`,
+    `Use testimonial elsewhere: ${yesNo(payload.wider_use_testimonial)}`,
+    `Use photographs elsewhere: ${yesNo(payload.wider_use_photos)}`,
+    `Share job feedback with connected organisation: ${yesNo(payload.share_feedback_with_job_organisation)}`,
+    `Photograph rights confirmed: ${yesNo(payload.photo_rights_confirmed)}`,
     ``,
     payload.content,
     ``,
@@ -354,6 +395,14 @@ function buildTestimonialEmailHtml(options: {
                   ${detailRow('Address', payload.customer_address || 'Not provided')}
                   ${detailRow('Rating', `${payload.rating}/5`)}
                   ${detailRow('Subject', payload.subject || 'Not provided')}
+                  ${detailRow('Permission wording version', payload.permission_wording_version)}
+                  ${detailRow('Permission recorded at', payload.permission_recorded_at)}
+                  ${detailRow('Publish testimonial', yesNo(payload.publish_testimonial))}
+                  ${detailRow('Publish photographs', yesNo(payload.publish_photos))}
+                  ${detailRow('Use testimonial elsewhere', yesNo(payload.wider_use_testimonial))}
+                  ${detailRow('Use photographs elsewhere', yesNo(payload.wider_use_photos))}
+                  ${detailRow('Share with connected organisation', yesNo(payload.share_feedback_with_job_organisation))}
+                  ${detailRow('Photo rights confirmed', yesNo(payload.photo_rights_confirmed))}
                 </table>
               </td>
             </tr>
@@ -409,6 +458,14 @@ function escapeAttr(value: string) {
 
 function cleanText(value: unknown, maxLength: number) {
   return String(value || '').trim().slice(0, maxLength);
+}
+
+function toBoolean(value: unknown) {
+  return value === true || value === 'true' || value === 'yes' || value === '1';
+}
+
+function yesNo(value: boolean) {
+  return value ? 'Yes' : 'No';
 }
 
 function extensionFromName(name: string, type: string) {

@@ -79,6 +79,9 @@
     el.style.setProperty('--article-image-size', `${card.image_zoom ?? 115}%`);
     el.style.setProperty('--article-mobile-image-position', `${card.mobile_image_position_x ?? card.image_position_x ?? 50}% ${card.mobile_image_position_y ?? card.image_position_y ?? 50}%`);
     el.style.setProperty('--article-mobile-image-size', `${card.mobile_image_zoom ?? card.image_zoom ?? 115}%`);
+    const alignment = ['left', 'justify', 'center', 'right'].includes(card.text_alignment) ? card.text_alignment : 'justify';
+    el.style.setProperty('--content-card-text-align', alignment);
+    el.style.setProperty('--content-card-text-align-last', alignment === 'justify' ? 'left' : alignment);
     el.classList.add('is-managed-content');
 
     const showButton = card.show_button !== false && card.button_label && card.button_url;

@@ -168,6 +168,8 @@ function renderWebsiteManagementNav() {
         { file: 'testimonials-admin.html', label: 'Testimonials' },
         { file: 'feedback-admin.html', label: 'Feedback' },
         { file: 'callbacks-admin.html', label: 'Callbacks' },
+        { file: 'contact-options-admin.html', label: 'Contact Options' },
+        { file: 'privacy-admin.html', label: 'Privacy Policy' },
         { file: 'site-management.html', label: 'Pages & Appearance' },
         { file: 'carousels-admin.html', label: 'Carousels' },
         { file: 'coverage-admin.html', label: 'Coverage Map' },

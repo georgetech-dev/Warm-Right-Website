@@ -12,7 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.adminPageTitle = "WarmHub - Content Cards";</script>
 <script src="../assets/js/admin-include.js?v=20260705theme"></script>
-  <script src="../assets/js/admin-image-library.js?v=20260625b"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
   <style>
     body { font-family:'Segoe UI', sans-serif; background:#f4f7f6; margin:0; padding:40px; visibility:hidden; color:#263238; }
     #admin-header-container { margin:-40px -40px 30px -40px; }
@@ -171,6 +171,13 @@
           <div id="body_editor" class="html-editor-body" contenteditable="true" data-placeholder="Write the card text here. Highlight text to make it bold, italic, or underlined."></div>
         </div>
         <textarea id="body_html" class="hidden"></textarea>
+        <label>Text alignment</label>
+        <select id="text_alignment" onchange="updatePreview()">
+          <option value="justify">Justify</option>
+          <option value="left">Left</option>
+          <option value="center">Centre</option>
+          <option value="right">Right</option>
+        </select>
         <label>Image URL</label>
         <div style="display:grid; grid-template-columns:1fr auto auto; gap:10px;">
           <input id="image_url" placeholder="assets/images/professional.jpg">
@@ -330,6 +337,7 @@
       for (const key of ['card_key','page_key','title','body_html','image_url','button_label','button_url','image_position_x','image_position_y','image_zoom']) {
         document.getElementById(key).value = card[key] ?? '';
       }
+      document.getElementById('text_alignment').value = card.text_alignment || 'justify';
       setBodyEditorHtml(card.body_html || '');
       document.getElementById('mobile_image_position_x').value = card.mobile_image_position_x ?? card.image_position_x ?? 50;
       document.getElementById('mobile_image_position_y').value = card.mobile_image_position_y ?? card.image_position_y ?? 50;
@@ -345,6 +353,7 @@
       document.getElementById('form-title').textContent = 'Add Content Card';
       for (const key of ['card_key','page_key','title','body_html','image_url','button_label','button_url']) document.getElementById(key).value = '';
       setBodyEditorHtml('');
+      document.getElementById('text_alignment').value = 'justify';
       document.getElementById('image_position_x').value = 50;
       document.getElementById('image_position_y').value = 50;
       document.getElementById('image_zoom').value = 115;
@@ -366,6 +375,7 @@
         page_key: pageKey,
         title: document.getElementById('title').value.trim(),
         body_html: document.getElementById('body_html').value.trim(),
+        text_alignment: document.getElementById('text_alignment').value || 'justify',
         image_url: document.getElementById('image_url').value.trim(),
         image_position_x: Number(document.getElementById('image_position_x').value),
         image_position_y: Number(document.getElementById('image_position_y').value),
@@ -419,8 +429,8 @@
 
     async function buildSeedRowsFromDeployedPages() {
       const fallbackRows = [
-        { card_key:'home:intro', page_key:'home', title:'Welcome to Warm Right', body_html:'Your home deserves reliable heat, safe systems, and clear advice - and that is exactly what we deliver.<br><br>Whether you need a new installation, a system service, or a second opinion, you are in expert hands.', image_url:'assets/images/professional.jpg', image_position_x:50, image_position_y:42, image_zoom:118, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:118, show_button:true, button_label:'Book a Visit', button_url:'book-a-visit.html', sort_order:0, is_active:true },
-        { card_key:'home:support', page_key:'home', title:'Need help?', body_html:'We have created our own fault guides that are easy for anyone to navigate.<br><br>If you need assistance and want to chat, visit our Contact Us page or why not start a live web chat?', image_url:'assets/images/fault-finder.png', image_position_x:50, image_position_y:50, image_zoom:115, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:115, show_button:true, button_label:'Contact Us', button_url:'/contact.html', sort_order:1, is_active:true }
+        { card_key:'home:intro', page_key:'home', title:'Welcome to Warm Right', body_html:'Your home deserves reliable heat, safe systems, and clear advice - and that is exactly what we deliver.<br><br>Whether you need a new installation, a system service, or a second opinion, you are in expert hands.', text_alignment:'justify', image_url:'assets/images/professional.jpg', image_position_x:50, image_position_y:42, image_zoom:118, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:118, show_button:true, button_label:'Book a Visit', button_url:'book-a-visit.html', sort_order:0, is_active:true },
+        { card_key:'home:support', page_key:'home', title:'Need help?', body_html:'We have created our own fault guides that are easy for anyone to navigate.<br><br>If you need assistance and want to chat, visit our Contact Us page or why not start a live web chat?', text_alignment:'justify', image_url:'assets/images/fault-finder.png', image_position_x:50, image_position_y:50, image_zoom:115, mobile_image_position_x:50, mobile_image_position_y:50, mobile_image_zoom:115, show_button:true, button_label:'Contact Us', button_url:'/contact.html', sort_order:1, is_active:true }
       ];
 
       const extractedRows = [];
@@ -437,6 +447,7 @@
               page_key: page.key,
               title: findSeedTitle(cardEl, page.title),
               body_html: sanitizeBodyHtml(cardEl.innerHTML) || seedBodyForPage(page.key),
+              text_alignment: 'justify',
               image_url: seedImageForPage(page.key, index),
               image_position_x: 50,
               image_position_y: 50,
@@ -457,6 +468,7 @@
             page_key: page.key,
             title: page.title,
             body_html: '',
+            text_alignment: 'justify',
             image_url: seedImageForPage(page.key, 0),
             image_position_x: 50,
             image_position_y: 50,
@@ -546,6 +558,8 @@
       const buttonLabel = document.getElementById('button_label').value.trim();
       const showButton = document.getElementById('show_button').checked;
       const body = document.getElementById('body_html').value || 'Card preview text will appear here.';
+      const alignment = document.getElementById('text_alignment').value || 'justify';
+      const alignmentLast = alignment === 'justify' ? 'left' : alignment;
       const html = `<span class="content-card-body">${body}</span>${showButton && buttonLabel ? `<span class="content-card-actions"><a class="content-card-button">${escapeHtml(buttonLabel)}</a></span>` : ''}`;
 
       document.getElementById('image_position_x_value').textContent = `${x}%`;
@@ -560,6 +574,8 @@
       if (image) desktopPreview.style.setProperty('--article-visual', `url("${imageUrlForCss(image).replace(/"/g, '\\"')}")`);
       desktopPreview.style.setProperty('--article-image-position', `${x}% ${y}%`);
       desktopPreview.style.setProperty('--article-image-size', `${zoom}%`);
+      desktopPreview.style.setProperty('--content-card-text-align', alignment);
+      desktopPreview.style.setProperty('--content-card-text-align-last', alignmentLast);
       desktopPreview.innerHTML = html;
 
       const mobilePreview = document.getElementById('mobile-preview-card');
@@ -569,6 +585,8 @@
       mobilePreview.style.setProperty('--article-image-size', `${zoom}%`);
       mobilePreview.style.setProperty('--article-mobile-image-position', `${mobileX}% ${mobileY}%`);
       mobilePreview.style.setProperty('--article-mobile-image-size', `${mobileZoom}%`);
+      mobilePreview.style.setProperty('--content-card-text-align', alignment);
+      mobilePreview.style.setProperty('--content-card-text-align-last', alignmentLast);
       mobilePreview.innerHTML = html;
     }
 

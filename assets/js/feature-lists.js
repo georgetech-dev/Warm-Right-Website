@@ -58,11 +58,11 @@
       const useIcon = item.use_icon && item.icon_url;
       const iconSize = Math.max(8, Number(item.icon_size || 22));
       const text = `<span class="managed-feature-list-text">${item.item_html || ''}</span>`;
-      if (!useIcon) return `<li class="card visible">${text}</li>`;
+      if (!useIcon) return `<li class="card">${text}</li>`;
       const iconSrc = window.WarmRightImages?.imageUrl(item.icon_url) || item.icon_url;
       const raw = window.WarmRightImages?.githubRawUrl(item.icon_url) || '';
       return `
-        <li class="card visible has-managed-icon">
+        <li class="card has-managed-icon">
           <img class="managed-feature-list-icon" src="${escapeHtml(iconSrc)}" alt="" aria-hidden="true" width="${iconSize}" height="${iconSize}" data-github-fallback="${escapeHtml(raw)}" onerror="if(this.dataset.githubFallback && this.dataset.githubFallback !== this.src){this.src=this.dataset.githubFallback;this.dataset.githubFallback='';}else{this.style.display='none';}">
           ${text}
         </li>
@@ -105,6 +105,7 @@
       const listRow = listMap.get(listEl.dataset.featureList);
       if (listRow) renderList(listEl, listRow, itemGroups[listRow.list_key] || []);
     });
+    if (typeof window.observeRevealCards === 'function') window.observeRevealCards(document);
   }
 
   document.addEventListener('includesLoaded', loadFeatureLists);

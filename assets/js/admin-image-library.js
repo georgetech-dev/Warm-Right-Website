@@ -21,12 +21,22 @@
       .admin-image-library-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
       .admin-image-library-actions input[type=file]{display:none}
       .admin-image-library-search{min-width:260px;padding:10px;border:1px solid #d1d5db;border-radius:6px;font:inherit}
+      .admin-image-library-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;color:#123b75;font:inherit;font-weight:700;text-decoration:none;line-height:1;cursor:pointer}
+      .admin-image-library-button.primary{border-color:#123b75;background:#123b75;color:#fff}
+      .admin-image-library-button.accent{border-color:#ff8c00;background:#ff8c00;color:#fff}
+      .admin-image-library-button.danger{border-color:#ef4444;background:#ef4444;color:#fff}
+      .admin-image-library-button:hover,.admin-image-library-button:focus{filter:brightness(.96);text-decoration:none}
+      .admin-image-library-button:disabled{opacity:.62;cursor:wait;filter:none}
       .admin-image-library-status{min-height:22px;color:#667085;margin:10px 0;font-size:14px}
       .admin-image-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:12px}
-      .admin-image-library-choice{border:1px solid #e5e7eb;border-radius:8px;background:#fff;padding:8px;text-align:left;cursor:pointer}
-      .admin-image-library-choice:hover{border-color:#004a99;box-shadow:0 6px 18px rgba(0,74,153,.12)}
-      .admin-image-library-choice img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;background:#f3f4f6}
-      .admin-image-library-choice span{display:block;margin-top:6px;font-size:12px;color:#444;word-break:break-word}
+      .admin-image-library-card{border:1px solid #e5e7eb;border-radius:8px;background:#fff;padding:8px;text-align:left}
+      .admin-image-library-select{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
+      .admin-image-library-select:hover img{box-shadow:0 6px 18px rgba(0,74,153,.12)}
+      .admin-image-library-card img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;background:#f3f4f6}
+      .admin-image-library-name{display:block;margin-top:7px;font-size:12px;font-weight:700;color:#243244;word-break:break-word}
+      .admin-image-library-meta{display:block;margin-top:4px;font-size:11px;color:#667085;word-break:break-word}
+      .admin-image-library-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+      .admin-image-library-card-actions .admin-image-library-button{min-height:34px;padding:0 8px;font-size:12px}
       .admin-image-library-upload{display:none;margin:16px 0;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb}
       .admin-image-library-upload.open{display:block}
       .admin-image-library-settings{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:12px 0}
@@ -52,10 +62,10 @@
           <h2 id="admin-image-library-title" style="margin:0;color:#004a99">Choose Website Image</h2>
           <div class="admin-image-library-actions">
             <input id="admin-image-library-search" class="admin-image-library-search" type="search" placeholder="Search images...">
-            <label class="btn-accent" for="admin-image-library-files">Add Images</label>
+            <label class="admin-image-library-button accent" for="admin-image-library-files">Add Images</label>
             <input id="admin-image-library-files" type="file" accept="image/*" multiple>
-            <button class="btn-outline" type="button" id="admin-image-library-refresh">Refresh</button>
-            <button class="btn-outline" type="button" id="admin-image-library-close">Close</button>
+            <button class="admin-image-library-button" type="button" id="admin-image-library-refresh">Refresh</button>
+            <button class="admin-image-library-button" type="button" id="admin-image-library-close">Close</button>
           </div>
         </div>
         <section id="admin-image-library-upload" class="admin-image-library-upload">
@@ -80,7 +90,7 @@
             <label>Target max KB
               <input id="admin-image-library-target-kb" type="number" min="100" step="50" value="700">
             </label>
-            <button class="btn-primary" type="button" id="admin-image-library-upload-btn">Upload Prepared Images</button>
+            <button class="admin-image-library-button primary" type="button" id="admin-image-library-upload-btn">Upload Prepared Images</button>
           </div>
           <div id="admin-image-library-upload-preview" class="admin-image-library-preview-grid"></div>
         </section>
@@ -143,16 +153,31 @@
     setStatus(`${visible.length} image file${visible.length === 1 ? '' : 's'} available.`);
     document.getElementById('admin-image-library-grid').innerHTML = visible.map(file => {
       const webPath = file.webPath || `assets/images/${file.name}`;
+      const sizeText = file.size ? formatBytes(file.size) : 'Size unknown';
       return `
-        <button type="button" class="admin-image-library-choice" data-path="${escapeAttr(webPath)}">
-          <img src="${escapeAttr(file.downloadUrl || imageSrcForAdmin(webPath))}" alt="${escapeAttr(file.name)}">
-          <span>${escapeHtml(file.name)}</span>
-        </button>
+        <article class="admin-image-library-card" data-path="${escapeAttr(webPath)}" data-name="${escapeAttr(file.name)}" data-sha="${escapeAttr(file.sha || '')}">
+          <button type="button" class="admin-image-library-select" data-path="${escapeAttr(webPath)}">
+            <img src="${escapeAttr(file.downloadUrl || imageSrcForAdmin(webPath))}" alt="${escapeAttr(file.name)}" data-meta-image>
+            <span class="admin-image-library-name">${escapeHtml(file.name)}</span>
+            <span class="admin-image-library-meta" data-size="${escapeAttr(sizeText)}">${escapeHtml(sizeText)} · checking resolution...</span>
+          </button>
+          <div class="admin-image-library-card-actions">
+            <button class="admin-image-library-button" type="button" data-rename-image="${escapeAttr(webPath)}">Edit Name</button>
+            <button class="admin-image-library-button danger" type="button" data-delete-image="${escapeAttr(webPath)}">Delete</button>
+          </div>
+        </article>
       `;
     }).join('');
-    document.querySelectorAll('.admin-image-library-choice').forEach(button => {
+    document.querySelectorAll('.admin-image-library-select').forEach(button => {
       button.addEventListener('click', () => select(button.dataset.path));
     });
+    document.querySelectorAll('[data-rename-image]').forEach(button => {
+      button.addEventListener('click', () => renameImage(button.dataset.renameImage));
+    });
+    document.querySelectorAll('[data-delete-image]').forEach(button => {
+      button.addEventListener('click', () => deleteImage(button.dataset.deleteImage));
+    });
+    loadRenderedImageMetadata();
   }
 
   function select(path) {
@@ -253,6 +278,48 @@
     } finally {
       uploadButton.disabled = false;
       uploadButton.textContent = 'Upload Prepared Images';
+    }
+  }
+
+  async function renameImage(path) {
+    const file = files.find(item => (item.webPath || item.path) === path);
+    if (!file) return;
+    const newName = prompt('Enter the new image file name:', file.name);
+    if (newName === null) return;
+    const safeName = makeSafeFileName(normalizeUploadName(newName, file.name));
+    if (!safeName || safeName === file.name) return;
+    if (!isImageFileName(safeName)) {
+      setStatus('Rename failed: the file name must keep an image extension.');
+      return;
+    }
+    try {
+      setStatus(`Renaming ${file.name}...`);
+      await callImageFunction('rename', {
+        path: file.path || path,
+        newName: safeName,
+        message: `Rename image ${file.name} to ${safeName}`,
+      }, 'POST');
+      await refresh();
+      setStatus(`Renamed ${file.name} to ${safeName}.`);
+    } catch (err) {
+      setStatus(`Rename failed: ${err.message}`);
+    }
+  }
+
+  async function deleteImage(path) {
+    const file = files.find(item => (item.webPath || item.path) === path);
+    if (!file || !confirm(`Delete ${file.name}? This removes it from assets/images in GitHub.`)) return;
+    try {
+      setStatus(`Deleting ${file.name}...`);
+      await callImageFunction('delete', {
+        path: file.path || path,
+        sha: file.sha,
+        message: `Delete image ${file.name}`,
+      }, 'DELETE');
+      await refresh();
+      setStatus(`Deleted ${file.name}.`);
+    } catch (err) {
+      setStatus(`Delete failed: ${err.message}`);
     }
   }
 
@@ -361,6 +428,10 @@
     return cleaned.replace(/(^-|-$)/g, '') || `image-${Date.now()}.png`;
   }
 
+  function isImageFileName(name) {
+    return /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(String(name || ''));
+  }
+
   function normalizeUploadName(name, fallbackName) {
     const trimmed = String(name || '').trim();
     const fallback = String(fallbackName || `image-${Date.now()}.jpg`);
@@ -373,6 +444,22 @@
   function setStatus(message) {
     const status = document.getElementById('admin-image-library-status');
     if (status) status.textContent = message;
+  }
+
+  function loadRenderedImageMetadata() {
+    document.querySelectorAll('[data-meta-image]').forEach(image => {
+      const meta = image.closest('.admin-image-library-card')?.querySelector('.admin-image-library-meta');
+      if (!meta) return;
+      const setMeta = () => {
+        const dimensions = image.naturalWidth && image.naturalHeight ? `${image.naturalWidth} x ${image.naturalHeight}px` : 'Resolution unavailable';
+        meta.textContent = `${meta.dataset.size || 'Size unknown'} · ${dimensions}`;
+      };
+      if (image.complete) setMeta();
+      else {
+        image.addEventListener('load', setMeta, { once: true });
+        image.addEventListener('error', () => { meta.textContent = `${meta.dataset.size || 'Size unknown'} · preview unavailable`; }, { once: true });
+      }
+    });
   }
 
   function formatBytes(bytes) {

@@ -35,6 +35,11 @@ Deno.serve(async (req) => {
       return json(await uploadImage(body));
     }
 
+    if (req.method === 'POST' && action === 'rename') {
+      const body = await req.json();
+      return json(await renameImage(body));
+    }
+
     if (req.method === 'DELETE' && action === 'delete') {
       const body = await req.json();
       return json(await deleteImage(body));
@@ -113,6 +118,47 @@ async function deleteImage(body: { path?: string; sha?: string; message?: string
   });
 
   return { ok: true };
+}
+
+async function renameImage(body: { path?: string; newName?: string; message?: string }) {
+  const oldPath = cleanRepoPath(body.path || '');
+  const safeName = safeFileName(body.newName || '');
+  if (!oldPath.startsWith(`${imagesPath()}/`) || !isImageName(oldPath)) {
+    throw httpError('Only assets/images image files can be renamed.', 400);
+  }
+  if (!safeName || !isImageName(safeName)) throw httpError('The new file name must be an image file.', 400);
+
+  const oldFile = await getExistingFile(oldPath);
+  if (!oldFile?.sha || !oldFile.download_url) throw httpError('Could not find the image to rename.', 404);
+
+  const newPath = `${imagesPath()}/${safeName}`;
+  if (newPath === oldPath) return { ok: true, file: oldFile };
+
+  const duplicate = await getExistingFile(newPath);
+  if (duplicate?.sha) throw httpError('A file with that name already exists.', 409);
+
+  const contentResponse = await fetch(oldFile.download_url);
+  if (!contentResponse.ok) throw httpError('Could not download the existing image before rename.', 502);
+  const bytes = new Uint8Array(await contentResponse.arrayBuffer());
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  const putResult = await githubJson('PUT', newPath, {
+    message: body.message || `Rename ${oldPath} to ${newPath}`,
+    content: btoa(binary),
+    branch: branch(),
+  });
+
+  await githubJson('DELETE', oldPath, {
+    message: body.message || `Remove old image path ${oldPath}`,
+    sha: oldFile.sha,
+    branch: branch(),
+  });
+
+  return { ok: true, file: putResult.content };
 }
 
 async function getExistingFile(path: string) {

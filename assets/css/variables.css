@@ -11,6 +11,11 @@
   --frame-neutral: #E6DED7;
   --tile-background: #FFFFFF;
   --nav-text: White;
+  --nav-hover-text: #FFD166;
+  --nav-dropdown-background: #FFFFFF;
+  --nav-dropdown-text: #0A2C66;
+  --nav-dropdown-hover-background: #FFF7E6;
+  --nav-dropdown-hover-text: #D97706;
   --nav-background: rgba(10, 44, 102, 0.95) ;
   --text-banner-primary: White;
   --text-banner-secondary: White;
@@ -33,6 +38,11 @@
   --frame-neutral: #333333;
   --tile-background: #242A31;
   --nav-text: #FFFFFF;
+  --nav-hover-text: #F59E0B;
+  --nav-dropdown-background: #111827;
+  --nav-dropdown-text: #FFFFFF;
+  --nav-dropdown-hover-background: #1F2937;
+  --nav-dropdown-hover-text: #FBBF24;
   --nav-background: #101827;
   --text-banner-primary: #FFFFFF;
   --text-banner-secondary: #FFFFFF;
@@ -51,7 +61,12 @@ body {
   background-attachment: fixed;
 }
 
-#main-nav-bar .nav a { color: var(--nav-text) !important; }
-#main-nav-bar .nav a:hover,
-#main-nav-bar .nav a.active { color: var(--highlight-amber) !important; border-bottom-color: var(--highlight-amber) !important; }
-
+#main-nav-bar .nav > a,
+#main-nav-bar .nav > .dropdown > a { color: var(--nav-text) !important; }
+#main-nav-bar .nav > a:hover,
+#main-nav-bar .nav > a.active,
+#main-nav-bar .nav > .dropdown > a:hover,
+#main-nav-bar .nav > .dropdown > a.active {
+  color: var(--nav-hover-text) !important;
+  border-bottom-color: var(--nav-hover-text) !important;
+}

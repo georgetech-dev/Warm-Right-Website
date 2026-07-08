@@ -2,7 +2,6 @@ console.log("MAIN JS VERSION", 4);
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  updateTileImages();
   initTestimonials();
 
   /* ================================
@@ -243,30 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ================================
     SUPPORT FUNCTIONS
 ================================== */
-async function updateTileImages() {
-  const callTile = document.getElementById('call-to-book');
-  if (!callTile) return;
-  const img = callTile.querySelector('img');
-
-  // 1. Fetch the real status from our new logic
-  // (Assuming getOpeningStatus() is available in your global scope or helper file)
-  const status = await getOpeningStatus(); 
-
-  // 2. Update the image based on the DB, not a hardcoded number
-  if (img) {
-    img.src = status.isOpen 
-      ? "assets/images/office-open.jpg" 
-      : "assets/images/office-closed.jpg";
-  }
-  
-  // 3. Bonus: Update the tile's visual state or link while we're here
-  if (!status.isOpen) {
-    callTile.classList.add('is-closed');
-  } else {
-    callTile.classList.remove('is-closed');
-  }
-}
-
 function initTestimonials() {
   const cards = document.querySelectorAll('.review-card');
   cards.forEach(card => {

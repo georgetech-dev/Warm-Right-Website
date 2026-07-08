@@ -94,7 +94,7 @@
               <h2>${escapeHtml(rate.title)}</h2>
               <p>${escapeHtml(rate.description || '')}</p>
             </div>
-            <div class="rate-options" style="--rate-option-count:${rateOptionList.length}">
+            <div class="rate-options" data-option-count="${rateOptionList.length}" style="--rate-option-count:${rateOptionList.length}">
               ${rateOptionList.map((option, optionIndex) => renderOption(rate, option, optionIndex, rateOptionList.length)).join('')}
             </div>
           </div>

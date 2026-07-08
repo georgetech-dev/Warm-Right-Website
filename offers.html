@@ -192,16 +192,29 @@
       document.body.style.overflow = '';
     };
 
+    let offersLoadStarted = false;
+    let offersFallbackRendered = false;
+
     async function loadManagedOffers() {
-      renderOffers(fallbackOffers);
+      if (offersLoadStarted) return;
+      offersLoadStarted = true;
+      if (!offersFallbackRendered) {
+        renderOffers(fallbackOffers);
+        offersFallbackRendered = true;
+      }
       const lib = window.supabase || window.Supabase;
-      if (!lib) { setTimeout(loadManagedOffers, 100); return; }
+      if (!lib) {
+        offersLoadStarted = false;
+        setTimeout(loadManagedOffers, 100);
+        return;
+      }
       const db = lib.createClient(
         'https://axampuprcnauxbbijmmt.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
       );
       const { data, error } = await db.from('site_offers').select('*').eq('is_active', true).order('sort_order', { ascending: true });
       if (!error && data && data.length) renderOffers(data);
+      if (typeof window.observeRevealCards === 'function') window.observeRevealCards(document.getElementById('offers-container'));
     }
 
     loadManagedOffers();

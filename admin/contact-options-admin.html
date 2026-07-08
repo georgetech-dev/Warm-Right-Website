@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Contact Options | Warm Right Admin</title>
+  <link rel="icon" href="../assets/images/favicon.png">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
+  <link rel="stylesheet" href="../assets/css/site-admin.css?v=1">
+  <link rel="stylesheet" href="../assets/css/contact-options-admin.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>window.adminPageTitle = 'Contact Options';</script>
+  <script src="../assets/js/admin-include.js?v=20260706contact"></script>
+</head>
+<body>
+  <div id="admin-header-container"></div>
+  <main class="site-admin-shell">
+    <section id="contact-options-list" class="site-admin-panel">
+      <div class="site-admin-heading">
+        <div><h1>Contact and Booking Options</h1><p>Manage the tiles used on Contact Us, Book a Visit and the mobile menu.</p></div>
+        <button id="add-contact-option" class="site-btn accent" type="button">Add Contact Option</button>
+      </div>
+      <p id="contact-options-status" class="site-status" role="status"></p>
+      <div class="site-table-wrap">
+        <table class="site-table">
+          <thead><tr><th></th><th>Image</th><th>Option</th><th>Action</th><th>Shown on</th><th>Status</th><th></th></tr></thead>
+          <tbody id="contact-options-body"><tr><td colspan="7">Loading contact options...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="closed-hours-settings" class="site-admin-panel">
+      <div class="site-admin-heading"><div><h2>Closed-hours Panel</h2><p>Shown only when General Enquiries is selected while the office is closed.</p></div></div>
+      <div class="site-form-grid">
+        <label class="wide">Panel title<input id="closed-title" maxlength="160"></label>
+        <label>Emergency button label<input id="closed-emergency-label" maxlength="80"></label>
+        <label>Emergency button link<input id="closed-emergency-url" placeholder="tel:08007566748,0"></label>
+        <label>Callback button label<input id="closed-callback-label" maxlength="80"></label>
+        <div class="wide contact-html-field">
+          <span class="contact-field-label">Panel wording</span>
+          <div class="contact-editor-toolbar" data-editor-toolbar="closed-body-editor">
+            <button type="button" data-command="bold"><strong>B</strong></button>
+            <button type="button" data-command="italic"><em>I</em></button>
+            <button type="button" data-command="underline"><u>U</u></button>
+            <button type="button" data-command="insertLineBreak">Line break</button>
+          </div>
+          <div id="closed-body-editor" class="contact-html-editor" contenteditable="true" role="textbox" aria-multiline="true"></div>
+        </div>
+      </div>
+      <div class="site-form-actions"><button id="save-closed-settings" class="site-btn primary" type="button">Save Closed-hours Panel</button></div>
+      <p id="closed-settings-status" class="site-status" role="status"></p>
+    </section>
+
+    <section id="mobile-button-settings" class="site-admin-panel">
+      <div class="site-admin-heading"><div><h2>Mobile Contact Buttons</h2><p>Choose the colours used by contact options enabled in the mobile menu.</p></div></div>
+      <div class="mobile-button-style-grid">
+        <label>Button colour<input id="mobile-button-background" type="color" value="#28a745"></label>
+        <label>Text colour<input id="mobile-button-text" type="color" value="#ffffff"></label>
+        <label>Hover colour<input id="mobile-button-hover" type="color" value="#218838"></label>
+      </div>
+      <div class="mobile-button-preview-wrap" style="margin-top:18px"><span id="mobile-button-preview" class="mobile-button-preview">Example Contact Button</span></div>
+      <div class="site-form-actions"><button id="save-mobile-button-settings" class="site-btn primary" type="button">Save Button Colours</button></div>
+      <p id="mobile-button-settings-status" class="site-status" role="status"></p>
+    </section>
+
+    <section id="contact-option-editor" class="site-admin-panel hidden">
+      <div class="site-admin-heading">
+        <div><h2 id="contact-option-editor-title">Add Contact Option</h2><p>Choose where it appears and what happens when it is selected.</p></div>
+        <button id="close-contact-option-editor" class="site-btn secondary" type="button">Cancel & Close</button>
+      </div>
+
+      <div class="site-form-grid">
+        <label>Option key<input id="contact-option-key" maxlength="60" placeholder="e.g. whatsapp"></label>
+        <label>Action<select id="contact-action-type"><option value="direct">Open configured link</option><option value="general">General Enquiries opening-hours logic</option><option value="callback">Open callback form</option></select></label>
+        <label class="wide">Action link<input id="contact-action-url" placeholder="tel:, sms:, mailto:, https:// or /page.html"><small>Not required for the callback form.</small></label>
+        <label class="wide">Image<span class="image-input-row"><input id="contact-image-url" placeholder="assets/images/contact.jpg"><button id="choose-contact-image" class="site-btn secondary" type="button">Choose Image</button></span></label>
+
+        <label>Contact Us title<input id="contact-title" maxlength="120"></label>
+        <label>Book a Visit title<input id="booking-title" maxlength="120" placeholder="Uses the Contact Us title when blank"></label>
+
+        <div class="contact-html-field">
+          <span class="contact-field-label">Contact Us wording</span>
+          <div class="contact-editor-toolbar" data-editor-toolbar="contact-body-editor">
+            <button type="button" data-command="bold"><strong>B</strong></button><button type="button" data-command="italic"><em>I</em></button><button type="button" data-command="underline"><u>U</u></button><button type="button" data-command="insertLineBreak">Line break</button>
+          </div>
+          <div id="contact-body-editor" class="contact-html-editor" contenteditable="true" role="textbox" aria-multiline="true"></div>
+        </div>
+        <div class="contact-html-field">
+          <span class="contact-field-label">Book a Visit wording</span>
+          <div class="contact-editor-toolbar" data-editor-toolbar="booking-body-editor">
+            <button type="button" data-command="bold"><strong>B</strong></button><button type="button" data-command="italic"><em>I</em></button><button type="button" data-command="underline"><u>U</u></button><button type="button" data-command="insertLineBreak">Line break</button>
+          </div>
+          <div id="booking-body-editor" class="contact-html-editor" contenteditable="true" role="textbox" aria-multiline="true"></div>
+        </div>
+
+        <label>Mobile menu button label<input id="contact-menu-label" maxlength="80"></label>
+        <div class="mobile-button-style-grid wide">
+          <label>Mobile button colour<input id="option-mobile-button-background" type="color" value="#28a745"></label>
+          <label>Mobile text colour<input id="option-mobile-button-text" type="color" value="#ffffff"></label>
+          <label>Mobile hover colour<input id="option-mobile-button-hover" type="color" value="#218838"></label>
+          <div class="mobile-button-preview-wrap option-mobile-preview-wrap"><span id="option-mobile-button-preview" class="mobile-button-preview">Mobile menu preview</span></div>
+        </div>
+        <div class="contact-placement-options">
+          <label class="site-check"><input id="show-on-contact" type="checkbox" checked> Contact Us page</label>
+          <label class="site-check"><input id="show-on-booking" type="checkbox"> Book a Visit page</label>
+          <label class="site-check"><input id="show-in-mobile-menu" type="checkbox"> Mobile menu button</label>
+          <label class="site-check"><input id="contact-option-active" type="checkbox" checked> Active</label>
+        </div>
+      </div>
+
+      <div class="contact-preview-layout">
+        <div class="contact-crop-controls">
+          <h3>Desktop image</h3>
+          <label>X <span id="desktop-x-value">50%</span><input id="desktop-image-x" type="range" min="0" max="100" value="50"></label>
+          <label>Y <span id="desktop-y-value">50%</span><input id="desktop-image-y" type="range" min="0" max="100" value="50"></label>
+          <label>Zoom <span id="desktop-zoom-value">100%</span><input id="desktop-image-zoom" type="range" min="100" max="220" value="100"></label>
+          <h3>Mobile image</h3>
+          <label>X <span id="mobile-x-value">50%</span><input id="mobile-image-x" type="range" min="0" max="100" value="50"></label>
+          <label>Y <span id="mobile-y-value">50%</span><input id="mobile-image-y" type="range" min="0" max="100" value="50"></label>
+          <label>Zoom <span id="mobile-zoom-value">100%</span><input id="mobile-image-zoom" type="range" min="100" max="220" value="100"></label>
+        </div>
+        <div class="contact-previews">
+          <div><h3>Desktop preview</h3><article id="contact-desktop-preview" class="contact-option-preview"><span><img alt=""></span><h4>Option title</h4><p>Option wording</p></article></div>
+          <div><h3>Mobile preview</h3><article id="contact-mobile-preview" class="contact-option-preview mobile"><span><img alt=""></span><h4>Option title</h4><p>Option wording</p></article></div>
+        </div>
+      </div>
+
+      <div class="site-form-actions"><button id="save-contact-option" class="site-btn primary" type="button">Save Option</button><button id="delete-contact-option" class="site-btn danger hidden" type="button">Delete Option</button></div>
+      <p id="contact-option-form-status" class="site-status" role="status"></p>
+    </section>
+  </main>
+
+  <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
+  <script src="../assets/js/contact-options-admin.js?v=20260706buttons"></script>
+</body>
+</html>

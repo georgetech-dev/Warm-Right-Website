@@ -81,7 +81,6 @@ window.initWarmRight = async function() {
   }
 
   const nextOpenStr = formatNextOpen(status.nextOpen);
-  const phoneNum = "0800 756 6748";
 
   const callModal = document.getElementById("call-modal");
   const modalForm = document.getElementById("modal-callback-form");
@@ -105,7 +104,8 @@ window.initWarmRight = async function() {
         const reopenMsg = `we re-open, which is <b>${nextOpenStr}</b>`;
 
         if (modalP) {
-            modalP.innerHTML = `You can still get in touch below, or call us when ${reopenMsg}`;
+            const configuredBody = modalP.dataset.closedBody || modalP.innerHTML;
+            modalP.innerHTML = `${configuredBody}<br><span class="closed-hours-reopen">For general enquiries, ${reopenMsg}.</span>`;
         }
         if (formIntro) {
             formIntro.innerHTML = `Please provide your details below. Since our office is currently closed, an engineer will be in touch as soon as ${reopenMsg}.`;
@@ -139,18 +139,25 @@ window.initWarmRight = async function() {
     }
   }
 
-  document.querySelectorAll('#call-to-book, .footer-call-btn, .mobile-call-btn, .request-callback-tile, .callback-direct').forEach(el => {
-    el.addEventListener('click', (e) => {
-      if (el.classList.contains('callback-direct') || el.classList.contains('request-callback-tile')) {
-        e.preventDefault();
-        openModal(true);
-      } 
-      else if (!status.isOpen) {
-        e.preventDefault();
-        openModal(false);
+  window.warmRightContactState = { status, openModal };
+  if (!window.__warmRightContactDelegation) {
+    window.__warmRightContactDelegation = true;
+    document.addEventListener('click', event => {
+      const trigger = event.target.closest('[data-contact-behavior], .footer-call-btn, .request-callback-tile, .callback-direct');
+      if (!trigger) return;
+      const behavior = trigger.dataset.contactBehavior
+        || (trigger.classList.contains('request-callback-tile') || trigger.classList.contains('callback-direct') ? 'callback' : 'general');
+      const contactState = window.warmRightContactState;
+      if (!contactState) return;
+      if (behavior === 'callback') {
+        event.preventDefault();
+        contactState.openModal(true);
+      } else if (behavior === 'general' && !contactState.status.isOpen) {
+        event.preventDefault();
+        contactState.openModal(false);
       }
     });
-  });
+  }
 
   document.addEventListener('click', (e) => {
     if (e.target.id === "call-modal" || 
@@ -160,60 +167,6 @@ window.initWarmRight = async function() {
       closeModal();
     }
   });
-
-  /* --- TILE DYNAMICS --- */
-  const callTile = document.getElementById("call-to-book");
-  const callTileText = document.getElementById("call-to-book-text");
-  const img = callTile?.querySelector('img');
-
-  if (callTile && callTileText) {
-    // PRESERVED YOUR WORKING LAYOUT STYLES
-    callTile.classList.add("info-tile", "card", "visible"); 
-    callTile.style.width = "100%";
-    callTile.style.display = "flex";
-    callTile.style.flexDirection = "column";
-
-    let loopIndex = 0;
-
-    setInterval(() => {
-      callTileText.classList.add("fading"); 
-      
-      setTimeout(() => {
-        if (status.isOpen) {
-          const openState = loopIndex % 2;
-          callTileText.innerHTML = openState === 0
-            ? `<span style="color: #22c55e; font-weight: bold;">Office Open</span><br><b>${phoneNum}</b>`
-            : `Press here to call us directly<br><b>${phoneNum}</b>`;
-          callTile.classList.add("call-open"); 
-          callTile.classList.remove("call-closed");
-        } else {
-          const closedState = loopIndex % 3;
-          if (closedState === 0) {
-              callTileText.innerHTML = `<span style="color: #ef4444; font-weight: bold;">Office Currently Closed</span><br>for general enquiries`;
-          } else if (closedState === 1) {
-              callTileText.innerHTML = `<span style="color: #ef4444; font-weight: bold;">Emergency assistance 24/7</span><br><b>${phoneNum}</b>`;
-          } else {
-              callTileText.innerHTML = `Next open:<br><b>${nextOpenStr}</b>`;
-          }
-          callTile.classList.add("call-closed");
-          callTile.classList.remove("call-open");
-        }
-        
-        callTileText.classList.remove("fading");
-        loopIndex++;
-      }, 600);
-    }, 3500);
-
-    if (status.isOpen) callTile.setAttribute("href", "tel:08007566748"); 
-    else callTile.setAttribute("href", "javascript:void(0)");
-  }
-
-  if (img) {
-    img.src = status.isOpen 
-      ? "../assets/images/office-open.jpg" 
-      : "../assets/images/office-closed.jpg";
-  }
-
 
 function applyHighlights() {
     const isGitHub = window.location.hostname.includes("github.io");

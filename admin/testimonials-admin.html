@@ -75,6 +75,44 @@
     }
     .pending-panel { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid #e5e7eb; }
     .status-pill { display: inline-flex; padding: 4px 9px; border-radius: 999px; background: #fff7ed; color: #c2410c; font-size: 12px; font-weight: 800; }
+    .consent-panel { margin: 4px 0 18px; padding: 16px; border: 1px solid #d8e2ee; border-radius: 8px; background: #f8fbff; }
+    .consent-panel h3 { margin: 0 0 10px; color: var(--primary-blue); font-size: 16px; }
+    .consent-grid { display: grid; gap: 8px; }
+    .consent-row { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; }
+    .consent-state { display: inline-flex; justify-content: center; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+    .consent-state.allowed { background: #e8f7ec; color: #166534; }
+    .consent-state.denied { background: #f3f4f6; color: #5b6472; }
+    .consent-warning { margin: 12px 0 0; padding: 10px; border-radius: 6px; background: #fff7ed; color: #9a3412; font-size: 13px; line-height: 1.45; }
+    .table-consent { display: grid; gap: 4px; font-size: 12px; }
+    .testimonial-section { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid #e5e7eb; }
+    .testimonial-section:last-of-type { border-bottom: 0; }
+    .section-toggle {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0 10px;
+      background: transparent;
+      border: 0;
+      color: var(--primary-blue);
+      font-size: 18px;
+      font-weight: 800;
+      text-align: left;
+    }
+    .section-toggle::after { content: "Collapse"; font-size: 12px; color: #64748b; }
+    .testimonial-section.is-collapsed .section-toggle::after { content: "Expand"; }
+    .testimonial-section.is-collapsed .section-body { display: none; }
+    .retention-settings {
+      margin: 0 0 22px;
+      padding: 16px;
+      border: 1px solid #d8e2ee;
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+    .retention-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    .retention-field label { display: block; margin-bottom: 5px; color: var(--primary-blue); font-size: 13px; font-weight: 800; }
+    .retention-field input { width: 100%; padding: 10px; border: 1px solid #ccd6e2; border-radius: 6px; box-sizing: border-box; }
+    .retention-field small { display: block; margin-top: 4px; color: #64748b; }
 
     /* Buttons */
     button { padding: 10px 18px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
@@ -107,35 +145,93 @@
       </div>
       <p id="email-outbox-status" style="margin:-10px 0 18px; min-height:20px; font-weight:700;"></p>
 
-      <section class="pending-panel">
-        <h3 style="margin:0 0 10px 0;">Pending Authorisation</h3>
-        <table id="pendingTable">
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Submitted</th>
-              <th>Rating</th>
-              <th>Photos</th>
-              <th style="text-align: right;">Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <section class="retention-settings" aria-labelledby="testimonial-retention-title">
+        <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:12px;">
+          <div>
+            <h3 id="testimonial-retention-title" style="margin:0 0 5px 0;">Retention Policy</h3>
+            <p style="margin:0;color:#64748b;">Leave a field blank to keep that testimonial type until manually removed.</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-outline" onclick="applyRetentionPolicy()">Apply Retention Now</button>
+            <button class="btn-primary" onclick="saveRetentionSettings()">Save Retention</button>
+          </div>
+        </div>
+        <div class="retention-grid">
+          <div class="retention-field">
+            <label for="retention-pending-months">Pending testimonials</label>
+            <input id="retention-pending-months" type="number" min="1" step="1" placeholder="Never">
+            <small>Default: 24 months</small>
+          </div>
+          <div class="retention-field">
+            <label for="retention-published-months">Published testimonials</label>
+            <input id="retention-published-months" type="number" min="1" step="1" placeholder="Never">
+            <small>Default: 36 months</small>
+          </div>
+          <div class="retention-field">
+            <label for="retention-rejected-months">Rejected testimonials</label>
+            <input id="retention-rejected-months" type="number" min="1" step="1" placeholder="Never">
+            <small>Default: 12 months</small>
+          </div>
+        </div>
+        <p id="retention-status" style="min-height:20px;margin:10px 0 0;font-weight:700;"></p>
       </section>
 
-      <h3 style="margin:0 0 10px 0;">Published Testimonials</h3>
-      <table id="testimonialTable">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Rating</th>
-            <th style="text-align: right;">Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <section class="testimonial-section" id="pending-section">
+        <button class="section-toggle" type="button" onclick="toggleTestimonialSection('pending-section')">Pending Authorisation</button>
+        <div class="section-body">
+          <table id="pendingTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Submitted</th>
+                <th>Rating</th>
+                <th>Photos</th>
+                <th>Publication</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="testimonial-section" id="published-section">
+        <button class="section-toggle" type="button" onclick="toggleTestimonialSection('published-section')">Published Testimonials</button>
+        <div class="section-body">
+          <table id="testimonialTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Rating</th>
+                <th>Publication</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="testimonial-section is-collapsed" id="rejected-section">
+        <button class="section-toggle" type="button" onclick="toggleTestimonialSection('rejected-section')">Rejected Testimonials</button>
+        <div class="section-body">
+          <table id="rejectedTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Submitted</th>
+                <th>Rating</th>
+                <th>Photos</th>
+                <th>Publication</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
     </div>
 
     <div id="form-view" class="hidden">
@@ -182,6 +278,22 @@
           <label>Admin Notes</label>
           <textarea id="admin_notes" rows="3" placeholder="Internal notes for pending submissions..."></textarea>
 
+          <section id="customer-consent-panel" class="consent-panel hidden" aria-labelledby="customer-consent-title">
+            <h3 id="customer-consent-title">Customer Permissions</h3>
+            <div class="consent-grid">
+              <div class="consent-row"><span id="consent-status-testimonial" class="consent-state"></span><span>Publish testimonial, display name and rating</span></div>
+              <div class="consent-row"><span id="consent-status-photos" class="consent-state"></span><span>Publish uploaded photographs</span></div>
+              <div class="consent-row"><span id="consent-status-wider-testimonial" class="consent-state"></span><span>Use testimonial elsewhere</span></div>
+              <div class="consent-row"><span id="consent-status-wider-photos" class="consent-state"></span><span>Use photographs elsewhere</span></div>
+              <div class="consent-row"><span id="consent-status-sharing" class="consent-state"></span><span>Share relevant feedback with the connected organisation</span></div>
+              <div class="consent-row"><span id="consent-status-photo-declaration" class="consent-state"></span><span>Photo upload declaration accepted</span></div>
+              <div class="consent-row"><span class="consent-state allowed">Version</span><span id="consent-wording-version"></span></div>
+              <div class="consent-row"><span class="consent-state allowed">Date</span><span id="consent-recorded-at"></span></div>
+              <div class="consent-row hidden" id="consent-withdrawal-row"><span class="consent-state denied">Withdrawn</span><span id="consent-withdrawal-detail"></span></div>
+            </div>
+            <p id="customer-consent-warning" class="consent-warning"></p>
+          </section>
+
           <button id="saveBtn" class="btn-primary" style="width:100%; padding:15px;" onclick="saveTestimonial()">Save Testimonial</button>
           <button id="approveBtn" class="btn-accent hidden" style="width:100%; padding:15px; margin-top:10px;" onclick="approvePendingTestimonial()">Approve & Publish</button>
         </div>
@@ -199,7 +311,7 @@
 
   </div>
 
-  <script src="../assets/js/admin-image-library.js?v=2"></script>
+  <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
   <script src="../assets/js/customer-email-editor.js?v=1"></script>
   <script>
     /* 1. INITIALIZATION & SECURITY */
@@ -207,6 +319,7 @@
     let editingPendingId = null;
     let existingImageUrls = []; 
     let selectedFiles = [];
+    let pendingConsent = null;
 
     async function checkSecurity() {
       const lib = window.supabase || window.Supabase;
@@ -232,7 +345,9 @@
       
       // REVEAL PAGE & LOAD DATA
       document.body.style.visibility = 'visible'; 
+      loadRetentionSettings();
       loadPendingTestimonials();
+      loadRejectedTestimonials();
       loadTestimonials(); 
     }
 
@@ -243,6 +358,78 @@
     };
 
     /* 2. TESTIMONIALS LOGIC */
+
+    const RETENTION_KEYS = {
+      pending: 'testimonial_retention_pending_months',
+      published: 'testimonial_retention_published_months',
+      rejected: 'testimonial_retention_rejected_months'
+    };
+    const RETENTION_DEFAULTS = {
+      pending: '24',
+      published: '36',
+      rejected: '12'
+    };
+
+    window.toggleTestimonialSection = (sectionId) => {
+      document.getElementById(sectionId)?.classList.toggle('is-collapsed');
+    };
+
+    function retentionInput(type) {
+      return document.getElementById(`retention-${type}-months`);
+    }
+
+    async function loadRetentionSettings() {
+      const { data, error } = await window.db
+        .from('site_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', Object.values(RETENTION_KEYS));
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const settings = Object.fromEntries((data || []).map(row => [row.setting_key, row.setting_value]));
+      Object.entries(RETENTION_KEYS).forEach(([type, key]) => {
+        const value = settings[key] ?? RETENTION_DEFAULTS[type];
+        retentionInput(type).value = value === 'never' ? '' : value;
+      });
+    }
+
+    window.saveRetentionSettings = async () => {
+      const status = document.getElementById('retention-status');
+      const updatedAt = new Date().toISOString();
+      const rows = Object.entries(RETENTION_KEYS).map(([type, key]) => {
+        const raw = retentionInput(type).value.trim();
+        return {
+          setting_key: key,
+          setting_value: raw ? String(Math.max(1, parseInt(raw, 10) || parseInt(RETENTION_DEFAULTS[type], 10))) : 'never',
+          updated_at: updatedAt
+        };
+      });
+
+      const { error } = await window.db.from('site_settings').upsert(rows);
+      status.style.color = error ? '#ef4444' : '#166534';
+      status.textContent = error ? error.message : 'Retention policy saved.';
+    };
+
+    window.applyRetentionPolicy = async () => {
+      if (!confirm('Apply the saved retention policy now? This will permanently delete rows older than the saved limits.')) return;
+      const status = document.getElementById('retention-status');
+      status.style.color = 'var(--primary-blue)';
+      status.textContent = 'Applying retention policy...';
+      const { data, error } = await window.db.rpc('purge_testimonials_by_retention');
+      if (error) {
+        status.style.color = '#ef4444';
+        status.textContent = error.message;
+        return;
+      }
+      status.style.color = '#166534';
+      const result = Array.isArray(data) ? data[0] : data;
+      status.textContent = `Retention applied. Pending deleted: ${result?.pending_deleted || 0}. Published deleted: ${result?.published_deleted || 0}. Rejected deleted: ${result?.rejected_deleted || 0}.`;
+      loadPendingTestimonials();
+      loadRejectedTestimonials();
+      loadTestimonials();
+    };
 
     function showFormMode() {
       document.getElementById('table-view').classList.add('hidden');
@@ -276,6 +463,7 @@
         item.innerHTML = `<img src="${URL.createObjectURL(file)}" class="gallery-img" alt="">`;
         gallery.appendChild(item);
       });
+      updateConsentWarning();
     }
 
     function renderImageGallery() {
@@ -293,7 +481,123 @@
     window.removeExistingImage = (index) => {
       existingImageUrls.splice(index, 1);
       renderImageGallery();
+      updateConsentWarning();
     };
+
+    function consentStateMarkup(label, allowed) {
+      return `<span>${label}: <strong style="color:${allowed ? '#166534' : '#64748b'}">${allowed ? 'Yes' : 'No'}</strong></span>`;
+    }
+
+    function imageUrls(data = null) {
+      if (Array.isArray(data?.image_urls)) return data.image_urls;
+      if (Array.isArray(existingImageUrls)) return existingImageUrls;
+      return [];
+    }
+
+    function imageCount(data = null) {
+      return imageUrls(data).length;
+    }
+
+    function permissionValue(data, newKey, legacyKey) {
+      if (data && data[newKey] !== undefined && data[newKey] !== null) return Boolean(data[newKey]);
+      return Boolean(data?.[legacyKey]);
+    }
+
+    function hasPhotos(data = null) {
+      return Boolean(imageCount(data) || selectedFiles.length);
+    }
+
+    function permissionSummaryMarkup(item) {
+      const photos = imageCount(item);
+      const version = item.permission_wording_version || (item.consent_recorded_at ? 'Legacy consent wording' : 'Not recorded');
+      const rows = [
+        consentStateMarkup('Publish testimonial', permissionValue(item, 'publish_testimonial', 'consent_publish_testimonial')),
+        photos ? consentStateMarkup('Publish photos', permissionValue(item, 'publish_photos', 'consent_publish_photos')) : '',
+        consentStateMarkup('Use testimonial elsewhere', permissionValue(item, 'wider_use_testimonial', 'consent_marketing')),
+        photos ? consentStateMarkup('Use photos elsewhere', permissionValue(item, 'wider_use_photos', 'consent_marketing')) : '',
+        consentStateMarkup('Share with organisation', permissionValue(item, 'share_feedback_with_job_organisation', 'consent_share_job_feedback')),
+        `<span style="color:#64748b;">Version: ${version}</span>`
+      ];
+      return `<div class="table-consent">${rows.filter(Boolean).join('')}</div>`;
+    }
+
+    function starRating(rating) {
+      const count = Math.max(0, Math.min(5, parseInt(rating, 10) || 0));
+      return '&#9733;'.repeat(count);
+    }
+
+    function setConsentState(id, allowed) {
+      const state = document.getElementById(id);
+      state.textContent = allowed ? 'Allowed' : 'Not allowed';
+      state.className = `consent-state ${allowed ? 'allowed' : 'denied'}`;
+    }
+
+    function renderCustomerConsent(data, showPhotoDeclaration = true) {
+      const showPhotoPermissions = hasPhotos(data);
+      pendingConsent = {
+        permission_wording_version: data?.permission_wording_version || 'Legacy consent wording',
+        permission_recorded_at: data?.permission_recorded_at || data?.consent_recorded_at || '',
+        publish_testimonial: permissionValue(data, 'publish_testimonial', 'consent_publish_testimonial'),
+        publish_photos: showPhotoPermissions ? permissionValue(data, 'publish_photos', 'consent_publish_photos') : false,
+        wider_use_testimonial: permissionValue(data, 'wider_use_testimonial', 'consent_marketing'),
+        wider_use_photos: showPhotoPermissions ? permissionValue(data, 'wider_use_photos', 'consent_marketing') : false,
+        share_feedback_with_job_organisation: permissionValue(data, 'share_feedback_with_job_organisation', 'consent_share_job_feedback'),
+        photo_rights_confirmed: showPhotoPermissions ? permissionValue(data, 'photo_rights_confirmed', 'photo_upload_declaration_accepted') : false,
+        permission_withdrawn: data?.permission_withdrawn || [],
+        withdrawal_requested_at: data?.withdrawal_requested_at || '',
+        withdrawal_completed_at: data?.withdrawal_completed_at || '',
+        withdrawal_method: data?.withdrawal_method || '',
+        withdrawal_notes: data?.withdrawal_notes || '',
+      };
+      document.getElementById('customer-consent-panel').classList.remove('hidden');
+      setConsentState('consent-status-testimonial', pendingConsent.publish_testimonial);
+      setConsentState('consent-status-photos', pendingConsent.publish_photos);
+      setConsentState('consent-status-wider-testimonial', pendingConsent.wider_use_testimonial);
+      setConsentState('consent-status-wider-photos', pendingConsent.wider_use_photos);
+      setConsentState('consent-status-sharing', pendingConsent.share_feedback_with_job_organisation);
+      document.getElementById('consent-status-photos').closest('.consent-row').classList.toggle('hidden', !showPhotoPermissions);
+      document.getElementById('consent-status-wider-photos').closest('.consent-row').classList.toggle('hidden', !showPhotoPermissions);
+      document.getElementById('consent-status-photo-declaration').closest('.consent-row').classList.toggle('hidden', !showPhotoDeclaration || !showPhotoPermissions);
+      setConsentState('consent-status-photo-declaration', pendingConsent.photo_rights_confirmed);
+      document.getElementById('consent-wording-version').textContent = pendingConsent.permission_wording_version;
+      document.getElementById('consent-recorded-at').textContent = pendingConsent.permission_recorded_at ? new Date(pendingConsent.permission_recorded_at).toLocaleString('en-GB') : 'Not recorded';
+      renderWithdrawalDetails();
+      updateConsentWarning();
+    }
+
+    function renderWithdrawalDetails() {
+      const row = document.getElementById('consent-withdrawal-row');
+      const detail = document.getElementById('consent-withdrawal-detail');
+      const withdrawn = Array.isArray(pendingConsent?.permission_withdrawn) ? pendingConsent.permission_withdrawn : [];
+      row.classList.toggle('hidden', !withdrawn.length);
+      if (!withdrawn.length) {
+        detail.textContent = '';
+        return;
+      }
+      const requested = pendingConsent.withdrawal_requested_at ? new Date(pendingConsent.withdrawal_requested_at).toLocaleString('en-GB') : 'date not recorded';
+      const completed = pendingConsent.withdrawal_completed_at ? ` Completed: ${new Date(pendingConsent.withdrawal_completed_at).toLocaleString('en-GB')}.` : '';
+      const method = pendingConsent.withdrawal_method ? ` Method: ${pendingConsent.withdrawal_method}.` : '';
+      const notes = pendingConsent.withdrawal_notes ? ` Notes: ${pendingConsent.withdrawal_notes}` : '';
+      detail.textContent = `${withdrawn.join(', ')} requested ${requested}.${completed}${method}${notes}`;
+    }
+
+    function updateConsentWarning() {
+      const warning = document.getElementById('customer-consent-warning');
+      if (!pendingConsent) return;
+      const photoRowsVisible = hasPhotos();
+      document.getElementById('consent-status-photos').closest('.consent-row').classList.toggle('hidden', !photoRowsVisible);
+      document.getElementById('consent-status-wider-photos').closest('.consent-row').classList.toggle('hidden', !photoRowsVisible);
+      document.getElementById('consent-status-photo-declaration').closest('.consent-row').classList.toggle('hidden', !photoRowsVisible);
+      if (!pendingConsent.publish_testimonial) {
+        warning.textContent = 'Publication is blocked because the customer did not permit publication of their testimonial, display name and rating.';
+        return;
+      }
+      if (photoRowsVisible && !pendingConsent.publish_photos) {
+        warning.textContent = 'The customer did not permit publication of photographs. Remove every photo before approving this testimonial.';
+        return;
+      }
+      warning.textContent = 'The current testimonial and photo selection can be approved under the permissions recorded above.';
+    }
 
     async function uploadSelectedImages() {
       if (!selectedFiles.length) return [];
@@ -319,7 +623,7 @@
 
       const tbody = document.querySelector('#pendingTable tbody');
       if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="color:#777;">No pending testimonials.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="color:#777;">No pending testimonials.</td></tr>';
         return;
       }
 
@@ -330,12 +634,49 @@
             <span style="font-size:12px;color:#666;">${item.customer_email || ''}</span>
           </td>
           <td>${new Date(item.created_at).toLocaleDateString('en-GB')}</td>
-          <td class="stars">${'★'.repeat(item.rating)}</td>
-          <td>${(item.image_urls || []).length}</td>
+          <td class="stars">${starRating(item.rating)}</td>
+          <td>${imageCount(item)}</td>
+          <td>${permissionSummaryMarkup(item)}</td>
           <td style="text-align:right;">
             <span class="status-pill">Pending</span>
             <button class="btn-outline" onclick="editPendingTestimonial('${item.id}')">Review</button>
             <button class="btn-outline" style="color:red; border-color:rgba(255,0,0,0.1)" onclick="rejectPendingTestimonial('${item.id}')">Reject</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadRejectedTestimonials() {
+      const { data, error } = await window.db
+        .from('testimonial_submissions')
+        .select('*')
+        .eq('status', 'rejected')
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const tbody = document.querySelector('#rejectedTable tbody');
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color:#777;">No rejected testimonials.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map((item) => `
+        <tr>
+          <td>
+            <strong>${item.customer_name}</strong><br>
+            <span style="font-size:12px;color:#666;">${item.customer_email || ''}</span>
+          </td>
+          <td>${new Date(item.created_at).toLocaleDateString('en-GB')}</td>
+          <td class="stars">${starRating(item.rating)}</td>
+          <td>${imageCount(item)}</td>
+          <td>${permissionSummaryMarkup(item)}</td>
+          <td style="text-align:right;">
+            <span class="status-pill">Rejected</span>
+            <button class="btn-outline" onclick="editPendingTestimonial('${item.id}')">Review</button>
+            <button class="btn-outline" onclick="restoreRejectedTestimonial('${item.id}')">Restore</button>
           </td>
         </tr>
       `).join('');
@@ -413,10 +754,11 @@
               </div>
             </td>
             <td><span class="type-badge">${t.review_type}</span></td>
-            <td class="stars">${'★'.repeat(t.rating)}</td>
+            <td class="stars">${starRating(t.rating)}</td>
+            <td>${permissionSummaryMarkup(t)}</td>
             <td style="text-align: right;">
               <button class="btn-outline" onclick="editTestimonial('${t.id}')">Edit</button>
-              <button class="btn-outline" style="color:red; border-color:rgba(255,0,0,0.1)" onclick="deleteTestimonial('${t.id}')">Delete</button>
+              <button class="btn-outline" style="color:red; border-color:rgba(255,0,0,0.1)" onclick="deleteTestimonial('${t.id}')">Remove</button>
             </td>
           </tr>
         `;
@@ -452,6 +794,7 @@
           await savePendingChanges();
           showTableMode();
           loadPendingTestimonials();
+          loadRejectedTestimonials();
         } catch (err) {
           alert(err.message);
         }
@@ -462,6 +805,12 @@
       const type = document.getElementById('review_type').value;
       if (!name) return alert("Customer name is required");
 
+      if (pendingConsent && !pendingConsent.publish_testimonial) {
+        return alert('This testimonial cannot be published because the customer did not permit publication.');
+      }
+      if (pendingConsent && type === 'photo' && (existingImageUrls.length || selectedFiles.length) && !pendingConsent.publish_photos) {
+        return alert('The customer did not permit publication of photographs. Remove all photos before saving this published testimonial.');
+      }
       const uploadedUrls = type === 'photo' ? await uploadSelectedImages() : [];
       const finalImageUrls = type === 'photo' ? [...existingImageUrls, ...uploadedUrls] : [];
 
@@ -472,7 +821,8 @@
         review_type: type,
         rating: parseInt(document.getElementById('rating').value),
         content: document.getElementById('content').value,
-        image_urls: finalImageUrls
+        image_urls: finalImageUrls,
+        publication_status: 'published'
       };
 
       const { error } = editingId ? 
@@ -483,6 +833,7 @@
       else {
         showTableMode();
         loadPendingTestimonials();
+        loadRejectedTestimonials();
         loadTestimonials();
       }
     }
@@ -492,7 +843,7 @@
       if (!data) return;
       editingId = id;
       editingPendingId = null;
-      existingImageUrls = data.image_urls || [];
+      existingImageUrls = imageUrls(data);
       selectedFiles = [];
       showFormMode();
       document.getElementById('formTitle').textContent = 'Edit Review';
@@ -508,6 +859,11 @@
       document.getElementById('content').value = data.content;
       
       document.getElementById('admin_notes').value = '';
+      if (data.source_submission_id) renderCustomerConsent(data, false);
+      else {
+        pendingConsent = null;
+        document.getElementById('customer-consent-panel').classList.add('hidden');
+      }
       renderImageGallery();
       toggleImageSection();
     };
@@ -517,7 +873,7 @@
       if (!data) return;
       editingId = null;
       editingPendingId = id;
-      existingImageUrls = data.image_urls || [];
+      existingImageUrls = imageUrls(data);
       selectedFiles = [];
       showFormMode();
       document.getElementById('formTitle').textContent = 'Review Pending Testimonial';
@@ -532,6 +888,7 @@
       document.getElementById('subject').value = data.subject || '';
       document.getElementById('content').value = data.content || '';
       document.getElementById('admin_notes').value = data.admin_notes || '';
+      renderCustomerConsent(data, true);
       renderImageGallery();
       toggleImageSection();
     };
@@ -561,6 +918,12 @@
     async function approvePendingTestimonial() {
       if (!editingPendingId) return;
       try {
+        if (!pendingConsent?.publish_testimonial) {
+          throw new Error('This testimonial cannot be published because the customer did not permit publication of their testimonial, display name and rating.');
+        }
+        if ((existingImageUrls.length || selectedFiles.length) && !pendingConsent?.publish_photos) {
+          throw new Error('The customer did not permit publication of photographs. Remove all photos before approving this testimonial.');
+        }
         await savePendingChanges();
         const reviewType = existingImageUrls.length ? 'photo' : 'standard';
         const payload = {
@@ -570,16 +933,33 @@
           review_type: reviewType,
           rating: parseInt(document.getElementById('rating').value),
           content: document.getElementById('content').value,
-          image_urls: existingImageUrls
+          image_urls: existingImageUrls,
+          permission_wording_version: pendingConsent.permission_wording_version,
+          permission_recorded_at: pendingConsent.permission_recorded_at,
+          publish_testimonial: pendingConsent.publish_testimonial,
+          publish_photos: pendingConsent.publish_photos,
+          wider_use_testimonial: pendingConsent.wider_use_testimonial,
+          wider_use_photos: pendingConsent.wider_use_photos,
+          share_feedback_with_job_organisation: pendingConsent.share_feedback_with_job_organisation,
+          photo_rights_confirmed: pendingConsent.photo_rights_confirmed,
+          consent_publish_testimonial: pendingConsent.publish_testimonial,
+          consent_publish_photos: pendingConsent.publish_photos,
+          consent_marketing: pendingConsent.wider_use_testimonial || pendingConsent.wider_use_photos,
+          consent_share_job_feedback: pendingConsent.share_feedback_with_job_organisation,
+          consent_recorded_at: pendingConsent.permission_recorded_at,
+          publication_status: 'published',
+          source_submission_id: editingPendingId
         };
         const { data, error } = await window.db.from('testimonials').insert([payload]).select('id').single();
         if (error) throw error;
         await window.db.from('testimonial_submissions').update({
           status: 'approved',
+          publication_status: 'published',
           approved_testimonial_id: data.id
         }).eq('id', editingPendingId);
         showTableMode();
         loadPendingTestimonials();
+        loadRejectedTestimonials();
         loadTestimonials();
       } catch (err) {
         alert(err.message);
@@ -588,24 +968,89 @@
 
     window.rejectPendingTestimonial = async (id) => {
       if (!confirm('Reject this testimonial submission?')) return;
-      await window.db.from('testimonial_submissions').update({ status: 'rejected' }).eq('id', id);
+      await window.db.from('testimonial_submissions').update({
+        status: 'rejected',
+        publication_status: 'rejected'
+      }).eq('id', id);
       loadPendingTestimonials();
+      loadRejectedTestimonials();
     };
 
+    window.restoreRejectedTestimonial = async (id) => {
+      if (!confirm('Move this testimonial back to pending review?')) return;
+      await window.db.from('testimonial_submissions').update({
+        status: 'pending',
+        publication_status: 'awaiting_review'
+      }).eq('id', id);
+      loadPendingTestimonials();
+      loadRejectedTestimonials();
+    };
+
+    function publishedToRejectedSubmission(testimonial) {
+      return {
+        customer_name: testimonial.customer_name || '',
+        customer_email: testimonial.customer_email || '',
+        customer_phone: testimonial.customer_phone || '',
+        review_date: testimonial.review_date || new Date().toISOString().slice(0, 10),
+        rating: testimonial.rating || 5,
+        subject: testimonial.subject || '',
+        content: testimonial.content || '',
+        image_urls: imageUrls(testimonial),
+        admin_notes: 'Removed from the public testimonials page by an admin.',
+        status: 'rejected',
+        publication_status: 'rejected',
+        approved_testimonial_id: null,
+        permission_wording_version: testimonial.permission_wording_version || 'Legacy consent wording',
+        permission_recorded_at: testimonial.permission_recorded_at || testimonial.consent_recorded_at || new Date().toISOString(),
+        publish_testimonial: permissionValue(testimonial, 'publish_testimonial', 'consent_publish_testimonial'),
+        publish_photos: permissionValue(testimonial, 'publish_photos', 'consent_publish_photos'),
+        wider_use_testimonial: permissionValue(testimonial, 'wider_use_testimonial', 'consent_marketing'),
+        wider_use_photos: permissionValue(testimonial, 'wider_use_photos', 'consent_marketing'),
+        share_feedback_with_job_organisation: permissionValue(testimonial, 'share_feedback_with_job_organisation', 'consent_share_job_feedback'),
+        photo_rights_confirmed: Boolean(testimonial.photo_rights_confirmed),
+        consent_publish_testimonial: permissionValue(testimonial, 'publish_testimonial', 'consent_publish_testimonial'),
+        consent_publish_photos: permissionValue(testimonial, 'publish_photos', 'consent_publish_photos'),
+        consent_marketing: permissionValue(testimonial, 'wider_use_testimonial', 'consent_marketing') || permissionValue(testimonial, 'wider_use_photos', 'consent_marketing'),
+        consent_share_job_feedback: permissionValue(testimonial, 'share_feedback_with_job_organisation', 'consent_share_job_feedback'),
+        consent_recorded_at: testimonial.permission_recorded_at || testimonial.consent_recorded_at || new Date().toISOString()
+      };
+    }
+
     window.deleteTestimonial = async (id) => {
-      if (!confirm('Delete this testimonial?')) return;
-      await window.db.from('testimonials').delete().eq('id', id);
+      if (!confirm('Remove this testimonial from the public site and move it to rejected?')) return;
+      const { data, error: loadError } = await window.db.from('testimonials').select('*').eq('id', id).single();
+      if (loadError) return alert(loadError.message);
+
+      if (data.source_submission_id) {
+        const rejectedPayload = publishedToRejectedSubmission(data);
+        const { error: rejectError } = await window.db
+          .from('testimonial_submissions')
+          .update(rejectedPayload)
+          .eq('id', data.source_submission_id);
+        if (rejectError) return alert(rejectError.message);
+      } else {
+        const { error: insertError } = await window.db
+          .from('testimonial_submissions')
+          .insert([publishedToRejectedSubmission(data)]);
+        if (insertError) return alert(insertError.message);
+      }
+
+      const { error } = await window.db.from('testimonials').delete().eq('id', id);
+      if (error) return alert(error.message);
+      loadRejectedTestimonials();
       loadTestimonials();
     };
 
     window.resetForm = () => {
       editingId = null;
       editingPendingId = null;
+      pendingConsent = null;
       existingImageUrls = [];
       selectedFiles = [];
       document.getElementById('formTitle').textContent = 'Add Testimonial';
       document.getElementById('saveBtn').textContent = 'Save Testimonial';
       document.getElementById('approveBtn').classList.add('hidden');
+      document.getElementById('customer-consent-panel').classList.add('hidden');
       document.getElementById('customer_name').value = '';
       document.getElementById('customer_email').value = '';
       document.getElementById('customer_phone').value = '';

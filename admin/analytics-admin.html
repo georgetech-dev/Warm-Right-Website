@@ -57,7 +57,7 @@
     <header class="page-head">
       <div>
         <h1>Website Insights</h1>
-        <p>Anonymous visitor activity and website engagement.</p>
+        <p>Aggregate page activity and website engagement. No visitor profiles or individual journeys are stored.</p>
       </div>
       <select id="period" class="period-select" onchange="loadSummary()">
         <option value="7">Last 7 days</option>
@@ -70,9 +70,9 @@
     <div id="status" class="status">Loading insights...</div>
 
     <section class="metric-grid" aria-label="Analytics totals">
-      <div class="metric-card"><span class="metric-label">Visitors</span><strong id="metric-visitors" class="metric-value">-</strong><span id="visitors-change" class="metric-change"></span></div>
       <div class="metric-card"><span class="metric-label">Page views</span><strong id="metric-views" class="metric-value">-</strong><span id="views-change" class="metric-change"></span></div>
-      <div class="metric-card"><span class="metric-label">Actions</span><strong id="metric-conversions" class="metric-value">-</strong><span class="metric-change">Bookings, contacts, offers and testimonials</span></div>
+      <div class="metric-card"><span class="metric-label">Website actions</span><strong id="metric-actions" class="metric-value">-</strong><span id="actions-change" class="metric-change"></span></div>
+      <div class="metric-card"><span class="metric-label">Active days</span><strong id="metric-active-days" class="metric-value">-</strong><span class="metric-change">Days with one or more page views</span></div>
     </section>
 
     <section class="dashboard-grid">
@@ -81,13 +81,13 @@
         <div id="daily-chart" class="chart"></div>
       </article>
       <article class="panel"><h2>Top Pages</h2><div id="top-pages"></div></article>
-      <article class="panel"><h2>Visitor Devices</h2><div id="devices"></div></article>
+      <article class="panel"><h2>Device Types</h2><div id="devices"></div></article>
       <article class="panel"><h2>Referrals</h2><div id="referrers"></div></article>
-      <article class="panel"><h2>Website Actions</h2><div id="conversions"></div></article>
+      <article class="panel"><h2>Website Actions</h2><div id="actions"></div></article>
 
       <article class="panel wide">
         <h2>Excluded IP Addresses</h2>
-        <p>Traffic from these addresses is discarded before analytics data is saved.</p>
+        <p>Traffic from these addresses is discarded before an aggregate counter is increased. The IP address is never attached to analytics data.</p>
         <p><strong>Important:</strong> devices using the same Wi-Fi normally share one public IP address. Ignoring your current IP will also ignore phones, tablets and other computers connected to that Wi-Fi.</p>
         <div class="ip-current">
           <div><span>Your current IP address</span><br><code id="current-ip">Checking...</code></div>
@@ -151,16 +151,16 @@
     }
 
     function renderSummary(data) {
-      document.getElementById('metric-visitors').textContent = number(data.totals.visitors);
       document.getElementById('metric-views').textContent = number(data.totals.views);
-      document.getElementById('metric-conversions').textContent = number(data.totals.conversions);
-      renderChange('visitors-change', data.totals.visitors, data.totals.previousVisitors);
+      document.getElementById('metric-actions').textContent = number(data.totals.actions);
+      document.getElementById('metric-active-days').textContent = number(data.totals.activeDays);
       renderChange('views-change', data.totals.views, data.totals.previousViews);
+      renderChange('actions-change', data.totals.actions, data.totals.previousActions);
       renderChart(data.daily || []);
       renderTable('top-pages', data.topPages, 'Page');
       renderTable('devices', data.devices, 'Device');
       renderTable('referrers', data.referrers, 'Source');
-      renderTable('conversions', data.conversions, 'Action');
+      renderTable('actions', data.actions, 'Action');
     }
 
     function renderChange(id, current, previous) {
@@ -177,7 +177,7 @@
       chart.style.setProperty('--chart-days', rows.length || 1);
       chart.innerHTML = rows.map(row => {
         const height = Math.max(2, Math.round((row.views / max) * 100));
-        return `<div class="chart-column" style="--bar-height:${height}%"><span class="chart-tip">${escapeHtml(formatDate(row.date))}: ${number(row.views)} views, ${number(row.visitors)} visitors</span><span class="chart-bar" style="height:${height}%"></span></div>`;
+        return `<div class="chart-column" style="--bar-height:${height}%"><span class="chart-tip">${escapeHtml(formatDate(row.date))}: ${number(row.views)} views, ${number(row.actions)} actions</span><span class="chart-bar" style="height:${height}%"></span></div>`;
       }).join('');
     }
 

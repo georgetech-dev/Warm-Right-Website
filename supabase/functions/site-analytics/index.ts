@@ -60,85 +60,98 @@ async function collectEvent(req: Request) {
 
   const body = await readJson(req);
   const event = {
-    session_id: cleanSessionId(body.session_id),
-    event_name: allowedEventName(body.event_name),
-    page_path: cleanPath(body.page_path),
-    page_title: cleanText(body.page_title, 180),
-    referrer: cleanUrl(body.referrer, 500),
-    utm_source: cleanText(body.utm_source, 120),
-    utm_medium: cleanText(body.utm_medium, 120),
-    utm_campaign: cleanText(body.utm_campaign, 160),
-    device_type: allowedDevice(body.device_type),
+    p_event_date: new Date().toISOString().slice(0, 10),
+    p_event_name: allowedEventName(body.event_name),
+    p_page_path: cleanPath(body.page_path),
+    p_page_title: cleanText(body.page_title, 180),
+    p_referrer_host: cleanHost(body.referrer_host),
+    p_device_type: allowedDevice(body.device_type),
   };
 
-  if (!event.session_id || !event.page_path) throw httpError('Invalid analytics event.', 400);
-  const { error } = await serviceDb.from('site_analytics_events').insert(event);
+  if (!event.p_page_path) throw httpError('Invalid analytics event.', 400);
+  const { error } = await serviceDb.rpc('increment_site_analytics_daily', event);
   if (error) throw error;
   return { ok: true };
 }
 
 async function buildSummary(days: number) {
   const now = new Date();
-  const currentStart = new Date(now.getTime() - days * 86400000);
-  const previousStart = new Date(now.getTime() - days * 2 * 86400000);
+  const today = now.toISOString().slice(0, 10);
+  const currentStart = isoDateDaysAgo(days - 1);
+  const previousStart = isoDateDaysAgo((days * 2) - 1);
+  const previousEnd = isoDateDaysAgo(days);
   const { data, error } = await serviceDb
-    .from('site_analytics_events')
-    .select('session_id,event_name,page_path,page_title,referrer,utm_source,utm_medium,utm_campaign,device_type,created_at')
-    .gte('created_at', previousStart.toISOString())
-    .order('created_at', { ascending: false })
-    .limit(20000);
+    .from('site_analytics_daily')
+    .select('event_date,event_name,page_path,page_title,referrer_host,device_type,event_count')
+    .gte('event_date', previousStart)
+    .lte('event_date', today)
+    .order('event_date', { ascending: true })
+    .limit(50000);
   if (error) throw error;
 
   const rows = data || [];
-  const current = rows.filter(row => new Date(row.created_at) >= currentStart);
-  const previous = rows.filter(row => new Date(row.created_at) < currentStart);
+  const current = rows.filter(row => row.event_date >= currentStart);
+  const previous = rows.filter(row => row.event_date >= previousStart && row.event_date <= previousEnd);
   const pageViews = current.filter(row => row.event_name === 'page_view');
   const previousViews = previous.filter(row => row.event_name === 'page_view');
+  const actions = current.filter(row => row.event_name !== 'page_view');
+  const previousActions = previous.filter(row => row.event_name !== 'page_view');
 
   return {
     days,
     generatedAt: now.toISOString(),
     totals: {
-      visitors: uniqueCount(pageViews, 'session_id'),
-      views: pageViews.length,
-      conversions: current.filter(row => row.event_name !== 'page_view').length,
-      previousVisitors: uniqueCount(previousViews, 'session_id'),
-      previousViews: previousViews.length,
+      views: sumCounts(pageViews),
+      actions: sumCounts(actions),
+      activeDays: new Set(pageViews.map(row => row.event_date)).size,
+      previousViews: sumCounts(previousViews),
+      previousActions: sumCounts(previousActions),
     },
-    daily: dailySeries(pageViews, days),
+    daily: dailySeries(current, days),
     topPages: groupedRows(pageViews, row => row.page_path, 10),
-    referrers: groupedRows(pageViews, row => referrerLabel(row.referrer), 8),
+    referrers: groupedRows(pageViews, row => row.referrer_host || 'Direct', 8),
     devices: groupedRows(pageViews, row => row.device_type || 'unknown', 5),
-    campaigns: groupedRows(pageViews.filter(row => row.utm_campaign || row.utm_source), row => row.utm_campaign || row.utm_source, 8),
-    conversions: groupedRows(current.filter(row => row.event_name !== 'page_view'), row => row.event_name, 8),
+    actions: groupedRows(actions, row => row.event_name, 8),
   };
 }
 
 function dailySeries(rows: Record<string, unknown>[], days: number) {
-  const counts = new Map<string, { views: number; sessions: Set<string> }>();
+  const counts = new Map<string, { views: number; actions: number }>();
   for (let offset = days - 1; offset >= 0; offset--) {
-    const date = new Date(Date.now() - offset * 86400000).toISOString().slice(0, 10);
-    counts.set(date, { views: 0, sessions: new Set() });
+    counts.set(isoDateDaysAgo(offset), { views: 0, actions: 0 });
   }
   rows.forEach(row => {
-    const date = String(row.created_at).slice(0, 10);
-    const item = counts.get(date);
+    const item = counts.get(String(row.event_date));
     if (!item) return;
-    item.views += 1;
-    item.sessions.add(String(row.session_id));
+    const count = numericCount(row.event_count);
+    if (row.event_name === 'page_view') item.views += count;
+    else item.actions += count;
   });
-  return Array.from(counts, ([date, item]) => ({ date, views: item.views, visitors: item.sessions.size }));
+  return Array.from(counts, ([date, item]) => ({ date, ...item }));
 }
 
 function groupedRows(rows: Record<string, unknown>[], keyFn: (row: Record<string, unknown>) => string, limit: number) {
   const counts = new Map<string, number>();
   rows.forEach(row => {
     const key = keyFn(row) || 'Unknown';
-    counts.set(key, (counts.get(key) || 0) + 1);
+    counts.set(key, (counts.get(key) || 0) + numericCount(row.event_count));
   });
   return Array.from(counts, ([label, count]) => ({ label, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
+}
+
+function sumCounts(rows: Record<string, unknown>[]) {
+  return rows.reduce((total, row) => total + numericCount(row.event_count), 0);
+}
+
+function numericCount(value: unknown) {
+  const count = Number(value);
+  return Number.isFinite(count) && count > 0 ? count : 0;
+}
+
+function isoDateDaysAgo(days: number) {
+  return new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
 }
 
 async function listExclusions() {
@@ -196,25 +209,14 @@ function cleanIp(value: unknown) {
   return /^[0-9a-f:]+$/i.test(ip) && ip.includes(':') ? ip.toLowerCase() : '';
 }
 
-function cleanSessionId(value: unknown) {
-  const id = cleanText(value, 80);
-  return /^[a-zA-Z0-9_-]{12,80}$/.test(id) ? id : '';
-}
-
 function cleanPath(value: unknown) {
   const path = cleanText(value, 300);
   return path.startsWith('/') && !path.includes('..') ? path.split('?')[0].split('#')[0] : '';
 }
 
-function cleanUrl(value: unknown, max: number) {
-  const text = cleanText(value, max);
-  if (!text) return '';
-  try {
-    const url = new URL(text);
-    return ['http:', 'https:'].includes(url.protocol) ? url.toString().slice(0, max) : '';
-  } catch {
-    return '';
-  }
+function cleanHost(value: unknown) {
+  const host = cleanText(value, 253).toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+  return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(host) ? host : '';
 }
 
 function allowedEventName(value: unknown) {
@@ -227,22 +229,8 @@ function allowedDevice(value: unknown) {
   return ['mobile', 'tablet', 'desktop'].includes(device) ? device : 'unknown';
 }
 
-function referrerLabel(value: unknown) {
-  if (!value) return 'Direct';
-  try {
-    const host = new URL(String(value)).hostname.replace(/^www\./, '');
-    return host || 'Direct';
-  } catch {
-    return 'Direct';
-  }
-}
-
 function isLikelyBot(userAgent: string) {
   return /bot|crawl|spider|slurp|preview|lighthouse|headless|monitor/i.test(userAgent);
-}
-
-function uniqueCount(rows: Record<string, unknown>[], key: string) {
-  return new Set(rows.map(row => String(row[key] || '')).filter(Boolean)).size;
 }
 
 function cleanText(value: unknown, max: number) {

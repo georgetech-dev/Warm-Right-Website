@@ -2,8 +2,8 @@
   const STORAGE_KEY = 'warmright-theme-preference';
   const CACHE_KEY = 'warmright-theme-settings';
   const DEFAULTS = {
-    light: { page_background:'#f9f6f2', surface:'#ffffff', text_primary:'#0f1724', text_secondary:'#5c5c5c', primary:'#0a2c66', accent:'#2a6f7b', highlight:'#d97706', nav_background:'#0a2c66', nav_text:'#ffffff', footer_background:'#062940', footer_text:'#ffffff', background_image:'', use_background_image:'false' },
-    dark: { page_background:'#181b20', surface:'#242a31', text_primary:'#f5f7fa', text_secondary:'#cbd5e1', primary:'#7db7ff', accent:'#5ac8c8', highlight:'#f59e0b', nav_background:'#101827', nav_text:'#ffffff', footer_background:'#0b111b', footer_text:'#f8fafc', background_image:'', use_background_image:'false' },
+    light: { page_background:'#f9f6f2', surface:'#ffffff', text_primary:'#0f1724', text_secondary:'#5c5c5c', primary:'#0a2c66', accent:'#2a6f7b', highlight:'#d97706', nav_background:'#0a2c66', nav_text:'#ffffff', nav_hover_text:'#ffd166', nav_dropdown_background:'#ffffff', nav_dropdown_text:'#0a2c66', nav_dropdown_hover_background:'#fff7e6', nav_dropdown_hover_text:'#d97706', footer_background:'#062940', footer_text:'#ffffff', background_image:'', use_background_image:'false' },
+    dark: { page_background:'#181b20', surface:'#242a31', text_primary:'#f5f7fa', text_secondary:'#cbd5e1', primary:'#7db7ff', accent:'#5ac8c8', highlight:'#f59e0b', nav_background:'#101827', nav_text:'#ffffff', nav_hover_text:'#f59e0b', nav_dropdown_background:'#111827', nav_dropdown_text:'#ffffff', nav_dropdown_hover_background:'#1f2937', nav_dropdown_hover_text:'#fbbf24', footer_background:'#0b111b', footer_text:'#f8fafc', background_image:'', use_background_image:'false' },
   };
   let settings = readCache();
 
@@ -40,6 +40,11 @@
       '--frame-neutral': values.surface,
       '--nav-background': values.nav_background,
       '--nav-text': values.nav_text,
+      '--nav-hover-text': values.nav_hover_text || values.highlight,
+      '--nav-dropdown-background': values.nav_dropdown_background || values.surface,
+      '--nav-dropdown-text': values.nav_dropdown_text || values.primary,
+      '--nav-dropdown-hover-background': values.nav_dropdown_hover_background || 'rgba(10, 44, 102, 0.05)',
+      '--nav-dropdown-hover-text': values.nav_dropdown_hover_text || values.highlight,
       '--footer-background': values.footer_background,
       '--footer-text': values.footer_text,
     };

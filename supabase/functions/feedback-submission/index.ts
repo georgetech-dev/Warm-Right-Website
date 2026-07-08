@@ -70,6 +70,11 @@ function normalizePayload(body: Record<string, unknown>) {
     wants_contact: toBoolean(body.wants_contact),
     pass_to_main_body: hasMainBody && toBoolean(body.pass_to_main_body),
     wants_testimonial: toBoolean(body.wants_testimonial),
+    consent_publish_testimonial: toBoolean(body.consent_publish_testimonial),
+    consent_publish_photos: toBoolean(body.consent_publish_photos),
+    consent_marketing: toBoolean(body.consent_marketing),
+    consent_share_job_feedback: toBoolean(body.consent_share_job_feedback),
+    consent_recorded_at: new Date().toISOString(),
     source: cleanText(body.source, 80) || 'direct',
   };
 
@@ -97,7 +102,12 @@ async function queueTeamEmail(db: ReturnType<typeof createClient>, to: string, s
     `Engineer communication: ${payload.engineer_communication}/5`, `Engineer experience: ${payload.engineer_experience}/5`,
     `Engineer comments: ${payload.engineer_comments || 'None'}`, '', ...organisationLines, '',
     `Final remarks: ${payload.final_remarks || 'None'}`, `Customer service contact requested: ${payload.wants_contact ? 'Yes' : 'No'}`,
-    `Would like to leave a website review: ${payload.wants_testimonial ? 'Yes' : 'No'}`, '', `Admin: ${adminUrl}`,
+    `Would like to leave a website review: ${payload.wants_testimonial ? 'Yes' : 'No'}`,
+    `Publish testimonial, display name and rating: ${payload.consent_publish_testimonial ? 'Yes' : 'No'}`,
+    `Publish uploaded photographs: ${payload.consent_publish_photos ? 'Yes' : 'No'}`,
+    `Use testimonial and photographs in wider marketing: ${payload.consent_marketing ? 'Yes' : 'No'}`,
+    `Share job feedback with connected organisation: ${payload.consent_share_job_feedback ? 'Yes' : 'No'}`,
+    '', `Admin: ${adminUrl}`,
   ].join('\n');
 
   await insertOutbox(db, {
@@ -221,7 +231,14 @@ function buildTeamHtml(payload: ReturnType<typeof normalizePayload>, adminUrl: s
     ['Organisation', payload.insurer_agent_name], ['Organisation communication', `${payload.main_body_communication}/5`],
     ['Organisation experience', `${payload.main_body_experience}/5`], ['Pass information to organisation', payload.pass_to_main_body ? 'Yes' : 'No'],
   );
-  rows.push(['Customer service contact requested', payload.wants_contact ? 'Yes' : 'No'], ['Website review requested', payload.wants_testimonial ? 'Yes' : 'No']);
+  rows.push(
+    ['Customer service contact requested', payload.wants_contact ? 'Yes' : 'No'],
+    ['Website review requested', payload.wants_testimonial ? 'Yes' : 'No'],
+    ['Publish testimonial', payload.consent_publish_testimonial ? 'Yes' : 'No'],
+    ['Publish photographs', payload.consent_publish_photos ? 'Yes' : 'No'],
+    ['Wider marketing use', payload.consent_marketing ? 'Yes' : 'No'],
+    ['Share with connected organisation', payload.consent_share_job_feedback ? 'Yes' : 'No'],
+  );
   return `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#10233f;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:28px 12px;"><tr><td align="center">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:720px;background:#fff;border-radius:12px;overflow:hidden;">
