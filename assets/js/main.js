@@ -1,6 +1,7 @@
 console.log("MAIN JS VERSION", 4);
 
 document.addEventListener("DOMContentLoaded", () => {
+  const uiIconPath = (path) => window.WarmRightImages?.publicUrl(path) || `/${String(path).replace(/^(\.\/|\.\.\/|\/)+/, '')}`;
 
   initTestimonials();
 
@@ -39,7 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
     backToTop = document.createElement('a');
     backToTop.href = "#";
     backToTop.className = "back-to-top";
-    backToTop.textContent = "↑";
+    backToTop.innerHTML = `<img src="${uiIconPath('assets/images/top-svgrepo-com.svg')}" alt="" aria-hidden="true">`;
+    backToTop.setAttribute('aria-label', 'Back to top');
     document.body.appendChild(backToTop);
   }
 
@@ -103,12 +105,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastFrameTime;
     let resumeTimeout;
     let clickAnimation;
+    let touchStartX = 0;
+    let lastTouchX = 0;
+    let userDragging = false;
 
     function pauseBriefly(delay = 1200) {
       isPaused = true;
       clearTimeout(resumeTimeout);
       resumeTimeout = setTimeout(() => {
         isPaused = false;
+        scrollPosition = track.scrollLeft;
         lastFrameTime = undefined;
       }, delay);
     }
@@ -126,6 +132,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function animateScroll(timestamp) {
       if (prefersReducedMotion || (isPaused && seekDirection === 0) || !isVisible || !track) {
+        lastFrameTime = timestamp;
+        requestAnimationFrame(animateScroll);
+        return;
+      }
+
+      if (userDragging) {
+        scrollPosition = track.scrollLeft;
         lastFrameTime = timestamp;
         requestAnimationFrame(animateScroll);
         return;
@@ -158,12 +171,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // User interaction handling
     if (track) {
+      track.addEventListener('scroll', () => {
+        scrollPosition = track.scrollLeft;
+      }, { passive: true });
       track.addEventListener('wheel', () => pauseBriefly(), { passive: true });
-      track.addEventListener('touchstart', () => {
+      track.addEventListener('touchstart', event => {
         isPaused = true;
+        userDragging = true;
+        scrollPosition = track.scrollLeft;
+        touchStartX = event.touches?.[0]?.clientX ?? 0;
+        lastTouchX = touchStartX;
         clearTimeout(resumeTimeout);
       }, { passive: true });
-      track.addEventListener('touchend', () => pauseBriefly(900), { passive: true });
+      track.addEventListener('touchmove', event => {
+        scrollPosition = track.scrollLeft;
+        lastTouchX = event.touches?.[0]?.clientX ?? lastTouchX;
+      }, { passive: true });
+      track.addEventListener('touchend', () => {
+        scrollPosition = track.scrollLeft;
+        userDragging = false;
+        const deltaX = lastTouchX - touchStartX;
+        if (Math.abs(deltaX) > 8) {
+          scrollDirection = deltaX < 0 ? 1 : -1;
+        }
+        pauseBriefly(1400);
+      }, { passive: true });
+      track.addEventListener('touchcancel', () => {
+        scrollPosition = track.scrollLeft;
+        userDragging = false;
+        pauseBriefly(1400);
+      }, { passive: true });
 
       // Hover + Touch pause
       container.addEventListener('mouseenter', () => {

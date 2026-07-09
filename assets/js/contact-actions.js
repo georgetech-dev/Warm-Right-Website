@@ -103,22 +103,143 @@
   function renderMobileActions(options) {
     const container = document.getElementById('mobile-contact-actions');
     if (!container) return;
+    if (container.parentElement !== document.body) {
+      document.body.appendChild(container);
+    }
+    const iconPath = path => window.WarmRightImages?.publicUrl(path) || `/${String(path).replace(/^(\.\/|\.\.\/|\/)+/, '')}`;
     const rows = options.filter(row => row.show_in_mobile_menu && (row.action_type !== 'direct' || safeActionUrl(row.action_url)));
-    container.replaceChildren(...rows.map(row => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'mobile-item mobile-contact-item';
+    if (!rows.length) {
+      container.hidden = true;
+      container.replaceChildren();
+      return;
+    }
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'mobile-contact-fab';
+    trigger.setAttribute('aria-label', 'Open quick contact options');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.innerHTML = `<img src="${iconPath('assets/images/contact-phone-talking-svgrepo-com.svg')}" alt="" aria-hidden="true">`;
+
+    const tray = document.createElement('div');
+    tray.className = 'mobile-contact-tray';
+    tray.hidden = true;
+
+    const iconMap = {
+      general: 'assets/images/phone-svgrepo-com-1.svg',
+      text: 'assets/images/sms-svgrepo-com.svg',
+      email: 'assets/images/email-svgrepo-com.svg',
+      whatsapp: 'assets/images/whatsapp-svgrepo-com-1.svg'
+    };
+
+    const chips = rows.map((row, index) => {
       const link = document.createElement('a');
-      link.className = 'call-btn mobile-contact-btn';
-      link.textContent = row.menu_label || row.contact_title;
+      link.className = 'mobile-contact-chip';
       link.dataset.contactBehavior = row.action_type || 'direct';
       link.dataset.contactOption = row.option_key;
+      link.href = row.action_type === 'callback' ? '#' : safeActionUrl(row.action_url) || '#';
+      link.setAttribute('aria-label', row.menu_label || row.contact_title || row.option_key);
+      link.title = row.menu_label || row.contact_title || row.option_key;
       link.style.setProperty('--mobile-contact-button-background', safeColour(row.mobile_button_background, getComputedStyle(document.documentElement).getPropertyValue('--mobile-contact-button-background') || DEFAULT_SETTINGS.mobile_button_background));
       link.style.setProperty('--mobile-contact-button-text', safeColour(row.mobile_button_text, getComputedStyle(document.documentElement).getPropertyValue('--mobile-contact-button-text') || DEFAULT_SETTINGS.mobile_button_text));
       link.style.setProperty('--mobile-contact-button-hover', safeColour(row.mobile_button_hover, getComputedStyle(document.documentElement).getPropertyValue('--mobile-contact-button-hover') || DEFAULT_SETTINGS.mobile_button_hover));
-      link.href = row.action_type === 'callback' ? '#' : safeActionUrl(row.action_url) || '#';
-      wrapper.appendChild(link);
-      return wrapper;
-    }));
+      const spread = rows.length > 1 ? 140 / Math.max(rows.length - 1, 1) : 0;
+      const angle = (-160 + (spread * index)) * (Math.PI / 180);
+      const radius = 86;
+      const offsetX = Math.cos(angle) * radius;
+      const offsetY = Math.sin(angle) * radius;
+      link.style.setProperty('--chip-x', `${offsetX.toFixed(1)}px`);
+      link.style.setProperty('--chip-y', `${offsetY.toFixed(1)}px`);
+      link.style.setProperty('--chip-delay', `${index * 45}ms`);
+      const icon = document.createElement('img');
+      icon.src = iconPath(iconMap[row.option_key] || 'assets/images/phone-svgrepo-com-1.svg');
+      icon.alt = '';
+      icon.setAttribute('aria-hidden', 'true');
+      link.appendChild(icon);
+      return link;
+    });
+
+    tray.replaceChildren(...chips);
+
+    let closeTimer = 0;
+
+    function startOpen() {
+      window.clearTimeout(closeTimer);
+      tray.hidden = false;
+      container.classList.remove('closing');
+      chips.forEach((chip, index) => {
+        chip.style.transitionDelay = `${index * 70}ms`;
+      });
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          container.classList.add('open');
+          trigger.setAttribute('aria-expanded', 'true');
+        });
+      });
+    }
+
+    function startClose() {
+      window.clearTimeout(closeTimer);
+      chips.forEach(chip => {
+        chip.style.transitionDelay = '0ms';
+      });
+      container.classList.remove('open');
+      container.classList.add('closing');
+      trigger.setAttribute('aria-expanded', 'false');
+      closeTimer = window.setTimeout(() => {
+        tray.hidden = true;
+        container.classList.remove('closing');
+      }, 380);
+    }
+
+    const closeTray = event => {
+      if (event && container.contains(event.target)) return;
+      startClose();
+      document.removeEventListener('click', closeTray);
+      document.removeEventListener('touchstart', closeTray);
+    };
+
+    trigger.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const opening = tray.hidden || !container.classList.contains('open');
+      document.removeEventListener('click', closeTray);
+      document.removeEventListener('touchstart', closeTray);
+      if (opening) {
+        startOpen();
+        window.setTimeout(() => {
+          document.addEventListener('click', closeTray);
+          document.addEventListener('touchstart', closeTray, { passive: true });
+        }, 0);
+      } else {
+        startClose();
+      }
+    });
+
+    tray.addEventListener('click', event => {
+      event.stopPropagation();
+      startClose();
+      document.removeEventListener('click', closeTray);
+      document.removeEventListener('touchstart', closeTray);
+    });
+
+    container.hidden = false;
+    container.replaceChildren(trigger, tray);
+    setupFooterAwareVisibility(container, closeTray);
+  }
+
+  function setupFooterAwareVisibility(container, closeTray) {
+    if (container.dataset.footerObserverReady === 'true') return;
+    const footer = document.querySelector('footer, #footer');
+    if (!footer || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(entries => {
+      const footerVisible = entries.some(entry => entry.isIntersecting);
+      container.classList.toggle('is-footer-hidden', footerVisible);
+      document.body.classList.toggle('near-footer', footerVisible);
+      if (footerVisible) closeTray();
+    }, { threshold: 0.12 });
+    observer.observe(footer);
+    container.dataset.footerObserverReady = 'true';
   }
 
   function applyClosedSettings(settings) {

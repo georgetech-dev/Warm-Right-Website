@@ -274,16 +274,17 @@ body.modal-open {
    8. FLOATING BUTTONS & RESPONSIVE
    ========================================== */
 .back-to-top {
+    --footer-float-offset: 0px;
     position: fixed;
-    right: 25px;
+    right: 18px;
     z-index: 1000;
     transition: all 0.4s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    bottom: 100px;
+    bottom: 18px;
     background: #ff9900;
     color: #fff;
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -292,21 +293,39 @@ body.modal-open {
     font-size: 20px;
     opacity: 0;
     pointer-events: none;
+    transform: translateY(var(--footer-float-offset));
 }
 
 .back-to-top.show { opacity: 1; pointer-events: auto; }
+
+body.near-footer .back-to-top {
+    --footer-float-offset: -64px;
+}
+
+.back-to-top img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    display: block;
+    filter: brightness(0) invert(1);
+}
 
 .accessibility-widget {
     position: fixed;
     left: 18px;
     bottom: 18px;
     z-index: 5000;
+    transition: transform .3s ease;
+}
+
+body.near-footer .accessibility-widget {
+    transform: translateY(-64px);
 }
 
 .accessibility-toggle {
     display: inline-flex;
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     align-items: center;
     justify-content: center;
     padding: 0;
@@ -351,7 +370,7 @@ body.modal-open {
 
 .floating-book-btn:hover, .back-to-top:hover {
     background: #e68a00;
-    transform: translateY(-3px);
+    transform: translateY(calc(var(--footer-float-offset) - 3px));
 }
 
 

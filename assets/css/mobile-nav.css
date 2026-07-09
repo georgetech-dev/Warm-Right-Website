@@ -259,25 +259,119 @@
   }
 }
 
-#mobile-nav-bar .mobile-contact-actions { padding: 0 14px 18px; }
-#mobile-nav-bar .mobile-contact-item { border-bottom: 0; padding: 0; }
-#mobile-nav-bar .mobile-contact-item + .mobile-contact-item { margin-top: 9px; }
-#mobile-nav-bar .mobile-contact-item .mobile-contact-btn {
-  display: block;
-  box-sizing: border-box;
-  margin-top: 0;
+.mobile-contact-actions {
+  --mobile-contact-fab-size: 56px;
+  --mobile-contact-half-size: calc(var(--mobile-contact-fab-size) / 2);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  width: 100%;
+  height: 170px;
+  z-index: 2600;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.mobile-contact-actions.is-footer-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+  visibility: hidden;
+}
+
+.mobile-contact-fab,
+.mobile-contact-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mobile-contact-fab-size);
+  height: var(--mobile-contact-fab-size);
+  padding: 0;
   border: 1px solid color-mix(in srgb, var(--mobile-contact-button-background, #28a745) 75%, #000);
+  border-radius: 50%;
   background: var(--mobile-contact-button-background, #28a745);
   color: var(--mobile-contact-button-text, #fff);
-  text-align: center;
   text-decoration: none;
-  transition: background-color .18s ease, transform .18s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: background-color .18s ease, transform .18s ease, opacity .18s ease;
+  pointer-events: auto;
 }
-#mobile-nav-bar .mobile-contact-item .mobile-contact-btn:hover,
-#mobile-nav-bar .mobile-contact-item .mobile-contact-btn:focus-visible {
+
+.mobile-contact-chip:hover,
+.mobile-contact-chip:focus-visible {
   background: var(--mobile-contact-button-hover, #218838);
   color: var(--mobile-contact-button-text, #fff);
-  transform: translateY(-1px);
+  transform: translate3d(var(--chip-x, 0px), calc(var(--chip-y, -72px) - 2px), 0) scale(1);
+}
+
+.mobile-contact-fab img,
+.mobile-contact-chip img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+
+.mobile-contact-fab {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  margin-left: calc(var(--mobile-contact-half-size) * -1);
+  transform: translate3d(0, 0, 0);
+  z-index: 2;
+  will-change: transform;
+}
+
+.mobile-contact-fab:hover,
+.mobile-contact-fab:focus-visible {
+  background: var(--mobile-contact-button-hover, #218838);
+  color: var(--mobile-contact-button-text, #fff);
+  transform: translate3d(0, -2px, 0);
+}
+
+.mobile-contact-fab img {
+  filter: brightness(0) invert(1);
+}
+
+.mobile-contact-tray {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mobile-contact-tray[hidden] {
+  display: none !important;
+}
+
+.mobile-contact-chip {
+  position: absolute;
+  left: 50%;
+  margin-left: calc(var(--mobile-contact-half-size) * -1);
+  bottom: 0;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.68);
+  transition:
+    transform .48s cubic-bezier(.18, .9, .2, 1.14),
+    opacity .28s ease,
+    background-color .18s ease;
+  transition-delay: var(--chip-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+.mobile-contact-actions.open .mobile-contact-chip {
+  opacity: 1;
+  transform: translate3d(var(--chip-x, 0px), var(--chip-y, -72px), 0) scale(1);
+  pointer-events: auto;
+}
+
+.mobile-contact-actions.closing .mobile-contact-chip {
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.68);
+}
+
+.mobile-contact-actions.open .mobile-contact-fab {
+  background: var(--mobile-contact-button-hover, #218838);
+  transform: translate3d(0, 0, 0);
 }
 
 #mobile-nav-bar .mobile-item a.active,
@@ -293,4 +387,29 @@
 #mobile-nav-bar .mobile-dropdown-menu a.active {
   opacity: 1;
   font-weight: 700;
+}
+
+@media (min-width: 1025px) {
+  .mobile-contact-actions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-contact-actions {
+    width: 100%;
+    height: 150px;
+  }
+
+  .mobile-contact-fab,
+  .mobile-contact-chip {
+    width: var(--mobile-contact-fab-size);
+    height: var(--mobile-contact-fab-size);
+  }
+
+  .mobile-contact-fab img,
+  .mobile-contact-chip img {
+    width: 24px;
+    height: 24px;
+  }
 }
