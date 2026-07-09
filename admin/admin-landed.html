@@ -11,6 +11,7 @@
   
   <script>window.adminPageTitle = "WarmHub";</script>
 <script src="../assets/js/admin-include.js?v=20260705theme"></script>
+<script src="../assets/js/admin-section-nav.js?v=20260709sections"></script>
 
   <style>
     /* 1. Hide the body by default to prevent "peeking" */
@@ -61,34 +62,40 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Dashboard Grid Styling */
-    /* Dashboard Grid Styling */
+    /* Smaller dashboard tiles */
     .menu-grid { 
-      display: grid; 
-      /* Default to 2 columns for mobile */
-      grid-template-columns: repeat(2, 1fr); 
-      gap: 25px; 
-      margin-top: 30px; 
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
     }
 
-    /* Override for Desktop (screens wider than 768px) */
-    @media (min-width: 768px) {
+    /* Four columns on tablets and smaller desktop windows. */
+    @media (min-width: 768px) and (max-width: 1199px) {
       .menu-grid {
-        /* Force exactly 4 columns on desktop */
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    /* Six columns on wide desktop screens: about one-third narrower than four-column tiles. */
+    @media (min-width: 1200px) {
+      .menu-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
       }
     }
 
     .card { 
+      min-width: 0;
+      min-height: 122px;
       background: white; 
-      padding: 30px; 
-      border-radius: 12px; 
+      padding: 16px 12px; 
+      border-radius: 10px; 
       text-align: center; 
       text-decoration: none; 
       color: #333; 
       border: 1px solid #ddd; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      transition: 0.3s; 
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+      transition: 0.25s; 
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -96,13 +103,30 @@
     }
     
     .card:hover { 
-      transform: translateY(-5px); 
+      transform: translateY(-3px); 
       border-color: #004a99; 
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+
+    .card div {
+      font-size: 30px !important;
+      line-height: 1.05;
+      margin-bottom: 7px !important;
     }
     
-    .card h3 { color: #004a99; margin-bottom: 10px; }
-    .card p { color: #666; font-size: 14px; margin: 0; }
+    .card h3 {
+      color: #004a99;
+      font-size: 15px;
+      line-height: 1.2;
+      margin: 0 0 6px 0;
+    }
+
+    .card p {
+      color: #666;
+      font-size: 12px;
+      line-height: 1.35;
+      margin: 0;
+    }
 
     /* --- MOBILE RESPONSIVENESS (< 768px) --- */
     /* --- MOBILE RESPONSIVENESS (< 768px) --- */
@@ -166,9 +190,10 @@
   <div class="tabs-wrapper">
     <div class="tab-buttons">
       <button class="tab-btn active" onclick="openTab(event, 'tab-jobs')">Importer</button>
-      <button class="tab-btn" onclick="openTab(event, 'tab-engineers')">Engineers</button>
+      <button class="tab-btn" style="display:none" onclick="openTab(event, 'tab-engineers')">Engineers</button>
       <button class="tab-btn" onclick="openTab(event, 'tab-inventory')">Inventory</button>
       <button class="tab-btn" onclick="openTab(event, 'tab-website')">Website Management</button>
+      <button class="tab-btn" onclick="openTab(event, 'tab-customers')">Customers</button>
       <button class="tab-btn" onclick="openTab(event, 'tab-general')">General Management</button>
       <button class="tab-btn" onclick="openTab(event, 'tab-settings')">Settings</button>
     </div>
@@ -191,7 +216,7 @@
         <h3>Resolving Import</h3>
         <p>Import and process Resolving jobs</p>
       </a>
-      <a href="../admin/jobs/home_importer.html" class="card">
+      <a href="../admin/jobs/home_importer.html" class="card" style="display:none">
         <div style="font-size: 40px; margin-bottom: 10px;">📥</div>
         <h3>HomeServe Import</h3>
         <p>Import and process HomeServe jobs</p>
@@ -199,7 +224,7 @@
     </div>
   </div>
 
-  <div id="tab-engineers" class="tab-content">
+  <div id="tab-engineers" class="tab-content" style="display:none">
     <div class="menu-grid">
       <p style="color: #666; margin-top: 20px;">No engineer tools configured yet.</p>
     </div>
@@ -217,16 +242,6 @@
 
   <div id="tab-website" class="tab-content">
     <div class="menu-grid">
-      <a href="rates.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">💰</div>
-        <h3>Manage Rates</h3>
-        <p>Edit scheduled pricing</p>
-      </a>
-      <a href="offers-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">%</div>
-        <h3>Manage Offers</h3>
-        <p>Edit offer tiles and details</p>
-      </a>
       <a href="content-cards-admin.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">TXT</div>
         <h3>Page Content Cards</h3>
@@ -242,34 +257,14 @@
         <h3>Hero Pictures</h3>
         <p>Edit page hero images and links</p>
       </a>
-      <a href="testimonials-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
-        <h3>Manage Testimonials</h3>
-        <p>Manage reviews from customers</p>
-      </a>
-      <a href="feedback-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">FB</div>
-        <h3>Customer Feedback</h3>
-        <p>Review survey responses and email settings</p>
-      </a>
-      <a href="callbacks-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">CALL</div>
-        <h3>Callbacks</h3>
-        <p>Review callback requests, add notes and mark them complete</p>
-      </a>
       <a href="contact-options-admin.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">LINK</div>
         <h3>Contact Options</h3>
         <p>Manage contact tiles, booking options and mobile menu buttons</p>
       </a>
-      <a href="privacy-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">POLICY</div>
-        <h3>Privacy Policy</h3>
-        <p>Edit the review date and numbered privacy notice sections</p>
-      </a>
       <a href="site-management.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">☰</div>
-        <h3>Pages & Appearance</h3>
+        <h3>Pages &amp; Appearance</h3>
         <p>Control page navigation, website colours and backgrounds</p>
       </a>
       <a href="carousels-admin.html" class="card">
@@ -277,30 +272,65 @@
         <h3>Carousels</h3>
         <p>Manage carousel tiles, images and ordering</p>
       </a>
-      <a href="coverage-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">MAP</div>
-        <h3>Customise Coverage</h3>
-        <p>Draw and label service areas</p>
-      </a>
       <a href="website-file-explorer.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">IMG</div>
         <h3>Website File Explorer</h3>
         <p>Add or remove assets/images files</p>
       </a>
-      <a href="analytics-admin.html" class="card">
-        <div style="font-size: 40px; margin-bottom: 10px;">DATA</div>
-        <h3>Website Insights</h3>
-        <p>View anonymous visitors and website activity</p>
+    </div>
+  </div>
+
+  <div id="tab-customers" class="tab-content">
+    <div class="menu-grid">
+      <a href="testimonials-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
+        <h3>Testimonials</h3>
+        <p>Manage reviews and testimonials from customers</p>
+      </a>
+      <a href="feedback-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">FB</div>
+        <h3>Feedback</h3>
+        <p>Review survey responses and email settings</p>
+      </a>
+      <a href="callbacks-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">CALL</div>
+        <h3>Callbacks</h3>
+        <p>Review callback requests, add notes and mark them complete</p>
       </a>
     </div>
   </div>
 
   <div id="tab-general" class="tab-content">
     <div class="menu-grid">
+      <a href="analytics-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">DATA</div>
+        <h3>Insights</h3>
+        <p>View anonymous visitors and website activity</p>
+      </a>
+      <a href="rates.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">💰</div>
+        <h3>Manage Rates</h3>
+        <p>Edit scheduled pricing</p>
+      </a>
+      <a href="offers-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">%</div>
+        <h3>Manage Offers</h3>
+        <p>Edit offer tiles and details</p>
+      </a>
+      <a href="coverage-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">MAP</div>
+        <h3>Coverage Map</h3>
+        <p>Draw and label service areas</p>
+      </a>
+      <a href="privacy-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">POLICY</div>
+        <h3>Privacy Policy</h3>
+        <p>Edit the review date and numbered privacy notice sections</p>
+      </a>
       <a href="opening-hours.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
         <h3>Opening Hours</h3>
-        <p>Change Warm Right's Business Hours</p>
+        <p>Change Warm Right's business hours</p>
       </a>
     </div>
   </div>
@@ -333,11 +363,28 @@
       // Show the current tab and add active class to the button
       document.getElementById(tabId).classList.add("active");
       evt.currentTarget.classList.add("active");
+
+      const sectionMap = {
+        'tab-jobs': 'importer',
+        'tab-inventory': 'inventory',
+        'tab-website': 'website',
+        'tab-customers': 'customers',
+        'tab-general': 'general',
+        'tab-settings': 'settings'
+      };
+
+      if (sectionMap[tabId] && window.setAdminSectionNav) {
+        window.setAdminSectionNav(sectionMap[tabId]);
+      }
+
+      if (sectionMap[tabId] && window.location.hash !== '#' + tabId) {
+        history.replaceState(null, '', '#' + tabId);
+      }
     }
 
     function openInitialTabFromHash() {
       const hashTab = window.location.hash.replace('#', '');
-      if (!hashTab) return;
+      if (!hashTab || hashTab === 'tab-engineers') return;
       const targetTab = document.getElementById(hashTab);
       const targetButton = Array.from(document.getElementsByClassName('tab-btn')).find(button =>
         button.getAttribute('onclick')?.includes(`'${hashTab}'`)
@@ -370,6 +417,10 @@
         // --- TRIGGER THE HEADER LOAD ---
         await window.loadAdminHeader(session); 
         openInitialTabFromHash();
+
+        if (!window.location.hash && window.setAdminSectionNav) {
+          window.setAdminSectionNav('importer');
+        }
         
         // Final reveal of the page content
         document.body.style.visibility = 'visible'; 

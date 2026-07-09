@@ -21,9 +21,9 @@ window.loadAdminHeader = async function(session) {
         const titleEl = document.getElementById('nav-page-title');
         if (titleEl) titleEl.textContent = window.adminPageTitle || "Admin";
 
-        // 3b. WEBSITE MANAGEMENT CHILD NAV
-        renderWebsiteManagementNav();
-        renderImporterNav();
+        // 3b. SECTION-SPECIFIC CHILD NAV
+        // Uses the original admin-tab-strip styling so only one child navigation is shown.
+        renderAdminSectionNav();
 
         // 4. SET USER DATA & AVATAR
         if (session && session.user) {
@@ -158,68 +158,96 @@ window.getCurrentUserRole = async function() {
     return data?.role || null;
 };
 
-function renderWebsiteManagementNav() {
-    const pages = [
-        { file: 'rates.html', label: 'Manage Rates' },
-        { file: 'offers-admin.html', label: 'Manage Offers' },
-        { file: 'content-cards-admin.html', label: 'Content Cards' },
-        { file: 'feature-lists-admin.html', label: 'Feature Lists' },
-        { file: 'hero-admin.html', label: 'Hero Pictures' },
-        { file: 'testimonials-admin.html', label: 'Testimonials' },
-        { file: 'feedback-admin.html', label: 'Feedback' },
-        { file: 'callbacks-admin.html', label: 'Callbacks' },
-        { file: 'contact-options-admin.html', label: 'Contact Options' },
-        { file: 'privacy-admin.html', label: 'Privacy Policy' },
-        { file: 'site-management.html', label: 'Pages & Appearance' },
-        { file: 'carousels-admin.html', label: 'Carousels' },
-        { file: 'coverage-admin.html', label: 'Coverage Map' },
-        { file: 'website-file-explorer.html', label: 'File Explorer' },
-        { file: 'analytics-admin.html', label: 'Insights' }
-    ];
+const adminSectionNavDefinitions = [
+    {
+        key: 'importer',
+        title: 'Importer',
+        overviewHash: 'tab-jobs',
+        ariaLabel: 'Importer tools',
+        pages: [
+            { file: 'sed_importer.html', path: 'jobs/sed_importer.html', label: 'Sedgwick Import' },
+            { file: 'res_importer.html', path: 'jobs/res_importer.html', label: 'Resolving Import' },
+            { file: 'home_importer.html', path: 'jobs/home_importer.html', label: 'HomeServe Import' }
+        ]
+    },
+    {
+        key: 'website',
+        title: 'Website Management',
+        overviewHash: 'tab-website',
+        ariaLabel: 'Website management tools',
+        pages: [
+            { file: 'content-cards-admin.html', label: 'Content Cards' },
+            { file: 'feature-lists-admin.html', label: 'Feature Lists' },
+            { file: 'hero-admin.html', label: 'Hero Pictures' },
+            { file: 'contact-options-admin.html', label: 'Contact Options' },
+            { file: 'site-management.html', label: 'Pages & Appearance' },
+            { file: 'carousels-admin.html', label: 'Carousels' },
+            { file: 'website-file-explorer.html', label: 'File Explorer' }
+        ]
+    },
+    {
+        key: 'customers',
+        title: 'Customers',
+        overviewHash: 'tab-customers',
+        ariaLabel: 'Customer tools',
+        pages: [
+            { file: 'testimonials-admin.html', label: 'Testimonials' },
+            { file: 'feedback-admin.html', label: 'Feedback' },
+            { file: 'callbacks-admin.html', label: 'Callbacks' }
+        ]
+    },
+    {
+        key: 'general',
+        title: 'General Management',
+        overviewHash: 'tab-general',
+        ariaLabel: 'General management tools',
+        pages: [
+            { file: 'analytics-admin.html', label: 'Insights' },
+            { file: 'rates.html', label: 'Manage Rates' },
+            { file: 'offers-admin.html', label: 'Manage Offers' },
+            { file: 'coverage-admin.html', label: 'Coverage Map' },
+            { file: 'privacy-admin.html', label: 'Privacy Policy' },
+            { file: 'opening-hours.html', label: 'Opening Hours' }
+        ]
+    },
+    {
+        key: 'settings',
+        title: 'Settings',
+        overviewHash: 'tab-settings',
+        ariaLabel: 'Settings tools',
+        pages: [
+            { file: 'settings-admin.html', label: 'Account Settings' }
+        ]
+    }
+];
+
+function renderAdminSectionNav() {
     const currentFile = window.location.pathname.split('/').pop();
-    if (!pages.some(page => page.file === currentFile)) return;
-    if (document.getElementById('website-management-nav')) return;
+    const section = adminSectionNavDefinitions.find(item =>
+        item.pages.some(page => page.file === currentFile)
+    );
+
+    // The dashboard has its own main tab navigation, so do not add a second bar there.
+    if (!section || currentFile === 'admin-landed.html') return;
+    if (document.getElementById('admin-section-child-nav')) return;
 
     const titleEl = document.getElementById('nav-page-title');
-    if (titleEl) titleEl.textContent = 'WarmHub - Website Management';
+    if (titleEl) titleEl.textContent = `WarmHub - ${section.title}`;
 
     const nav = document.createElement('nav');
-    nav.id = 'website-management-nav';
-    nav.className = 'website-management-nav admin-tab-strip';
-    nav.setAttribute('aria-label', 'Website management tools');
+    nav.id = 'admin-section-child-nav';
+    nav.className = `${section.key}-nav admin-tab-strip`;
+    nav.setAttribute('aria-label', section.ariaLabel);
+
+    const overviewHref = `${getAdminUrl('admin-landed.html')}#${section.overviewHash}`;
     nav.innerHTML = `
-        <a class="admin-tab-link admin-tab-back" href="${getAdminUrl('admin-landed.html')}#tab-website">&lt; Back</a>
-        ${pages.map(page => `
-            <a class="admin-tab-link ${page.file === currentFile ? 'is-active' : ''}" href="${getAdminUrl(page.file)}">${page.label}</a>
-        `).join('')}
-    `;
-
-    const header = document.getElementById('admin-header-container');
-    if (header) header.appendChild(nav);
-}
-
-function renderImporterNav() {
-    const pages = [
-        { file: 'sed_importer.html', path: 'jobs/sed_importer.html', label: 'Sedgwick Import' },
-        { file: 'res_importer.html', path: 'jobs/res_importer.html', label: 'Resolving Import' },
-        { file: 'home_importer.html', path: 'jobs/home_importer.html', label: 'HomeServe Import' }
-    ];
-    const currentFile = window.location.pathname.split('/').pop();
-    if (!pages.some(page => page.file === currentFile)) return;
-    if (document.getElementById('importer-nav')) return;
-
-    const titleEl = document.getElementById('nav-page-title');
-    if (titleEl) titleEl.textContent = 'WarmHub - Importer';
-
-    const nav = document.createElement('nav');
-    nav.id = 'importer-nav';
-    nav.className = 'importer-nav admin-tab-strip';
-    nav.setAttribute('aria-label', 'Importer tools');
-    nav.innerHTML = `
-        <a class="admin-tab-link admin-tab-back" href="${getAdminUrl('admin-landed.html')}#tab-jobs">&lt; Back</a>
-        ${pages.map(page => `
-            <a class="admin-tab-link ${page.file === currentFile ? 'is-active' : ''}" href="${getAdminUrl(page.path)}">${page.label}</a>
-        `).join('')}
+        <a class="admin-tab-link admin-tab-back" href="${overviewHref}">Overview</a>
+        ${section.pages.map(page => {
+            const href = getAdminUrl(page.path || page.file);
+            const activeClass = page.file === currentFile ? 'is-active' : '';
+            const ariaCurrent = page.file === currentFile ? ' aria-current="page"' : '';
+            return `<a class="admin-tab-link ${activeClass}" href="${href}"${ariaCurrent}>${page.label}</a>`;
+        }).join('')}
     `;
 
     const header = document.getElementById('admin-header-container');
