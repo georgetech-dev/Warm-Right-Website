@@ -5,6 +5,12 @@ window.loadAdminHeader = async function(session) {
     if (!container) return;
 
     try {
+        const currentFile = window.location.pathname.split('/').pop();
+        if (!['login.html', 'reset-password.html'].includes(currentFile)) {
+            const isAdmin = await window.requireRole(['admin'], { silentRedirect: true });
+            if (!isAdmin) return;
+        }
+
         // 1. Calculate the absolute site root path dynamically for GitHub Pages compatibility
         const siteRoot = getAdminSiteRoot();
         const partialsPath = siteRoot + "partials/";
@@ -255,7 +261,7 @@ function renderAdminSectionNav() {
 }
 
 // Function to protect pages based on role
-window.requireRole = async function(allowedRoles) {
+window.requireRole = async function(allowedRoles, options = {}) {
     const db = await waitForAdminDb();
     if (!db) {
         console.error("Admin database client was not ready for role check.");
@@ -281,7 +287,7 @@ window.requireRole = async function(allowedRoles) {
 
     if (!allowedRoles.includes(userRole)) {
         console.warn(`Access denied. User role '${userRole}' not in allowed list:`, allowedRoles);
-        alert("You do not have permission to view this page.");
+        if (!options.silentRedirect) alert("You do not have permission to view this page.");
         window.location.replace(getAdminUrl('admin-landed.html'));
         return false;
     }

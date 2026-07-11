@@ -1,18 +1,32 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  cleanText,
+  createServiceClient,
+  defaultCorsHeaders as corsHeaders,
+  enforceRateLimit,
+  httpError,
+  json,
+  requestIp,
+  requiredEnv,
+} from '../_shared/security.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const HONEYPOT_FIELDS = ['website', 'company', 'url'];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     if (req.method !== 'POST') throw httpError('Unsupported method.', 405);
-    const payload = normalisePayload(await req.json());
-    const db = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'));
+    const body = await req.json();
+    const db = createServiceClient();
+    await enforceRateLimit({
+      db,
+      scope: 'callback_submission',
+      identifier: requestIp(req) || cleanText(body.customer_phone, 60) || 'anonymous',
+      limit: 6,
+      windowSeconds: 600,
+    });
+    const payload = normalisePayload(body);
     const { data: request, error } = await db.from('callback_requests').insert(payload).select('id').single();
     if (error) throw error;
 
@@ -37,6 +51,9 @@ Deno.serve(async (req) => {
 });
 
 function normalisePayload(body: Record<string, unknown>) {
+  if (HONEYPOT_FIELDS.some((field) => cleanText(body[field], 120))) {
+    throw httpError('This request could not be accepted.', 400);
+  }
   const payload = {
     customer_name: cleanText(body.customer_name, 120),
     customer_phone: cleanText(body.customer_phone, 60),
@@ -104,10 +121,6 @@ async function triggerEmailOutbox() {
   if (!response.ok) throw new Error(`Email workflow returned ${response.status}.`);
 }
 
-function cleanText(value: unknown, max: number) { return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max); }
 function validEmail(value: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value); }
 function escapeHtml(value: unknown) { return String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char] || char)); }
 function escapeAttr(value: unknown) { return escapeHtml(value).replace(/`/g, '&#96;'); }
-function requiredEnv(name: string) { const value = Deno.env.get(name); if (!value) throw httpError(`${name} is not configured.`, 500); return value; }
-function httpError(message: string, status: number) { return Object.assign(new Error(message), { status }); }
-function json(payload: unknown, status = 200) { return new Response(JSON.stringify(payload), { status, headers:{ ...corsHeaders, 'Content-Type':'application/json' } }); }

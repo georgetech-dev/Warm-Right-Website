@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
   Promise.allSettled([
     initPublicDatabase(),
     loadScriptOnce(siteRoot + "assets/js/public-image-resolver.js?v=1"),
+    loadScriptOnce(siteRoot + "assets/js/sanitize-rich-html.js?v=1"),
     loadScriptOnce(siteRoot + "assets/js/site-theme.js?v=3"),
     loadScriptOnce(siteRoot + "assets/js/site-management-public.js?v=8"),
     loadScriptOnce(siteRoot + "assets/js/hero-management-public.js?v=9"),

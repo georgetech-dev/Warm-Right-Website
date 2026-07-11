@@ -268,94 +268,29 @@
       margin-top: 22px;
     }
     .testimonial-field {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      column-gap: 18px;
-      align-items: start;
+      display: block;
       margin-top: 8px;
     }
-    .testimonial-field:focus-within {
-      z-index: 20;
-    }
     .testimonial-field > label {
-      grid-column: 1 / -1;
+      display: block;
       margin-top: 0;
+      margin-bottom: 8px;
     }
     .field-control {
-      grid-column: 1;
-      min-width: 0;
       width: 100%;
     }
-    .field-tip {
-      position: absolute;
-      top: 25px;
-      right: 0;
-      z-index: 10;
-      box-sizing: border-box;
-      width: calc(50% - 9px);
-      max-height: 0;
-      margin: 0;
-      padding: 0 14px;
-      overflow: hidden;
-      border: 0 solid transparent;
-      border-radius: 8px;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateX(-8px);
-      transition: max-height 280ms ease, margin 280ms ease, padding 280ms ease,
-                  border-width 280ms ease, opacity 180ms ease, transform 280ms ease;
-    }
-    .testimonial-field:focus-within > .field-tip:not(.field-tip-deferred),
-    .field-tip.is-visible {
-      max-height: 260px;
-      padding: 11px 14px;
-      border-width: 1px;
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateX(0);
-    }
-    .field-tip strong {
-      display: block;
-      margin-bottom: 3px;
-      font-size: 0.86rem;
-    }
-    .field-tip span {
-      display: block;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-    .field-tip-private {
-      border-color: #c8dfcf;
-      background: #f4faf6;
-      color: #315d3d;
-    }
-    .field-tip-public {
-      border-color: #e5cec7;
-      background: #fff8f6;
-      color: #67433a;
-    }
-    .field-tip-public strong {
-      color: #8a4938;
-    }
-    .field-tip-private strong {
-      color: #2e6b3f;
-    }
     .testimonial-field > .ai-title-error {
-      grid-column: 1;
+      display: block;
+      margin-top: 8px;
     }
     .testimonial-field > .preview-list {
-      grid-column: 1 / -1;
+      display: grid;
     }
     .testimonial-field-wide {
-      grid-template-columns: minmax(0, 1fr);
+      display: block;
     }
     .testimonial-field-wide > .field-control {
-      grid-column: 1;
-    }
-    .testimonial-field-wide > .field-tip {
-      top: calc(100% + 6px);
-      width: 50%;
+      width: 100%;
     }
     .address-finder-wrap {
       position: relative;
@@ -530,29 +465,8 @@
       .photo-declaration-actions .photo-picker-btn {
         width: 100%;
       }
-      .testimonial-field:focus-within > .field-tip:not(.field-tip-deferred),
-      .field-tip.is-visible {
-        max-height: 360px;
-      }
       .testimonial-field {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .field-control,
-      .field-tip,
-      .testimonial-field > .ai-title-error,
-      .testimonial-field > .preview-list {
-        grid-column: 1;
-      }
-      .field-tip {
-        top: calc(100% + 6px);
-        left: 0;
-        right: auto;
-        width: 100%;
-        transform: translateY(-8px);
-      }
-      .testimonial-field:focus-within > .field-tip:not(.field-tip-deferred),
-      .field-tip.is-visible {
-        transform: translateY(0);
+        display: block;
       }
     }
   </style>
@@ -566,31 +480,20 @@
     <h2 class="section-heading card">Share Your Experience</h2>
     <section class="testimonial-submit-panel">
       <form id="testimonial-submit-form" novalidate autocomplete="off">
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" style="position:absolute;left:-10000px;opacity:0;pointer-events:none;" aria-hidden="true">
         <div class="testimonial-field">
           <label for="customer_name">Your name</label>
-          <input id="customer_name" class="field-control" name="customer_name" required autocomplete="name" aria-describedby="customer-name-tip">
-          <p id="customer-name-tip" class="field-tip field-tip-public" role="note">
-            <strong>Displayed on our website</strong>
-            <span>Your name will be displayed with your testimonial. Please feel free to use only your first name if that is more comfortable.</span>
-          </p>
+          <input id="customer_name" class="field-control" name="customer_name" required autocomplete="name">
         </div>
 
         <div class="testimonial-field">
           <label for="customer_email">Email address</label>
-          <input id="customer_email" class="field-control" name="customer_email" type="email" required autocomplete="email" aria-describedby="customer-email-tip">
-          <p id="customer-email-tip" class="field-tip field-tip-private" role="note">
-            <strong>Kept private</strong>
-            <span>We use your email address to confirm that your submission was successful. We may also contact you about your testimonial if you have asked us to. Your email address is not displayed on our website.</span>
-          </p>
+          <input id="customer_email" class="field-control" name="customer_email" type="email" required autocomplete="email">
         </div>
 
         <div class="testimonial-field">
           <label for="customer_phone">Phone number</label>
-          <input id="customer_phone" class="field-control" name="customer_phone" autocomplete="tel" aria-describedby="customer-phone-tip">
-          <p id="customer-phone-tip" class="field-tip field-tip-private" role="note">
-            <strong>Optional and kept private</strong>
-            <span>We use your phone number only if you have asked us to contact you. You may leave this blank. If provided, it is not displayed on our website.</span>
-          </p>
+          <input id="customer_phone" class="field-control" name="customer_phone" autocomplete="tel">
         </div>
 
         <div class="testimonial-field">
@@ -601,13 +504,9 @@
         <div class="testimonial-field">
           <label for="customer_address">Address</label>
           <div class="address-finder-wrap field-control">
-            <input id="customer_address" name="wr_visit_location" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="Start typing and choose your address from the suggestions" aria-controls="address-suggestions" aria-expanded="false" aria-describedby="customer-address-tip">
+            <input id="customer_address" name="wr_visit_location" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="Start typing and choose your address from the suggestions" aria-controls="address-suggestions" aria-expanded="false">
             <div id="address-suggestions" class="address-suggestions" role="listbox"></div>
           </div>
-          <p id="customer-address-tip" class="field-tip field-tip-private" role="note">
-            <strong>Kept private</strong>
-            <span>We use your address only to locate your visit in our records. It is not displayed on our website.</span>
-          </p>
         </div>
 
         <div class="testimonial-field">
@@ -617,7 +516,7 @@
               <path d="M12.224 11.623L16 0l3.776 11.623H32l-9.888 6.865 3.776 11.417L16 22.668 6.112 29.85l3.776-11.362L0 11.623h12.224"></path>
             </symbol>
           </svg>
-          <div class="rating-picker field-control" id="rating-picker" aria-label="Rating out of 5" aria-describedby="rating-tip">
+          <div class="rating-picker field-control" id="rating-picker" aria-label="Rating out of 5">
           <input type="radio" id="rating-5" name="rating" value="5" checked>
           <label class="rating-label rating-sparks" for="rating-5" aria-label="5 stars">
             <svg class="rating-label-icon"><use href="#rating-star"></use></svg>
@@ -643,34 +542,22 @@
             <svg class="rating-label-icon"><use href="#rating-star"></use></svg>
           </label>
           </div>
-          <p id="rating-tip" class="field-tip field-tip-public" role="note">
-            <strong>Displayed on our website</strong>
-            <span>Please rate your overall experience with Warm Right Ltd, considering our service rather than your agent, insurer or landlord. You can tell us more about them in the short customer service survey offered at the end.</span>
-          </p>
         </div>
 
         <div class="testimonial-field testimonial-field-wide">
           <label for="content">Your testimonial</label>
-          <textarea id="content" class="field-control" name="content" rows="7" required maxlength="1800" aria-describedby="testimonial-content-tip"></textarea>
-          <p id="testimonial-content-tip" class="field-tip field-tip-public" role="note">
-            <strong>Displayed on our website</strong>
-            <span>Please tell us about your experience with Warm Right Ltd. If your testimonial contains more than seven words, a short title will be generated automatically when you leave this field.</span>
-          </p>
+          <textarea id="content" class="field-control" name="content" rows="7" required maxlength="1800"></textarea>
         </div>
 
         <div class="testimonial-field">
           <label for="subject">Short title</label>
           <div class="ai-title-row field-control">
             <div id="ai-title-field" class="ai-title-field">
-              <input id="subject" name="subject" maxlength="90" placeholder="Write your testimonial first" required disabled aria-describedby="testimonial-title-tip">
+              <input id="subject" name="subject" maxlength="90" placeholder="Write your testimonial first" required disabled>
               <span class="ai-title-input-spinner" aria-hidden="true"></span>
             </div>
             <button type="button" id="regenerate-title-btn" class="ai-title-action">Regenerate Title</button>
           </div>
-          <p id="testimonial-title-tip" class="field-tip field-tip-public" role="note">
-            <strong>Displayed on our website</strong>
-            <span>This title is generated by Gemini AI. You can highlight and replace it, or regenerate it. A short testimonial may produce a similar title each time.</span>
-          </p>
           <p id="ai-title-error" class="ai-title-error" aria-live="polite"></p>
         </div>
 
@@ -678,17 +565,13 @@
           <label for="testimonial_images">Photos</label>
           <div class="field-control">
             <p style="margin:0 0 8px;color:#64748b;font-size:14px;">You can add up to 4 photos.</p>
-            <input id="testimonial_images" name="testimonial_images" type="file" accept="image/*" multiple style="display:none;" aria-describedby="testimonial-photos-tip">
-            <input id="testimonial_camera" name="testimonial_camera" type="file" accept="image/*" capture="environment" style="display:none;" aria-describedby="testimonial-photos-tip">
+            <input id="testimonial_images" name="testimonial_images" type="file" accept="image/*" multiple style="display:none;">
+            <input id="testimonial_camera" name="testimonial_camera" type="file" accept="image/*" capture="environment" style="display:none;">
             <div class="photo-picker-actions">
-              <button type="button" class="photo-picker-btn" onclick="openPhotoPicker()" aria-describedby="testimonial-photos-tip">Choose Photos</button>
-              <button type="button" class="photo-picker-btn" onclick="openCameraPicker()" aria-describedby="testimonial-photos-tip">Take Photo</button>
+              <button type="button" class="photo-picker-btn" onclick="openPhotoPicker()">Choose Photos</button>
+              <button type="button" class="photo-picker-btn" onclick="openCameraPicker()">Take Photo</button>
             </div>
           </div>
-          <p id="testimonial-photos-tip" class="field-tip field-tip-public field-tip-deferred" role="note" aria-hidden="true">
-            <strong>May be displayed publicly</strong>
-            <span>If possible, please add photos of your repair. All photos are reviewed by our team. For information about how uploaded photos may be used, please read our <a href="/privacy.html">privacy policy</a>.</span>
-          </p>
           <div id="image-preview" class="preview-list"></div>
         </div>
 
@@ -989,6 +872,7 @@
 
     function setPhotoTipVisibility(visible) {
       const photoTip = document.getElementById('testimonial-photos-tip');
+      if (!photoTip) return;
       photoTip.classList.toggle('is-visible', visible);
       photoTip.setAttribute('aria-hidden', String(!visible));
     }
@@ -1234,6 +1118,7 @@
       const images = await Promise.all(selectedPhotos.map(fileToPayload));
       const hasPhotos = images.length > 0;
       const payload = {
+        website: document.getElementById('website').value.trim(),
         customer_name: document.getElementById('customer_name').value.trim(),
         customer_email: document.getElementById('customer_email').value.trim(),
         customer_phone: document.getElementById('customer_phone').value.trim(),

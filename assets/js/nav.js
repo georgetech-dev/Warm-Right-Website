@@ -83,6 +83,7 @@ window.initWarmRight = async function() {
   const nextOpenStr = formatNextOpen(status.nextOpen);
 
   const callModal = document.getElementById("call-modal");
+  const emergencyModal = document.getElementById("emergency-modal");
   const modalForm = document.getElementById("modal-callback-form");
   const modalInitial = document.getElementById("modal-initial-actions");
   const modalThankYou = document.getElementById("modal-thank-you");
@@ -139,10 +140,32 @@ window.initWarmRight = async function() {
     }
   }
 
-  window.warmRightContactState = { status, openModal };
+  function openEmergencyModal() {
+    if (!emergencyModal) return;
+    emergencyModal.style.display = "flex";
+    document.body.classList.add('modal-open');
+  }
+
+  function closeEmergencyModal() {
+    if (!emergencyModal) return;
+    emergencyModal.style.display = "none";
+    if (!callModal || callModal.style.display !== "flex") {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
+  window.warmRightContactState = { status, openModal, openEmergencyModal };
   if (!window.__warmRightContactDelegation) {
     window.__warmRightContactDelegation = true;
     document.addEventListener('click', event => {
+      const emergencyTrigger = event.target.closest('[data-emergency-trigger]');
+      if (emergencyTrigger) {
+        event.preventDefault();
+        closeModal();
+        openEmergencyModal();
+        return;
+      }
+
       const trigger = event.target.closest('[data-contact-behavior], .footer-call-btn, .request-callback-tile, .callback-direct');
       if (!trigger) return;
       const behavior = trigger.dataset.contactBehavior
@@ -165,6 +188,11 @@ window.initWarmRight = async function() {
         e.target.classList.contains('modal-close-trigger') ||
         e.target.closest('.call-modal-close')) {
       closeModal();
+    }
+    if (e.target.id === "emergency-modal" ||
+        e.target.matches('[data-emergency-close]') ||
+        e.target.closest('[data-emergency-close]')) {
+      closeEmergencyModal();
     }
   });
 

@@ -1,8 +1,13 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+import {
+  cleanText,
+  createServiceClient,
+  defaultCorsHeaders as corsHeaders,
+  enforceRateLimit,
+  httpError,
+  json,
+  readJson,
+  requestIp,
+} from '../_shared/security.ts';
 
 const legacyGoogleBase = 'https://maps.googleapis.com/maps/api/place';
 const googlePlacesBase = 'https://places.googleapis.com/v1';
@@ -13,6 +18,14 @@ Deno.serve(async (req) => {
   try {
     if (req.method !== 'POST') throw httpError('Unsupported method.', 405);
     const body = await readJson(req);
+    const db = createServiceClient();
+    await enforceRateLimit({
+      db,
+      scope: 'google_places_lookup',
+      identifier: requestIp(req) || 'anonymous',
+      limit: 40,
+      windowSeconds: 300,
+    });
     const action = cleanText(body.action, 40);
 
     if (action === 'autocomplete') {
@@ -205,28 +218,8 @@ function googleKey() {
   return value;
 }
 
-async function readJson(req: Request) {
-  try { return await req.json(); } catch { return {}; }
-}
-
-function cleanText(value: unknown, max: number) {
-  return String(value || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, max);
-}
-
 function toNumber(value: unknown) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
 
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
-function httpError(message: string, status: number) {
-  const err = new Error(message) as Error & { status: number };
-  err.status = status;
-  return err;
-}

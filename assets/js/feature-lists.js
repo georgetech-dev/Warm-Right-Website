@@ -57,7 +57,8 @@
     listEl.innerHTML = activeItems.map(item => {
       const useIcon = item.use_icon && item.icon_url;
       const iconSize = Math.max(8, Number(item.icon_size || 22));
-      const text = `<span class="managed-feature-list-text">${item.item_html || ''}</span>`;
+      const safeHtml = window.WarmRightSanitize?.sanitizeRichHtml(item.item_html || '') || '';
+      const text = `<span class="managed-feature-list-text">${safeHtml}</span>`;
       if (!useIcon) return `<li class="card">${text}</li>`;
       const iconSrc = window.WarmRightImages?.imageUrl(item.icon_url) || item.icon_url;
       const raw = window.WarmRightImages?.githubRawUrl(item.icon_url) || '';

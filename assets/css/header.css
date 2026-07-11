@@ -13,7 +13,7 @@ html, body {
   left: 0;
   right: 0;
   width: 95%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   z-index: 1000;
   background: var(--nav-background);
@@ -32,8 +32,9 @@ html, body {
 #main-nav-bar .header-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 15px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 10px 18px;
   
 }
 
@@ -64,16 +65,33 @@ html, body {
 
 
 /* --- DESKTOP NAV LINKS --- */
-#main-nav-bar .nav { display: flex; gap: 15px; align-items: center; }
-#main-nav-bar .nav a { 
+#main-nav-bar .nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+#main-nav-bar .nav a,
+#main-nav-bar .nav button {
   color: var(--nav-text, #fff);
   text-decoration: none; 
   font-weight: 600; 
-  font-size: 0.9rem; 
+  font-size: 0.88rem; 
   line-height: 1.2;
-  padding: 8px 10px;
+  padding: 8px 8px;
   border-bottom: 2px solid transparent;
   transition: all 0.3s ease;
+  font-family: inherit;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+#main-nav-bar .nav button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
 #main-nav-bar .nav > a:hover,
@@ -82,6 +100,28 @@ html, body {
 #main-nav-bar .nav > .dropdown > a.active {
   color: var(--nav-hover-text, #ffd166);
   border-bottom: 2px solid var(--nav-hover-text, #ffd166);
+}
+
+#main-nav-bar .nav-emergency-btn {
+  margin-left: auto;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #c62828;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 10px 22px rgba(198, 40, 40, 0.22);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#main-nav-bar .nav-emergency-btn:hover,
+#main-nav-bar .nav-emergency-btn:focus-visible {
+  background: #e53935;
+  color: #fff;
+  border-bottom-color: transparent;
+  transform: translateY(-1px);
 }
 
 /* --- DESKTOP DROPDOWNS --- */

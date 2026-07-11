@@ -1,10 +1,6 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-};
+import { defaultCorsHeaders as corsHeaders, httpError, json, requireAdminUser, requiredEnv } from '../_shared/security.ts';
 
-const IMAGE_EXTENSIONS = new Set(['avif', 'gif', 'jpeg', 'jpg', 'png', 'svg', 'webp']);
+const IMAGE_EXTENSIONS = new Set(['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp']);
 
 type GitHubFile = {
   name: string;
@@ -21,7 +17,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    await requireAuthenticatedUser(req);
+    await requireAdminUser(req);
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action') || 'list';
@@ -51,23 +47,6 @@ Deno.serve(async (req) => {
     return json({ error: err.message || 'Unexpected error.' }, err.status || 500);
   }
 });
-
-async function requireAuthenticatedUser(req: Request) {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader) throw httpError('Missing Authorization header.', 401);
-
-  const supabaseUrl = requiredEnv('SUPABASE_URL');
-  const anonKey = requiredEnv('SUPABASE_ANON_KEY');
-  const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-    headers: {
-      Authorization: authHeader,
-      apikey: anonKey,
-    },
-  });
-
-  if (!response.ok) throw httpError('Not signed in.', 401);
-  return response.json();
-}
 
 async function listImages() {
   const files = await githubJson<GitHubFile[]>('GET', repoPath());
@@ -232,24 +211,3 @@ function safeFileName(name: string) {
     .replace(/(^-|-$)/g, '');
 }
 
-function requiredEnv(name: string) {
-  const value = Deno.env.get(name);
-  if (!value) throw httpError(`Missing ${name} secret.`, 500);
-  return value;
-}
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      ...corsHeaders,
-      'Content-Type': 'application/json',
-    },
-  });
-}
-
-function httpError(message: string, status: number) {
-  const err = new Error(message) as Error & { status: number };
-  err.status = status;
-  return err;
-}

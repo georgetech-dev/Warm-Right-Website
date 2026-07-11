@@ -1,12 +1,15 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  cleanText,
+  createServiceClient,
+  defaultCorsHeaders as corsHeaders,
+  httpError,
+  json,
+  readJson,
+  requestIp,
+  requireAdminUser,
+} from '../_shared/security.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-};
-
-const serviceDb = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'));
+const serviceDb = createServiceClient();
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -184,24 +187,8 @@ async function isExcludedIp(ip: string) {
   return Boolean(data?.length);
 }
 
-async function requireAdminUser(req: Request) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader) throw httpError('Not signed in.', 401);
-  const authDb = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_ANON_KEY'), {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data: { user }, error } = await authDb.auth.getUser();
-  if (error || !user) throw httpError('Admin session is invalid.', 401);
-  return user;
-}
-
-function requestIp(req: Request) {
-  const raw = req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')?.split(',')[0] || '';
-  return cleanIp(raw);
-}
-
 function cleanIp(value: unknown) {
-  let ip = cleanText(value, 80).replace(/^\[|\]$/g, '');
+  let ip = String(cleanText(value, 80)).replace(/^\[|\]$/g, '');
   if (ip.startsWith('::ffff:')) ip = ip.slice(7);
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
     return ip.split('.').every(part => Number(part) <= 255) ? ip : '';
@@ -233,31 +220,8 @@ function isLikelyBot(userAgent: string) {
   return /bot|crawl|spider|slurp|preview|lighthouse|headless|monitor/i.test(userAgent);
 }
 
-function cleanText(value: unknown, max: number) {
-  return String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, max);
-}
-
 function clampNumber(value: string | null, min: number, max: number, fallback: number) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.min(max, Math.max(min, Math.round(number))) : fallback;
 }
 
-async function readJson(req: Request) {
-  try { return await req.json(); } catch { return {}; }
-}
-
-function requiredEnv(name: string) {
-  const value = Deno.env.get(name);
-  if (!value) throw new Error(`Missing ${name} secret.`);
-  return value;
-}
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-}
-
-function httpError(message: string, status: number) {
-  const err = new Error(message) as Error & { status: number };
-  err.status = status;
-  return err;
-}

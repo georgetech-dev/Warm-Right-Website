@@ -92,7 +92,8 @@
       ? `<span class="content-card-actions"><a class="content-card-button" href="${escapeHtml(card.button_url)}">${escapeHtml(card.button_label)}</a></span>`
       : '';
 
-    el.innerHTML = `<span class="content-card-body">${card.body_html || ''}</span>${button}`;
+    const safeBody = window.WarmRightSanitize?.sanitizeRichHtml(card.body_html || '') || '';
+    el.innerHTML = `<span class="content-card-body">${safeBody}</span>${button}`;
   }
 
   async function loadContentCards() {

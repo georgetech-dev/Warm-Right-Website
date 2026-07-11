@@ -184,7 +184,8 @@
 
     function showOfferModal(title, html) {
       document.getElementById('offer-modal-title').textContent = title;
-      document.getElementById('offer-modal-body').innerHTML = html || 'More details will be available soon.';
+      const safeHtml = window.WarmRightSanitize?.sanitizeRichHtml(html || '') || '';
+      document.getElementById('offer-modal-body').innerHTML = safeHtml || 'More details will be available soon.';
       document.getElementById('offer-modal').style.display = 'flex';
       document.body.style.overflow = 'hidden';
     }

@@ -18,10 +18,11 @@
 /* --- TOP BAR CONTENTS (Flex Layout) --- */
 #mobile-nav-bar .mobile-bar-contents {
   display: flex;
-  justify-content: space-between; /* Hamburger Left, Brand Right */
+  justify-content: flex-start;
   align-items: center;
   padding: 10px 15px;
   height: 60px;
+  gap: 10px;
 }
 
 
@@ -29,29 +30,48 @@
 #mobile-nav-bar .mobile-brand-wrapper {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   text-decoration: none;
- 
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    
-    /* This pushes the logo and text to the far right */
-    margin-left: auto; 
-    
-    /* Ensures it doesn't slide under the fixed hamburger if the screen is tiny */
-    padding-left: 70px; 
+  margin-left: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 #mobile-nav-bar .mobile-brand-wrapper span {
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
+  white-space: nowrap;
 }
 
 #mobile-nav-bar .mobile-brand-wrapper img {
   height: 35px;
   width: auto;
+}
+
+#mobile-nav-bar .mobile-emergency-btn {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  background: #c62828;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 9px 11px;
+  box-shadow: 0 8px 18px rgba(198, 40, 40, 0.24);
+  cursor: pointer;
+  margin-left: 54px;
+  white-space: nowrap;
+}
+
+#mobile-nav-bar .mobile-emergency-btn:hover,
+#mobile-nav-bar .mobile-emergency-btn:focus-visible {
+  background: #e53935;
 }
 
 /* --- MOBILE DRAWER (Slide from Left) --- */
@@ -396,6 +416,20 @@
 }
 
 @media (max-width: 420px) {
+  #mobile-nav-bar .mobile-bar-contents {
+    gap: 8px;
+  }
+
+  #mobile-nav-bar .mobile-emergency-btn {
+    margin-left: 50px;
+    font-size: 0.7rem;
+    padding: 8px 10px;
+  }
+
+  #mobile-nav-bar .mobile-brand-wrapper span {
+    font-size: 0.88rem;
+  }
+
   .mobile-contact-actions {
     width: 100%;
     height: 150px;

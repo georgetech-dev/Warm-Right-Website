@@ -1,10 +1,16 @@
-# Ignore local backup folders and large archives
+# Local backups and archives
 Warm Right Website BackUps/
 *.zip
-customer-email-templates-update.sql
-public-site-base-url-update.sql
-rate-options-update.sql
-supabase-site-management.sql
-supabase-feedback-survey-update.sql
-callback-requests-update.sql
-supabase-site-management.sql
+
+# Dependencies and local tooling
+node_modules/
+.env
+.env.*
+!.env.example
+supabase/.temp/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak

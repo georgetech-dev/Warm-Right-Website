@@ -1,18 +1,32 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  cleanText,
+  createServiceClient,
+  defaultCorsHeaders as corsHeaders,
+  enforceRateLimit,
+  httpError,
+  json,
+  requestIp,
+  requiredEnv,
+} from '../_shared/security.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const HONEYPOT_FIELDS = ['website', 'company', 'url'];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     if (req.method !== 'POST') throw httpError('Unsupported method.', 405);
-    const payload = normalizePayload(await req.json());
-    const db = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'));
+    const body = await req.json();
+    const db = createServiceClient();
+    await enforceRateLimit({
+      db,
+      scope: 'feedback_submission',
+      identifier: requestIp(req) || cleanText(body.customer_email, 180) || 'anonymous',
+      limit: 5,
+      windowSeconds: 900,
+    });
+    const payload = normalizePayload(body);
 
     const { data: inserted, error } = await db.from('feedback_surveys').insert(payload).select('id').single();
     if (error) throw error;
@@ -55,6 +69,9 @@ Deno.serve(async (req) => {
 });
 
 function normalizePayload(body: Record<string, unknown>) {
+  if (HONEYPOT_FIELDS.some((field) => cleanText(body[field], 120))) {
+    throw httpError('This request could not be accepted.', 400);
+  }
   const jobOrigin = cleanText(body.job_origin, 20) === 'referred' ? 'referred' : 'direct';
   const hasMainBody = jobOrigin === 'referred';
   const privacyNoticeAccepted = toBoolean(body.privacy_notice_accepted);
@@ -309,10 +326,6 @@ function senderAddress() {
 function requiredRating(value: unknown, label: string) { const number = Number(value); if (!Number.isInteger(number) || number < 1 || number > 5) throw httpError(`${label} is required.`, 400); return number; }
 function validEmail(value: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value); }
 function toBoolean(value: unknown) { return value === true || value === 'true' || value === 'yes' || value === '1'; }
-function cleanText(value: unknown, maxLength: number) { return String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength); }
 function emailAddressOnly(value: string) { const match = value.match(/<([^>]+)>/); return (match?.[1] || value).trim(); }
 function escapeHtml(value: unknown) { return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char)); }
 function escapeAttr(value: unknown) { return escapeHtml(value).replace(/`/g, '&#96;'); }
-function requiredEnv(name: string) { const value = Deno.env.get(name); if (!value) throw httpError(`${name} is not configured.`, 500); return value; }
-function httpError(message: string, status: number) { return Object.assign(new Error(message), { status }); }
-function json(payload: unknown, status = 200) { return new Response(JSON.stringify(payload), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); }

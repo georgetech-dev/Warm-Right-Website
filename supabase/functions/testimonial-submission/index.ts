@@ -1,10 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+import {
+  cleanText,
+  createServiceClient,
+  defaultCorsHeaders as corsHeaders,
+  enforceRateLimit,
+  httpError,
+  json,
+  requestIp,
+  requiredEnv,
+} from '../_shared/security.ts';
 
 type SubmittedImage = {
   name: string;
@@ -13,6 +17,8 @@ type SubmittedImage = {
 };
 
 const PERMISSION_WORDING_VERSION = 'testimonial-permissions-v1.0-2026-07';
+const HONEYPOT_FIELDS = ['website', 'company', 'url'];
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,8 +29,15 @@ Deno.serve(async (req) => {
     if (req.method !== 'POST') throw httpError('Unsupported method.', 405);
 
     const body = await req.json();
+    const db = createServiceClient();
+    await enforceRateLimit({
+      db,
+      scope: 'testimonial_submission',
+      identifier: requestIp(req) || cleanText(body.customer_email, 180) || 'anonymous',
+      limit: 5,
+      windowSeconds: 900,
+    });
     const payload = normalizePayload(body);
-    const db = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'));
     const imageUrls = await uploadImages(db, payload.images);
 
     const { data: settingsRows } = await db
@@ -88,6 +101,9 @@ Deno.serve(async (req) => {
 });
 
 function normalizePayload(body: Record<string, unknown>) {
+  if (HONEYPOT_FIELDS.some((field) => cleanText(body[field], 120))) {
+    throw httpError('This request could not be accepted.', 400);
+  }
   const customer_name = cleanText(body.customer_name, 120);
   const customer_email = cleanText(body.customer_email, 180);
   const customer_phone = cleanText(body.customer_phone, 60);
@@ -126,7 +142,7 @@ async function uploadImages(db: ReturnType<typeof createClient>, images: Submitt
   const urls: string[] = [];
 
   for (const image of images) {
-    if (!image.base64 || !image.type?.startsWith('image/')) continue;
+    if (!image.base64 || !ALLOWED_IMAGE_TYPES.has(String(image.type || '').toLowerCase())) continue;
     if (image.base64.length > 1_800_000) {
       throw httpError('One of the uploaded photos is too large. Please choose a smaller image.', 413);
     }
@@ -456,10 +472,6 @@ function escapeAttr(value: string) {
   return escapeHtml(value);
 }
 
-function cleanText(value: unknown, maxLength: number) {
-  return String(value || '').trim().slice(0, maxLength);
-}
-
 function toBoolean(value: unknown) {
   return value === true || value === 'true' || value === 'yes' || value === '1';
 }
@@ -474,21 +486,3 @@ function extensionFromName(name: string, type: string) {
   return type.split('/').pop()?.replace('jpeg', 'jpg') || 'jpg';
 }
 
-function requiredEnv(name: string) {
-  const value = Deno.env.get(name);
-  if (!value) throw httpError(`Missing ${name} secret.`, 500);
-  return value;
-}
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
-function httpError(message: string, status: number) {
-  const err = new Error(message) as Error & { status: number };
-  err.status = status;
-  return err;
-}

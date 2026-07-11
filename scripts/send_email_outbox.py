@@ -4,6 +4,7 @@ import smtplib
 import ssl
 import sys
 from email.message import EmailMessage
+from email.utils import formataddr, getaddresses, parseaddr
 from urllib import error, request
 
 
@@ -89,8 +90,16 @@ def build_message(row):
 def format_from(value):
     value = (value or SMTP_FROM).strip()
     if "<" in value and ">" in value:
-        return value
-    return f"{SMTP_FROM_NAME} <{value}>"
+        addresses = [(name.strip(), address.strip()) for name, address in getaddresses([value]) if address.strip()]
+        if addresses:
+            name, address = addresses[0]
+            return formataddr((name or SMTP_FROM_NAME, address))
+
+    name, address = parseaddr(value)
+    if address:
+        return formataddr((name or SMTP_FROM_NAME, address.strip()))
+
+    return formataddr((SMTP_FROM_NAME, value))
 
 
 def send_message(message):
