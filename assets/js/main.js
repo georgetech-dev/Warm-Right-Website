@@ -2,6 +2,38 @@ console.log("MAIN JS VERSION", 4);
 
 document.addEventListener("DOMContentLoaded", () => {
   const uiIconPath = (path) => window.WarmRightImages?.publicUrl(path) || `/${String(path).replace(/^(\.\/|\.\.\/|\/)+/, '')}`;
+  const supportsStableScrollbarGutter = !!window.CSS?.supports?.('scrollbar-gutter: stable');
+
+  if (!window.WarmRightScrollLock) {
+    const activeLocks = new Set();
+    const lockBody = () => {
+      const scrollbarGap = supportsStableScrollbarGutter
+        ? 0
+        : Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+      document.body.style.setProperty('--modal-scrollbar-gap', `${scrollbarGap}px`);
+      document.body.style.paddingRight = `${scrollbarGap}px`;
+      document.body.classList.add('modal-open');
+    };
+    const unlockBody = () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.paddingRight = '';
+      document.body.style.removeProperty('--modal-scrollbar-gap');
+    };
+    window.WarmRightScrollLock = {
+      lock(key = 'default') {
+        activeLocks.add(String(key));
+        lockBody();
+      },
+      unlock(key = 'default') {
+        activeLocks.delete(String(key));
+        if (!activeLocks.size) unlockBody();
+      },
+      clear() {
+        activeLocks.clear();
+        unlockBody();
+      }
+    };
+  }
 
   initTestimonials();
 

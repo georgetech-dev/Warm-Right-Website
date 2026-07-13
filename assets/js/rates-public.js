@@ -113,12 +113,12 @@
     const safeHtml = window.WarmRightSanitize?.sanitizeRichHtml(option.read_more_content || '') || '';
     document.getElementById('rate-modal-body').innerHTML = safeHtml || 'Additional information will be available soon.';
     document.getElementById('rate-info-modal').classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+    window.WarmRightScrollLock?.lock('rates-modal') || document.body.classList.add('modal-open');
   }
 
   function closeRateModal() {
     document.getElementById('rate-info-modal').classList.remove('is-open');
-    document.body.style.overflow = '';
+    window.WarmRightScrollLock?.unlock('rates-modal') || document.body.classList.remove('modal-open');
   }
 
   document.addEventListener('click', event => {

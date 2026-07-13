@@ -12,6 +12,10 @@
     'unvented-cylinders',
     'common-faults'
   ]);
+  const KNOWN_FAQ_PAGES = new Set([
+    'boiler-installation',
+    'kitchens-bathrooms'
+  ]);
   const PAGE_META = {
     home: { description: 'Edit the homepage hero, welcome cards and both homepage carousels.', previewUrl: '/index.html', modulePageKey: 'home', sections: ['page-settings', 'hero', 'content-cards', 'carousel:take-a-look', 'carousel:support'] },
     about: { description: 'Manage the About Us hero and supporting content blocks.', previewUrl: '/about.html', modulePageKey: 'about', sections: ['page-settings', 'hero', 'content-cards'] },
@@ -26,10 +30,10 @@
     repairs: { description: 'Manage the repairs page content and feature lists.', previewUrl: '/services/repairs.html', modulePageKey: 'repairs', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
     'annual-servicing': { description: 'Manage the annual servicing page content and feature lists.', previewUrl: '/services/annual-servicing.html', modulePageKey: 'annual-servicing', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
     'landlords-certificates': { description: 'Manage the landlord certificates page content and feature lists.', previewUrl: '/services/landlords-certificates.html', modulePageKey: 'landlords-certificates', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
-    'boiler-installation': { description: 'Manage the boiler installations page content and feature lists.', previewUrl: '/services/boiler-installation.html', modulePageKey: 'boiler-installation', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
+    'boiler-installation': { description: 'Manage the boiler installations page content, feature lists and FAQs.', previewUrl: '/services/boiler-installation.html', modulePageKey: 'boiler-installation', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists', 'faq'] },
     'general-maintenance': { description: 'Manage the plumbing page content.', previewUrl: '/services/general-maintenance.html', modulePageKey: 'general-maintenance', sections: ['page-settings', 'hero', 'content-cards'] },
     'homebuyers-reports': { description: 'Manage the homebuyer reports support page content.', previewUrl: '/support/homebuyers-reports.html', modulePageKey: 'homebuyers-reports', sections: ['page-settings', 'hero', 'content-cards'] },
-    'kitchens-bathrooms': { description: 'Manage the kitchens and bathrooms page content.', previewUrl: '/services/kitchens-bathrooms.html', modulePageKey: 'kitchens-bathrooms', sections: ['page-settings', 'hero', 'content-cards'] },
+    'kitchens-bathrooms': { description: 'Manage the kitchens and bathrooms page content and FAQs.', previewUrl: '/services/kitchens-bathrooms.html', modulePageKey: 'kitchens-bathrooms', sections: ['page-settings', 'hero', 'content-cards', 'faq'] },
     'powerflushing-descaling': { description: 'Manage the powerflushing page content and feature lists.', previewUrl: '/services/powerflushing-descaling.html', modulePageKey: 'powerflushing-descaling', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
     'second-opinion': { description: 'Manage the second opinions page content and feature lists.', previewUrl: '/services/second-opinion.html', modulePageKey: 'second-opinion', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
     'unvented-cylinders': { description: 'Manage the unvented cylinders page content and feature lists.', previewUrl: '/services/unvented-cylinders.html', modulePageKey: 'unvented-cylinders', sections: ['page-settings', 'hero', 'content-cards', 'feature-lists'] },
@@ -48,7 +52,9 @@
     { key: 'appearance', title: 'Appearance & Navigation', caption: 'Colours, backgrounds, public address and nav visibility.', href: 'appearance-admin.html' },
     { key: 'file-explorer', title: 'File Explorer', caption: 'Upload, rename and remove website images.', href: 'website-file-explorer.html' },
     { key: 'contact-options', title: 'Contact Options', caption: 'Manage contact tiles, emergency callbacks and mobile buttons.', href: 'contact-options-admin.html' },
+    { key: 'faqs', title: 'FAQs', caption: 'Edit accordion questions and answers for FAQ pages.', href: 'faqs-admin.html' },
     { key: 'privacy', title: 'Privacy Policy', caption: 'Edit the privacy notice and review date.', href: 'privacy-admin.html' },
+    { key: 'terms', title: 'Terms & Conditions', caption: 'Manage reusable offer terms and deep-link anchors.', href: 'terms-admin.html' },
     { key: 'coverage', title: 'Coverage Map', caption: 'Manage the interactive coverage map and labels.', href: 'coverage-admin.html' }
   ];
 
@@ -58,6 +64,8 @@
   let contentCards = [];
   let featureLists = [];
   let featureListItems = [];
+  let faqSections = [];
+  let faqItems = [];
   let heroes = [];
   let contactOptions = [];
   let carouselTiles = [];
@@ -103,11 +111,13 @@
   }
 
   async function loadAll() {
-    const [pages, cards, lists, listItems, heroRows, options, tiles] = await Promise.all([
+    const [pages, cards, lists, listItems, faqSectionRows, faqItemRows, heroRows, options, tiles] = await Promise.all([
       safeSelect(() => db.from('site_pages').select('*').order('sort_order')),
       safeSelect(() => db.from('site_content_cards').select('*').order('page_key').order('sort_order')),
       safeSelect(() => db.from('site_feature_lists').select('*').order('page_key').order('sort_order')),
       safeSelect(() => db.from('site_feature_list_items').select('*').order('list_key').order('sort_order')),
+      safeSelect(() => db.from('site_faq_sections').select('*').order('page_key').order('sort_order')),
+      safeSelect(() => db.from('site_faq_items').select('*').order('section_key').order('sort_order')),
       safeSelect(() => db.from('site_heroes').select('*').order('page_key').order('sort_order')),
       safeSelect(() => db.from('site_contact_options').select('*').order('sort_order')),
       safeSelect(() => db.from('site_carousel_tiles').select('*').order('carousel_key').order('sort_order'))
@@ -116,6 +126,8 @@
     contentCards = cards;
     featureLists = lists;
     featureListItems = listItems;
+    faqSections = faqSectionRows;
+    faqItems = faqItemRows;
     heroes = heroRows;
     contactOptions = options;
     carouselTiles = tiles;
@@ -374,6 +386,7 @@
     const sections = ['page-settings', 'hero'];
     if (!['offers', 'rates', 'services', 'support'].includes(pageKey)) sections.push('content-cards');
     if (KNOWN_FEATURE_LIST_PAGES.has(pageKey)) sections.push('feature-lists');
+    if (KNOWN_FAQ_PAGES.has(pageKey)) sections.push('faq');
     return sections;
   }
 
@@ -411,6 +424,7 @@
     if (section === 'hero') return renderHeroSection(page, meta);
     if (section === 'content-cards') return renderContentCardsSection(page, meta);
     if (section === 'feature-lists') return renderFeatureListsSection(page, meta);
+    if (section === 'faq') return renderFaqSection(page, meta);
     if (section.startsWith('contact-options:')) return renderContactOptionsSection(page, section.split(':')[1]);
     if (section.startsWith('carousel:')) return renderCarouselSection(section.split(':')[1]);
     if (section === 'special:rates') return renderSpecialManagerSection('rates', 'Schedule of Rates', 'Edit grouped rate cards, prices, modal content and images.', 'rates.html');
@@ -610,6 +624,47 @@
             ${cards}
           </div>
         ` : '<div class="page-studio-empty">No managed feature lists are active for this page yet.</div>'}
+      </section>
+    `;
+  }
+
+  function renderFaqSection(page, meta) {
+    const rows = faqSections.filter(item => item.page_key === meta.modulePageKey).sort(sortByOrder);
+    const cards = rows.map(row => {
+      const itemsPreview = faqItems
+        .filter(item => item.section_key === row.section_key && item.is_active !== false)
+        .sort(sortByOrder)
+        .slice(0, 4)
+        .map(item => `<li>${escapeHtml(item.question || 'Untitled question')}</li>`)
+        .join('');
+      return `
+        <article class="page-studio-list-card page-studio-clickable" data-open-editor="${escapeAttr(getAdminUrl('faqs-admin.html', { page: meta.modulePageKey, sectionKey: row.section_key, embed: 1 }))}" data-editor-title="${escapeAttr(row.title || row.section_key)}">
+          <div class="page-studio-card-body">
+            <div class="page-studio-inline-head">
+              <span class="page-studio-badge ${row.is_active === false ? 'is-muted' : 'is-good'}">${row.is_active === false ? 'Hidden' : 'Live'}</span>
+            </div>
+            <h4>${escapeHtml(row.title || row.section_key)}</h4>
+            <ul class="page-studio-list-items">${itemsPreview || '<li>Click to edit FAQ questions and answers.</li>'}</ul>
+          </div>
+        </article>
+      `;
+    }).join('');
+    return `
+      <section class="page-studio-section" id="studio-section-faq">
+        <div class="page-studio-section-head">
+          <div class="page-studio-section-copy">
+            <h3>Frequently Asked Questions</h3>
+            <p class="page-studio-section-subtitle">Edit accordion questions, answers and visibility for this page.</p>
+          </div>
+          <div class="page-studio-section-actions">
+            <button class="site-btn secondary" type="button" data-open-editor="${escapeAttr(getAdminUrl('faqs-admin.html', { page: meta.modulePageKey, embed: 1 }))}" data-editor-title="Manage FAQs">Open FAQ Editor</button>
+          </div>
+        </div>
+        ${rows.length ? `
+          <div class="page-studio-preview-grid">
+            ${cards}
+          </div>
+        ` : '<div class="page-studio-empty">No managed FAQ section is active for this page yet.</div>'}
       </section>
     `;
   }

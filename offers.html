@@ -76,6 +76,7 @@
     #offer-modal-body, #offer-modal-body p, #offer-modal-body li, #offer-modal-body span { color:var(--offers-modal-text); }
     .offer-actions { display:flex; gap:12px; margin-top:20px; }
     .offer-actions .btn-read-more { flex:1; text-align:center; }
+    .offer-actions .is-hidden { display:none !important; }
     @media (max-width: 992px) {
       .offers-grid .feature-tile { flex-direction: column !important; max-width: 500px; margin: 0 auto; }
       .offers-grid .feature-tile img { width: 100%; max-width: 100%; min-height: 0; height: 220px; }
@@ -115,6 +116,7 @@
       <div id="offer-modal-body" style="line-height:1.7;"></div>
       <div class="offer-actions">
         <button class="btn-read-more" onclick="closeOfferModal()">Close Window</button>
+        <a id="offer-modal-terms" class="btn-read-more is-hidden" href="terms.html">Offer Terms</a>
         <a class="btn-read-more" href="book-a-visit.html">Book Now</a>
       </div>
     </div>
@@ -127,25 +129,33 @@
         title: 'Family & Friends Offer',
         image_url: 'assets/images/family-offer.jpg',
         summary: 'Book together on the same day within a 2-mile radius and unlock generous boiler service discounts.',
-        content_html: '<p>Know someone nearby who needs a boiler service or Gas Safety Check? Book together on the same day and save.</p><ul class="indent"><li>2 households: <strong>10% off</strong> each</li><li>3 households: <strong>30% off</strong> each</li><li>4 households: <strong>50% off</strong> each</li><li>5+ households: <strong>Yours is FREE!</strong></li></ul><p><em>Offer excludes parts. Boilers must have been serviced within the last 13 months. Terms apply.</em></p>'
+        content_html: '<p>Know someone nearby who needs a boiler service or Gas Safety Check? Book together on the same day and save.</p><ul class="indent"><li>2 households: <strong>10% off</strong> each</li><li>3 households: <strong>30% off</strong> each</li><li>4 households: <strong>50% off</strong> each</li><li>5+ households: <strong>Yours is FREE!</strong></li></ul><p><em>Offer excludes parts. Boilers must have been serviced within the last 13 months. Terms apply.</em></p>',
+        terms_section_key: 'family-offer',
+        terms_link_label: 'Offer Terms'
       },
       {
         title: 'Landlord Bundle',
         image_url: 'assets/images/landlord-deal.jpg',
         summary: 'An all-in-one landlord package for compliance, servicing and tenant support.',
-        content_html: '<p>Our landlord package includes what you need to stay compliant and keep tenants safe.</p><ul class="indent"><li>Unlimited same-day callouts to your property</li><li>Annual boiler service</li><li>CP12 Gas Safety Certificate</li><li>Free Energy Efficiency and System Condition Report</li></ul><p><strong>Only GBP 120 inc. VAT one-off</strong> or <strong>GBP 12/month inc. VAT</strong></p>'
+        content_html: '<p>Our landlord package includes what you need to stay compliant and keep tenants safe.</p><ul class="indent"><li>Unlimited same-day callouts to your property</li><li>Annual boiler service</li><li>CP12 Gas Safety Certificate</li><li>Free Energy Efficiency and System Condition Report</li></ul><p><strong>Only GBP 120 inc. VAT one-off</strong> or <strong>GBP 12/month inc. VAT</strong></p>',
+        terms_section_key: 'landlord-bundle',
+        terms_link_label: 'Bundle Terms'
       },
       {
         title: 'OAP Discounts',
         image_url: 'assets/images/oap-discount.jpg',
         summary: 'Discounted rates on selected services for older customers.',
-        content_html: '<p>We are proud to support older customers with discounted rates on selected services. Let us know when booking and we will apply the saving automatically.</p>'
+        content_html: '<p>We are proud to support older customers with discounted rates on selected services. Let us know when booking and we will apply the saving automatically.</p>',
+        terms_section_key: 'oap-discounts',
+        terms_link_label: 'Discount Terms'
       },
       {
         title: 'Free Manuals & Guides',
         image_url: 'assets/images/manuals.jpg',
         summary: 'Free downloads, safety tips and troubleshooting information.',
-        content_html: '<p>Need help identifying a fault or understanding your boiler? Visit our <a href="/support/manuals.html">Manuals & Information page</a> for free downloads, safety tips and troubleshooting advice.</p>'
+        content_html: '<p>Need help identifying a fault or understanding your boiler? Visit our <a href="/support/manuals.html">Manuals & Information page</a> for free downloads, safety tips and troubleshooting advice.</p>',
+        terms_section_key: 'general-offer-terms',
+        terms_link_label: 'View Terms'
       }
     ];
 
@@ -176,23 +186,55 @@
       `).join('');
     }
 
+    function termsHref(sectionKey) {
+      const key = String(sectionKey || '').trim();
+      return key ? `terms.html?section=${encodeURIComponent(key)}` : 'terms.html';
+    }
+
+    function rememberTermsTarget(sectionKey) {
+      const key = String(sectionKey || '').trim();
+      if (!key) return;
+      try {
+        sessionStorage.setItem('warmright_terms_target', key);
+      } catch (_) {
+        // ignore storage failures
+      }
+    }
+
     function openOfferModal(index) {
       const offer = window.currentOffers?.[index];
       if (!offer) return;
-      showOfferModal(offer.title, offer.content_html || offer.summary || '');
+      showOfferModal(offer);
     }
 
-    function showOfferModal(title, html) {
-      document.getElementById('offer-modal-title').textContent = title;
+    function showOfferModal(offer) {
+      const html = offer.content_html || offer.summary || '';
+      document.getElementById('offer-modal-title').textContent = offer.title || 'Offer Details';
       const safeHtml = window.WarmRightSanitize?.sanitizeRichHtml(html || '') || '';
       document.getElementById('offer-modal-body').innerHTML = safeHtml || 'More details will be available soon.';
+      const termsButton = document.getElementById('offer-modal-terms');
+      if (offer.terms_section_key) {
+        termsButton.href = termsHref(offer.terms_section_key);
+        termsButton.onclick = (event) => {
+          event.preventDefault();
+          rememberTermsTarget(offer.terms_section_key);
+          window.location.href = termsHref(offer.terms_section_key);
+        };
+        termsButton.textContent = offer.terms_link_label || 'Offer Terms';
+        termsButton.classList.remove('is-hidden');
+      } else {
+        termsButton.href = 'terms.html';
+        termsButton.onclick = null;
+        termsButton.textContent = 'Offer Terms';
+        termsButton.classList.add('is-hidden');
+      }
       document.getElementById('offer-modal').style.display = 'flex';
-      document.body.style.overflow = 'hidden';
+      window.WarmRightScrollLock?.lock('offers-modal') || document.body.classList.add('modal-open');
     }
 
     window.closeOfferModal = () => {
       document.getElementById('offer-modal').style.display = 'none';
-      document.body.style.overflow = '';
+      window.WarmRightScrollLock?.unlock('offers-modal') || document.body.classList.remove('modal-open');
     };
 
     let offersInitialised = false;
@@ -244,6 +286,6 @@
   </script>
   <script src="assets/js/include.js"></script>
   <script src="assets/js/nav.js"></script>
-<script src="assets/js/main.js?v=10"></script>
+<script src="assets/js/main.js?v=11"></script>
 </body>
 </html>

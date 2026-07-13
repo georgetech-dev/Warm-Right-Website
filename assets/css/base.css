@@ -15,6 +15,7 @@ html, body {
   color: var(--text-primary);
   line-height: 1.5;
   font-size: var(--base-font-size); /*main font size */
+  scrollbar-gutter: stable;
 }
 .container {
   max-width: 1150px;
@@ -600,7 +601,9 @@ p.article-gap.card a:hover {
    =========================== */
 
 .faq {
-  background: var(--card-bg, #fff);
+  background: var(--faq-item-background, var(--tile-background, #fff));
+  color: var(--faq-item-text, var(--text-primary, #0f1724));
+  border: 1px solid var(--faq-border, rgba(15, 23, 36, 0.08));
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
@@ -616,20 +619,21 @@ p.article-gap.card a:hover {
 
 .faq h3 {
   font-size: 1.2rem;
-  color: var(--heading-color, #0a2c66);
-  margin-bottom: 0.75rem;
+  color: var(--faq-question-text, var(--primary-blue, #0a2c66));
+  margin-bottom: 0;
   position: relative;
-  padding-right: 1.5rem;
+  padding-right: 2.4rem;
 }
 
 .faq h3::after {
   content: "+";
   position: absolute;
   right: 0;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 1.4rem;
-  color: var(--accent-color, #d63c2c);
-  transition: transform 0.3s ease;
+  color: var(--faq-toggle-text, var(--accent-orange, #d63c2c));
+  transition: transform 0.25s ease, color 0.25s ease;
 }
 
 .faq.open h3::after {
@@ -651,6 +655,39 @@ p.article-gap.card a:hover {
 .faq.open p {
   max-height: 500px; /* ensures smooth expansion */
   opacity: 1;
+}
+
+.faq.open h3::after {
+  content: "−";
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.faq p,
+.faq .faq-answer {
+  color: var(--faq-item-text, var(--text-primary, #333));
+}
+
+.faq .faq-answer {
+  font-size: 1rem;
+  line-height: 1.6;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+}
+
+.faq .faq-answer > *:first-child {
+  margin-top: 0;
+}
+
+.faq .faq-answer > *:last-child {
+  margin-bottom: 0;
+}
+
+.faq.open .faq-answer {
+  max-height: 500px;
+  opacity: 1;
+  margin-top: 0.75rem;
 }
 
 /* Container spacing for FAQ sections */

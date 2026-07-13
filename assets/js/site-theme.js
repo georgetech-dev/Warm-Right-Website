@@ -2,8 +2,8 @@
   const STORAGE_KEY = 'warmright-theme-preference';
   const CACHE_KEY = 'warmright-theme-settings';
   const DEFAULTS = {
-    light: { page_background:'#f9f6f2', surface:'#ffffff', text_primary:'#0f1724', text_secondary:'#5c5c5c', primary:'#0a2c66', accent:'#2a6f7b', highlight:'#d97706', nav_background:'#0a2c66', nav_text:'#ffffff', nav_hover_text:'#ffd166', nav_dropdown_background:'#ffffff', nav_dropdown_text:'#0a2c66', nav_dropdown_hover_background:'#fff7e6', nav_dropdown_hover_text:'#d97706', footer_background:'#062940', footer_text:'#ffffff', background_image:'', use_background_image:'false' },
-    dark: { page_background:'#181b20', surface:'#242a31', text_primary:'#f5f7fa', text_secondary:'#cbd5e1', primary:'#7db7ff', accent:'#5ac8c8', highlight:'#f59e0b', nav_background:'#101827', nav_text:'#ffffff', nav_hover_text:'#f59e0b', nav_dropdown_background:'#111827', nav_dropdown_text:'#ffffff', nav_dropdown_hover_background:'#1f2937', nav_dropdown_hover_text:'#fbbf24', footer_background:'#0b111b', footer_text:'#f8fafc', background_image:'', use_background_image:'false' },
+    light: { page_background:'#f9f6f2', surface:'#ffffff', text_primary:'#0f1724', text_secondary:'#5c5c5c', primary:'#0a2c66', accent:'#2a6f7b', highlight:'#d97706', nav_background:'#0a2c66', nav_text:'#ffffff', nav_hover_text:'#ffd166', nav_dropdown_background:'#ffffff', nav_dropdown_text:'#0a2c66', nav_dropdown_hover_background:'#fff7e6', nav_dropdown_hover_text:'#d97706', footer_background:'#062940', footer_text:'#ffffff', feature_list_item_background:'#ffffff', feature_list_item_text:'#0f1724', feature_list_icon_tint:'#0f1724', faq_item_background:'#ffffff', faq_item_text:'#334155', faq_question_text:'#0a2c66', faq_toggle_text:'#d63c2c', faq_border:'#dbe4ef', testimonial_form_background:'#ffffff', testimonial_form_text:'#0f1724', testimonial_input_background:'#ffffff', testimonial_input_text:'#0f1724', testimonial_input_border:'#d8e2ee', testimonial_support_background:'#f8fbff', testimonial_support_text:'#344054', background_image:'', use_background_image:'false' },
+    dark: { page_background:'#181b20', surface:'#242a31', text_primary:'#f5f7fa', text_secondary:'#cbd5e1', primary:'#7db7ff', accent:'#5ac8c8', highlight:'#f59e0b', nav_background:'#101827', nav_text:'#ffffff', nav_hover_text:'#f59e0b', nav_dropdown_background:'#111827', nav_dropdown_text:'#ffffff', nav_dropdown_hover_background:'#1f2937', nav_dropdown_hover_text:'#fbbf24', footer_background:'#0b111b', footer_text:'#f8fafc', feature_list_item_background:'#f8fafc', feature_list_item_text:'#0f1724', feature_list_icon_tint:'#0f1724', faq_item_background:'#f8fafc', faq_item_text:'#0f1724', faq_question_text:'#0a2c66', faq_toggle_text:'#d63c2c', faq_border:'#334155', testimonial_form_background:'#111827', testimonial_form_text:'#f8fafc', testimonial_input_background:'#0f172a', testimonial_input_text:'#f8fafc', testimonial_input_border:'#334155', testimonial_support_background:'#1b2635', testimonial_support_text:'#dbe5f2', background_image:'', use_background_image:'false' },
   };
   let settings = readCache();
 
@@ -47,6 +47,14 @@
       '--nav-dropdown-hover-text': values.nav_dropdown_hover_text || values.highlight,
       '--footer-background': values.footer_background,
       '--footer-text': values.footer_text,
+      '--feature-list-item-background': values.feature_list_item_background || values.surface,
+      '--feature-list-item-text': values.feature_list_item_text || values.text_primary,
+      '--feature-list-icon-tint': values.feature_list_icon_tint || values.primary,
+      '--faq-item-background': values.faq_item_background || values.surface,
+      '--faq-item-text': values.faq_item_text || values.text_primary,
+      '--faq-question-text': values.faq_question_text || values.primary,
+      '--faq-toggle-text': values.faq_toggle_text || values.highlight,
+      '--faq-border': values.faq_border || values.surface,
       '--rates-card-background': values.rates_card_background || values.surface,
       '--rates-card-text': values.rates_card_text || values.text_primary,
       '--rates-card-muted': values.rates_card_muted || values.text_secondary,
@@ -71,6 +79,13 @@
       '--testimonials-card-text': values.testimonials_card_text || values.text_primary,
       '--testimonials-card-muted': values.testimonials_card_muted || values.text_secondary,
       '--testimonials-accent': values.testimonials_accent || values.accent,
+      '--testimonial-form-background': values.testimonial_form_background || values.surface,
+      '--testimonial-form-text': values.testimonial_form_text || values.text_primary,
+      '--testimonial-input-background': values.testimonial_input_background || values.surface,
+      '--testimonial-input-text': values.testimonial_input_text || values.text_primary,
+      '--testimonial-input-border': values.testimonial_input_border || values.surface,
+      '--testimonial-support-background': values.testimonial_support_background || values.surface,
+      '--testimonial-support-text': values.testimonial_support_text || values.text_secondary,
       '--privacy-surface': values.privacy_surface || 'transparent',
       '--privacy-text': values.privacy_text || values.text_primary,
       '--privacy-heading': values.privacy_heading || values.primary,

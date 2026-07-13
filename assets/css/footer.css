@@ -4,6 +4,7 @@
 body.modal-open {
     overflow: hidden !important; /* Prevents background site from scrolling */
     height: 100vh;
+    padding-right: var(--modal-scrollbar-gap, 0px);
 }
 
 /* ==========================================

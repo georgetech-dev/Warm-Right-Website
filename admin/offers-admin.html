@@ -39,6 +39,7 @@
     .editor-toolbar button { padding:7px 10px; background:white; border:1px solid #ddd; }
     .html-editor { min-height:190px; padding:14px; border:1px solid #ddd; border-radius:0 0 6px 6px; background:white; font-size:16px; line-height:1.55; outline:none; }
     .image-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+    .terms-note { margin:8px 0 0; color:#667085; font-size:13px; line-height:1.45; }
   </style>
 </head>
 <body>
@@ -67,6 +68,13 @@
           <input id="title" placeholder="Offer title">
           <label>Tile Summary</label>
           <textarea id="summary" rows="3" placeholder="Short tile text..."></textarea>
+          <label>Terms section</label>
+          <select id="terms_section_key">
+            <option value="">No linked terms section</option>
+          </select>
+          <label>Terms button label</label>
+          <input id="terms_link_label" placeholder="Offer Terms">
+          <p class="terms-note">Choose a section from the shared Terms &amp; Conditions page to show a direct link inside the offer modal.</p>
           <label>Read More Content</label>
           <div class="editor-toolbar">
             <button type="button" onclick="editorCommand('bold')"><strong>B</strong></button>
@@ -92,6 +100,7 @@
   <script>
     let editingId = null;
     let currentSession = null;
+    let termsSections = [];
 
     function editorCommand(command) {
       if (command === 'createLink') {
@@ -127,6 +136,7 @@
       currentSession = session;
       await window.loadAdminHeader(session);
       document.body.style.visibility = 'visible';
+      await loadTermsSections();
       loadOffers();
     }
 
@@ -137,10 +147,29 @@
       document.getElementById('formTitle').textContent = 'Add New Offer';
       document.getElementById('title').value = '';
       document.getElementById('summary').value = '';
+      document.getElementById('terms_section_key').value = '';
+      document.getElementById('terms_link_label').value = '';
       document.getElementById('image_url').value = '';
       document.getElementById('is_active').checked = true;
       document.getElementById('imagePreview').src = '../assets/images/no-image.jpg';
       setEditorHtml('');
+    }
+
+    async function loadTermsSections() {
+      const select = document.getElementById('terms_section_key');
+      select.innerHTML = '<option value="">No linked terms section</option>';
+      const { data, error } = await window.db
+        .from('terms_policy_sections')
+        .select('section_key, subtitle, is_active, sort_order')
+        .order('sort_order', { ascending:true });
+      if (error) {
+        console.warn('Terms sections could not be loaded for offers admin.', error.message);
+        return;
+      }
+      termsSections = data || [];
+      select.innerHTML += termsSections.map(section => `
+        <option value="${escapeHtml(section.section_key)}">${escapeHtml(section.subtitle)}${section.is_active === false ? ' (hidden)' : ''} - #${escapeHtml(section.section_key)}</option>
+      `).join('');
     }
 
     function initSortable() {
@@ -182,6 +211,8 @@
       document.getElementById('formTitle').textContent = 'Editing: ' + data.title;
       document.getElementById('title').value = data.title || '';
       document.getElementById('summary').value = data.summary || '';
+      document.getElementById('terms_section_key').value = data.terms_section_key || '';
+      document.getElementById('terms_link_label').value = data.terms_link_label || '';
       document.getElementById('image_url').value = data.image_url || '';
       document.getElementById('imagePreview').src = imageSrcForAdmin(data.image_url);
       document.getElementById('is_active').checked = data.is_active !== false;
@@ -212,6 +243,8 @@
         title,
         summary: document.getElementById('summary').value.trim(),
         content_html: getEditorHtml(),
+        terms_section_key: document.getElementById('terms_section_key').value.trim() || null,
+        terms_link_label: document.getElementById('terms_link_label').value.trim() || null,
         image_url: imageUrl,
         is_active: document.getElementById('is_active').checked
       };

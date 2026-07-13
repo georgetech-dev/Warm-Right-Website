@@ -30,9 +30,12 @@
     style.id = 'managed-feature-list-styles';
     style.textContent = `
       .managed-feature-list{list-style:none;padding-left:0}
+      .managed-feature-list>li.card{background:var(--feature-list-item-background, var(--tile-background, #fff));color:var(--feature-list-item-text, var(--text-primary, #0f1724))}
       .managed-feature-list>li.has-managed-icon{display:flex;align-items:flex-start;gap:12px}
       .managed-feature-list-icon{flex:0 0 auto;object-fit:contain;margin-top:.1em}
       .managed-feature-list-text{min-width:0}
+      .managed-feature-list-text,.managed-feature-list-text *{color:inherit}
+      .managed-feature-list>li.card strong{color:inherit}
     `;
     document.head.appendChild(style);
   }

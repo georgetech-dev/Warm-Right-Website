@@ -6,9 +6,12 @@
     ['global', 'Page & Background', ['page_background', 'surface', 'text_primary', 'text_secondary', 'primary', 'accent', 'highlight', 'background_image', 'use_background_image']],
     ['navigation', 'Navigation', ['nav_background', 'nav_text', 'nav_hover_text', 'nav_dropdown_background', 'nav_dropdown_text', 'nav_dropdown_hover_background', 'nav_dropdown_hover_text']],
     ['footer', 'Footer', ['footer_background', 'footer_text']],
+    ['feature-lists', 'Feature Lists', ['feature_list_item_background', 'feature_list_item_text', 'feature_list_icon_tint']],
+    ['faq', 'FAQs', ['faq_item_background', 'faq_item_text', 'faq_question_text', 'faq_toggle_text', 'faq_border']],
     ['rates', 'Schedule of Rates', ['rates_card_background', 'rates_card_text', 'rates_card_muted', 'rates_card_divider', 'rates_button_background', 'rates_button_text', 'rates_modal_background', 'rates_modal_text', 'rates_modal_muted', 'rates_modal_close_background', 'rates_modal_close_text']],
     ['offers', 'Offers', ['offers_card_background', 'offers_card_text', 'offers_card_muted', 'offers_button_background', 'offers_button_text', 'offers_modal_background', 'offers_modal_text', 'offers_modal_close_background', 'offers_modal_close_text']],
     ['testimonials', 'Testimonials', ['testimonials_card_background', 'testimonials_card_text', 'testimonials_card_muted', 'testimonials_accent']],
+    ['testimonial-submit', 'Testimonial Submit', ['testimonial_form_background', 'testimonial_form_text', 'testimonial_input_background', 'testimonial_input_text', 'testimonial_input_border', 'testimonial_support_background', 'testimonial_support_text']],
     ['privacy', 'Privacy Policy', ['privacy_surface', 'privacy_text', 'privacy_heading', 'privacy_subheading', 'privacy_link', 'privacy_divider']],
   ];
 
@@ -46,6 +49,8 @@
     ['nav_dropdown_background', 'Dropdown background'], ['nav_dropdown_text', 'Dropdown text'],
     ['nav_dropdown_hover_background', 'Dropdown hover background'], ['nav_dropdown_hover_text', 'Dropdown hover text'],
     ['footer_background', 'Footer background'], ['footer_text', 'Footer text'],
+    ['feature_list_item_background', 'Feature list item background'], ['feature_list_item_text', 'Feature list item text'], ['feature_list_icon_tint', 'Feature list icon tint'],
+    ['faq_item_background', 'FAQ item background'], ['faq_item_text', 'FAQ answer text'], ['faq_question_text', 'FAQ question text'], ['faq_toggle_text', 'FAQ plus/minus colour'], ['faq_border', 'FAQ border colour'],
     ['rates_card_background', 'Rates card background'], ['rates_card_text', 'Rates card heading and price text'],
     ['rates_card_muted', 'Rates card body text'], ['rates_card_divider', 'Rates card dividers'],
     ['rates_button_background', 'Rates button background'], ['rates_button_text', 'Rates button text'],
@@ -59,6 +64,10 @@
     ['offers_modal_close_text', 'Offers modal close text'],
     ['testimonials_card_background', 'Testimonial card background'], ['testimonials_card_text', 'Testimonial heading text'],
     ['testimonials_card_muted', 'Testimonial body text'], ['testimonials_accent', 'Testimonial accent'],
+    ['testimonial_form_background', 'Testimonial form background'], ['testimonial_form_text', 'Testimonial form text'],
+    ['testimonial_input_background', 'Testimonial input background'], ['testimonial_input_text', 'Testimonial input text'],
+    ['testimonial_input_border', 'Testimonial input border'], ['testimonial_support_background', 'Testimonial support panel background'],
+    ['testimonial_support_text', 'Testimonial support panel text'],
     ['privacy_surface', 'Privacy page surface'], ['privacy_text', 'Privacy page text'],
     ['privacy_heading', 'Privacy page headings'], ['privacy_subheading', 'Privacy page subheadings'],
     ['privacy_link', 'Privacy page links'], ['privacy_divider', 'Privacy page dividers'],
@@ -69,6 +78,8 @@
       primary: '#0a2c66', accent: '#2a6f7b', highlight: '#d97706', nav_background: '#0a2c66',
       nav_text: '#ffffff', nav_hover_text: '#ffd166', nav_dropdown_background: '#ffffff', nav_dropdown_text: '#0a2c66',
       nav_dropdown_hover_background: '#fff7e6', nav_dropdown_hover_text: '#d97706', footer_background: '#062940', footer_text: '#ffffff',
+      feature_list_item_background: '#ffffff', feature_list_item_text: '#0f1724', feature_list_icon_tint: '#0f1724',
+      faq_item_background: '#ffffff', faq_item_text: '#334155', faq_question_text: '#0a2c66', faq_toggle_text: '#d63c2c', faq_border: '#dbe4ef',
       rates_card_background: '#ffffff', rates_card_text: '#0a2c66', rates_card_muted: '#5c5c5c', rates_card_divider: '#dce4eb',
       rates_button_background: '#0a2c66', rates_button_text: '#ffffff', rates_modal_background: '#ffffff', rates_modal_text: '#334155',
       rates_modal_muted: '#64748b', rates_modal_close_background: '#eef2f6', rates_modal_close_text: '#334155',
@@ -76,6 +87,9 @@
       offers_button_background: '#0a2c66', offers_button_text: '#ffffff', offers_modal_background: '#ffffff',
       offers_modal_text: '#334155', offers_modal_close_background: '#eef2f6', offers_modal_close_text: '#334155',
       testimonials_card_background: '#fffaf5', testimonials_card_text: '#062940', testimonials_card_muted: '#5c5c5c', testimonials_accent: '#2b6777',
+      testimonial_form_background: '#ffffff', testimonial_form_text: '#0f1724', testimonial_input_background: '#ffffff',
+      testimonial_input_text: '#0f1724', testimonial_input_border: '#d8e2ee', testimonial_support_background: '#f8fbff',
+      testimonial_support_text: '#344054',
       privacy_surface: '#f9f6f2', privacy_text: '#26364a', privacy_heading: '#062940', privacy_subheading: '#2a6672', privacy_link: '#0a5aa1', privacy_divider: '#dce4eb',
       background_image: '', use_background_image: 'false',
     },
@@ -84,6 +98,8 @@
       primary: '#7db7ff', accent: '#5ac8c8', highlight: '#f59e0b', nav_background: '#101827',
       nav_text: '#ffffff', nav_hover_text: '#f59e0b', nav_dropdown_background: '#111827', nav_dropdown_text: '#ffffff',
       nav_dropdown_hover_background: '#1f2937', nav_dropdown_hover_text: '#fbbf24', footer_background: '#0b111b', footer_text: '#f8fafc',
+      feature_list_item_background: '#f8fafc', feature_list_item_text: '#0f1724', feature_list_icon_tint: '#0f1724',
+      faq_item_background: '#f8fafc', faq_item_text: '#0f1724', faq_question_text: '#0a2c66', faq_toggle_text: '#d63c2c', faq_border: '#334155',
       rates_card_background: '#202833', rates_card_text: '#f5f7fa', rates_card_muted: '#cbd5e1', rates_card_divider: '#3a4759',
       rates_button_background: '#2f5ea8', rates_button_text: '#ffffff', rates_modal_background: '#1c2430', rates_modal_text: '#f5f7fa',
       rates_modal_muted: '#cbd5e1', rates_modal_close_background: '#334155', rates_modal_close_text: '#f8fafc',
@@ -91,6 +107,9 @@
       offers_button_background: '#2f5ea8', offers_button_text: '#ffffff', offers_modal_background: '#1c2430',
       offers_modal_text: '#f5f7fa', offers_modal_close_background: '#334155', offers_modal_close_text: '#f8fafc',
       testimonials_card_background: '#202833', testimonials_card_text: '#f5f7fa', testimonials_card_muted: '#cbd5e1', testimonials_accent: '#5ac8c8',
+      testimonial_form_background: '#111827', testimonial_form_text: '#f8fafc', testimonial_input_background: '#0f172a',
+      testimonial_input_text: '#f8fafc', testimonial_input_border: '#334155', testimonial_support_background: '#1b2635',
+      testimonial_support_text: '#dbe5f2',
       privacy_surface: '#181b20', privacy_text: '#e2e8f0', privacy_heading: '#f8fafc', privacy_subheading: '#8bd7de', privacy_link: '#8fc2ff', privacy_divider: '#334155',
       background_image: '', use_background_image: 'false',
     },
@@ -338,6 +357,18 @@
         body: renderMiniFooterPreview(),
       }),
       renderExampleCard({
+        key: 'feature-lists',
+        title: 'Feature Lists',
+        description: 'List items, icons and contrast for managed bullet sections.',
+        body: renderMiniFeatureListsPreview(),
+      }),
+      renderExampleCard({
+        key: 'faq',
+        title: 'FAQs',
+        description: 'Accordion cards, question text and plus-button colour.',
+        body: renderMiniFaqPreview(),
+      }),
+      renderExampleCard({
         key: 'rates',
         title: 'Schedule of Rates',
         description: 'Rates cards, buttons and modal colours.',
@@ -354,6 +385,12 @@
         title: 'Testimonials',
         description: 'Testimonial card colours and accent styling.',
         body: renderMiniTestimonialsPreview(),
+      }),
+      renderExampleCard({
+        key: 'testimonial-submit',
+        title: 'Testimonial Submit',
+        description: 'Form panel, inputs and consent blocks on the testimonial page.',
+        body: renderMiniTestimonialSubmitPreview(),
       }),
       renderExampleCard({
         key: 'privacy',
@@ -446,6 +483,45 @@
     return `<div class="appearance-mini-footer" style="background:${escapeHtml(bg)};color:${escapeHtml(text)}">Warm Right footer links and contact details</div>`;
   }
 
+  function renderMiniFeatureListsPreview() {
+    const value = key => themeInput('dark', key)?.value || THEME_DEFAULTS.dark[key];
+    return `
+      <div class="appearance-mini-site" style="background:${escapeHtml(themeInput('dark', 'page_background')?.value || THEME_DEFAULTS.dark.page_background)}">
+        <div class="appearance-mini-body">
+          <div class="appearance-mini-feature-list">
+            ${[
+              'Full appliance inspection and safety checks.',
+              'Flue and ventilation checks for safe operation.',
+              'Certificate issued on completion.',
+            ].map(text => `
+              <div class="appearance-mini-feature-item" style="background:${escapeHtml(value('feature_list_item_background'))};color:${escapeHtml(value('feature_list_item_text'))}">
+                <span class="appearance-mini-feature-icon" style="color:${escapeHtml(value('feature_list_icon_tint'))}">•</span>
+                <span>${escapeHtml(text)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMiniFaqPreview() {
+    const value = key => themeInput('dark', key)?.value || THEME_DEFAULTS.dark[key];
+    return `
+      <div class="appearance-mini-site" style="background:${escapeHtml(themeInput('dark', 'page_background')?.value || THEME_DEFAULTS.dark.page_background)}">
+        <div class="appearance-mini-body">
+          <div class="appearance-mini-card" style="background:${escapeHtml(value('faq_item_background'))};color:${escapeHtml(value('faq_item_text'))};border:1px solid ${escapeHtml(value('faq_border'))}">
+            <strong style="color:${escapeHtml(value('faq_question_text'))}">How do I know if I need a new boiler?</strong>
+            <span style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <span>Warm Right can help review breakdowns, age and repair history.</span>
+              <span style="font-size:1.35rem;color:${escapeHtml(value('faq_toggle_text'))};font-weight:800;">+</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function renderMiniRatesPreview() {
     const value = key => themeInput('light', key)?.value || THEME_DEFAULTS.light[key];
     return `
@@ -506,6 +582,24 @@
     `;
   }
 
+  function renderMiniTestimonialSubmitPreview() {
+    const value = key => themeInput('dark', key)?.value || THEME_DEFAULTS.dark[key];
+    return `
+      <div class="appearance-mini-site" style="background:${escapeHtml(themeInput('dark', 'page_background')?.value || THEME_DEFAULTS.dark.page_background)}">
+        <div class="appearance-mini-body">
+          <div class="appearance-mini-card" style="background:${escapeHtml(value('testimonial_form_background'))};color:${escapeHtml(value('testimonial_form_text'))}">
+            <strong style="color:${escapeHtml(themeInput('dark', 'primary')?.value || THEME_DEFAULTS.dark.primary)}">Share Your Experience</strong>
+            <div class="appearance-mini-form-stack">
+              <span class="appearance-mini-input" style="background:${escapeHtml(value('testimonial_input_background'))};color:${escapeHtml(value('testimonial_input_text'))};border-color:${escapeHtml(value('testimonial_input_border'))}">Your name</span>
+              <span class="appearance-mini-input" style="background:${escapeHtml(value('testimonial_input_background'))};color:${escapeHtml(value('testimonial_input_text'))};border-color:${escapeHtml(value('testimonial_input_border'))}">Your testimonial</span>
+            </div>
+            <div class="appearance-mini-note" style="background:${escapeHtml(value('testimonial_support_background'))};color:${escapeHtml(value('testimonial_support_text'))}">Consent and helper notes use this support surface.</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function bindModal() {
     document.getElementById('appearance-modal-close').addEventListener('click', closeAppearanceModal);
     document.getElementById('appearance-modal-backdrop').addEventListener('click', closeAppearanceModal);
@@ -524,9 +618,12 @@
       'dark-global': { title: 'Dark Mode Appearance', description: 'Edit the dark-mode page, surface and accent colours.', sourceId: 'appearance-theme-editor-panel', mode: 'dark', group: 'global' },
       'navigation': { title: 'Navigation Colours', description: 'Desktop nav, hover text and dropdown colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'navigation' },
       'footer': { title: 'Footer Colours', description: 'Footer background and text colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'footer' },
+      'feature-lists': { title: 'Feature List Colours', description: 'Background, text and icon colours for managed feature list items.', sourceId: 'appearance-theme-editor-panel', mode: 'dark', group: 'feature-lists' },
+      'faq': { title: 'FAQ Colours', description: 'Accordion card, question, answer and toggle colours for FAQ sections.', sourceId: 'appearance-theme-editor-panel', mode: 'dark', group: 'faq' },
       'rates': { title: 'Schedule of Rates Colours', description: 'Card, button and modal colours for the rates page.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'rates' },
       'offers': { title: 'Offers Colours', description: 'Offer cards, buttons and modal colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'offers' },
       'testimonials': { title: 'Testimonials Colours', description: 'Testimonial cards and accent colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'testimonials' },
+      'testimonial-submit': { title: 'Testimonial Submit Colours', description: 'Form panel, input and support surface colours for the public testimonial page.', sourceId: 'appearance-theme-editor-panel', mode: 'dark', group: 'testimonial-submit' },
       'privacy': { title: 'Privacy Policy Colours', description: 'Privacy page surfaces, headings, links and dividers.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'privacy' },
     }[key];
     if (!config) return;

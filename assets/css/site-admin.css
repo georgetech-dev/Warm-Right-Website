@@ -209,6 +209,51 @@ body { margin: 0; padding: 40px; visibility: hidden; background: #f4f7f6; color:
   font-size: 0.82rem;
 }
 
+.appearance-mini-form-stack {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.appearance-mini-feature-list {
+  display: grid;
+  gap: 8px;
+}
+
+.appearance-mini-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.appearance-mini-feature-icon {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.appearance-mini-input {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid #dbe4ef;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.appearance-mini-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
 .appearance-mini-button {
   display: inline-flex;
   align-items: center;

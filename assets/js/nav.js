@@ -92,7 +92,7 @@ window.initWarmRight = async function() {
   function openModal(directForm = false) {
     if (!callModal) return;
     callModal.style.display = "flex";
-    document.body.classList.add('modal-open');
+    window.WarmRightScrollLock?.lock('call-modal') || document.body.classList.add('modal-open');
     const callbackStatus = document.getElementById('callback-form-status');
     if (callbackStatus) { callbackStatus.textContent = ''; callbackStatus.classList.remove('error'); }
 
@@ -136,20 +136,21 @@ window.initWarmRight = async function() {
   function closeModal() {
     if (callModal) {
       callModal.style.display = "none";
-      document.body.classList.remove('modal-open');
+      window.WarmRightScrollLock?.unlock('call-modal') || document.body.classList.remove('modal-open');
     }
   }
 
   function openEmergencyModal() {
     if (!emergencyModal) return;
     emergencyModal.style.display = "flex";
-    document.body.classList.add('modal-open');
+    window.WarmRightScrollLock?.lock('emergency-modal') || document.body.classList.add('modal-open');
   }
 
   function closeEmergencyModal() {
     if (!emergencyModal) return;
     emergencyModal.style.display = "none";
-    if (!callModal || callModal.style.display !== "flex") {
+    window.WarmRightScrollLock?.unlock('emergency-modal');
+    if (!window.WarmRightScrollLock && (!callModal || callModal.style.display !== "flex")) {
       document.body.classList.remove('modal-open');
     }
   }

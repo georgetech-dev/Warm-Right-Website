@@ -179,22 +179,98 @@
 
     initSupabase();
 
+    function setMessage(text, color = "var(--primary-blue)") {
+      const msg = document.getElementById('msg');
+      msg.style.color = color;
+      msg.textContent = text;
+    }
+
+    async function waitForDb(maxAttempts = 40) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        if (db?.auth) return db;
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      return null;
+    }
+
+    async function getCurrentUserRole() {
+      const readyDb = await waitForDb();
+      if (!readyDb) return null;
+
+      const { data: { user }, error: userError } = await readyDb.auth.getUser();
+      if (userError || !user) return null;
+
+      const { data, error } = await readyDb
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Unable to resolve admin role during login.", error);
+        return null;
+      }
+
+      return data?.role || null;
+    }
+
+    async function completeAdminLogin() {
+      const role = await getCurrentUserRole();
+
+      if (role !== 'admin') {
+        await db.auth.signOut().catch(() => {});
+        setMessage("This account does not currently have admin access.", "#ef4444");
+        document.getElementById('login-fields').style.display = 'block';
+        document.getElementById('mfa-section').style.display = 'none';
+        return false;
+      }
+
+      setMessage("Access Granted. Redirecting...", "#10b981");
+      setTimeout(() => { window.location.href = 'admin-landed.html'; }, 800);
+      return true;
+    }
+
+    async function hydrateExistingSession() {
+      const readyDb = await waitForDb();
+      if (!readyDb) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const reason = params.get('reason');
+
+      if (reason === 'no-role') {
+        setMessage("That sign-in does not have an admin role assigned yet.", "#ef4444");
+      } else if (reason === 'forbidden') {
+        setMessage("That account is signed in, but it cannot access the admin area.", "#ef4444");
+      }
+
+      const { data, error } = await readyDb.auth.getSession();
+      if (error || !data.session) return;
+
+      const role = await getCurrentUserRole();
+      if (role === 'admin') {
+        setMessage("Existing admin session found. Redirecting...", "#10b981");
+        window.location.replace('admin-landed.html');
+        return;
+      }
+
+      await readyDb.auth.signOut().catch(() => {});
+      if (!reason) {
+        setMessage("Please sign in with an admin account to continue.", "#ef4444");
+      }
+    }
+
     // --- STEP 1: INITIAL LOGIN ---
     document.getElementById('loginBtn').addEventListener('click', async () => {
       if (!db) return;
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const msg = document.getElementById('msg');
-
-      msg.style.color = "var(--primary-blue)";
-      msg.textContent = "Authenticating...";
+      setMessage("Authenticating...");
 
       const { data, error } = await db.auth.signInWithPassword({ email, password });
 
       if (error) {
-        msg.style.color = "#ef4444";
-        msg.textContent = error.message;
+        setMessage(error.message, "#ef4444");
       } else {
         // --- CHECK IF MFA IS REQUIRED ---
         const { data: { nextLevel, currentLevel } } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -203,13 +279,10 @@
             // MFA is enabled for this user
             document.getElementById('login-fields').style.display = 'none';
             document.getElementById('mfa-section').style.display = 'block';
-            msg.textContent = "";
+            setMessage("");
             document.getElementById('mfa-otp').focus();
         } else {
-            // No MFA, proceed normally
-            msg.style.color = "#10b981";
-            msg.textContent = "Access Granted. Redirecting...";
-            setTimeout(() => { window.location.href = 'admin-landed.html'; }, 800);
+            await completeAdminLogin();
         }
       }
     });
@@ -217,16 +290,13 @@
     // --- STEP 2: VERIFY MFA ---
     async function verifyLoginMFA() {
         const otp = document.getElementById('mfa-otp').value.trim();
-        const msg = document.getElementById('msg');
 
         if (otp.length < 6) {
-            msg.style.color = "#ef4444";
-            msg.textContent = "Please enter the 6-digit code.";
+            setMessage("Please enter the 6-digit code.", "#ef4444");
             return;
         }
 
-        msg.style.color = "var(--primary-blue)";
-        msg.textContent = "Verifying code...";
+        setMessage("Verifying code...");
 
         // 1. Get the enrolled factor
         const { data: factors } = await db.auth.mfa.listFactors();
@@ -235,8 +305,7 @@
         // 2. Create Challenge
         const { data: challengeData, error: challengeError } = await db.auth.mfa.challenge({ factorId: factor.id });
         if (challengeError) {
-            msg.style.color = "#ef4444";
-            msg.textContent = challengeError.message;
+            setMessage(challengeError.message, "#ef4444");
             return;
         }
 
@@ -248,12 +317,9 @@
         });
 
         if (verifyError) {
-            msg.style.color = "#ef4444";
-            msg.textContent = "Invalid code. Please try again.";
+            setMessage("Invalid code. Please try again.", "#ef4444");
         } else {
-            msg.style.color = "#10b981";
-            msg.textContent = "Verification Successful. Redirecting...";
-            setTimeout(() => { window.location.href = 'admin-landed.html'; }, 800);
+            await completeAdminLogin();
         }
     }
 
@@ -273,11 +339,9 @@
 	document.getElementById('forgot-password').addEventListener('click', async (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value.trim();
-        const msg = document.getElementById('msg');
 
         if (!email) {
-            msg.style.color = "#ef4444";
-            msg.textContent = "Please enter your email address first.";
+            setMessage("Please enter your email address first.", "#ef4444");
             return;
         }
 
@@ -286,57 +350,13 @@
         });
 
         if (error) {
-            msg.style.color = "#ef4444";
-            msg.textContent = error.message;
+            setMessage(error.message, "#ef4444");
         } else {
-            msg.style.color = "var(--primary-blue)";
-            msg.textContent = "Password reset email sent! Check your inbox.";
+            setMessage("Password reset email sent! Check your inbox.");
         }
     });
 
-    async function debugAuth() {
-        console.log("--- Debugging Login Redirect ---");
-        
-        // 1. Check if window.db exists
-        if (typeof window.db === 'undefined') {
-            console.error("FAIL: window.db is not defined! Are your script tags in the right order?");
-            return;
-        }
-
-        // 2. Try to get the session
-        const { data, error } = await window.db.auth.getSession();
-        
-        if (error) {
-            console.error("FAIL: Supabase error:", error);
-            return;
-        }
-
-        if (!data.session) {
-            console.log("SUCCESS: No user logged in. Allowing access to login page.");
-            return;
-        }
-
-        // 3. Decode the JWT
-        try {
-            const token = data.session.access_token;
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log("Logged in as:", payload.email, "with role:", payload.user_role);
-
-            // 4. Check Roles
-            const forbiddenRoles = ['customer', 'site-viewer', 'site-viewer-engineer'];
-            if (forbiddenRoles.includes(payload.user_role)) {
-                console.log("FORBIDDEN: Redirecting to /index.html...");
-                window.location.replace('/index.html');
-            } else {
-                console.log("ALLOWED: This user is an Admin/Engineer.");
-            }
-        } catch (e) {
-            console.error("FAIL: Could not decode token:", e);
-        }
-    }
-    
-    // Run it
-    debugAuth();
+    hydrateExistingSession();
   </script>
 </body>
 </html>

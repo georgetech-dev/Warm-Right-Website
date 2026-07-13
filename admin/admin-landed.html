@@ -327,6 +327,11 @@
             <h3>Privacy Policy</h3>
             <p>Edit the review date and privacy notice sections</p>
           </a>
+          <a href="terms-admin.html" class="card">
+            <div style="font-size: 34px; margin-bottom: 10px;">TERMS</div>
+            <h3>Terms &amp; Conditions</h3>
+            <p>Manage linked offer terms and reusable public sections</p>
+          </a>
           <a href="coverage-admin.html" class="card">
             <div style="font-size: 34px; margin-bottom: 10px;">MAP</div>
             <h3>Coverage Map</h3>
@@ -383,6 +388,11 @@
         <div style="font-size: 40px; margin-bottom: 10px;">POLICY</div>
         <h3>Privacy Policy</h3>
         <p>Edit the review date and numbered privacy notice sections</p>
+      </a>
+      <a href="terms-admin.html" class="card">
+        <div style="font-size: 40px; margin-bottom: 10px;">TERMS</div>
+        <h3>Terms &amp; Conditions</h3>
+        <p>Manage linked offer terms and reusable public sections</p>
       </a>
       <a href="opening-hours.html" class="card">
         <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
@@ -470,7 +480,10 @@
         window.location.href = 'login.html';
       } else {
         console.log("Session active:", session.user.email);
-        
+
+        const isAdmin = await window.requireRole(['admin']);
+        if (!isAdmin) return;
+
         // --- TRIGGER THE HEADER LOAD ---
         await window.loadAdminHeader(session); 
         openInitialTabFromHash();

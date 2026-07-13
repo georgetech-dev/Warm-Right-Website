@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WarmHub - FAQs | Warm Right Ltd</title>
+  <link rel="icon" href="../assets/images/favicon.png">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>window.adminPageTitle = "WarmHub - FAQs";</script>
+  <script src="../assets/js/admin-include.js?v=20260705theme"></script>
+  <style>
+    body { font-family:'Segoe UI', sans-serif; background:#f4f7f6; margin:0; padding:40px; visibility:hidden; color:#263238; }
+    #admin-header-container { margin:-40px -40px 30px -40px; }
+    .container { max-width:1300px; margin:0 auto; }
+    .panel { background:#fff; border-radius:12px; padding:24px; box-shadow:0 4px 8px rgba(0,0,0,.05); margin-bottom:24px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .toolbar-controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    h2, h3 { color:#004a99; margin:0; }
+    .hint, .status { color:#667085; font-size:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:14px; }
+    th { text-align:left; color:#004a99; background:#f9fafb; border-bottom:2px solid #e5e7eb; padding:12px; }
+    td { border-bottom:1px solid #e5e7eb; padding:12px; vertical-align:top; }
+    label { display:block; font-weight:700; margin:14px 0 6px; }
+    input, textarea, select, button { font-family:'Segoe UI', sans-serif; }
+    input, textarea, select { width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:6px; padding:10px; font-size:15px; }
+    textarea { min-height:110px; resize:vertical; }
+    input[type="checkbox"] { width:auto; }
+    button { padding:10px 16px; border:0; border-radius:6px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:#004a99; color:#fff; }
+    .btn-accent { background:#ff8c00; color:#fff; }
+    .btn-outline { background:#fff; color:#004a99; border:1px solid #e5e7eb; }
+    .btn-danger { background:#ef4444; color:#fff; }
+    .view-hidden { display:none !important; }
+    .layout { display:grid; grid-template-columns:minmax(360px, .78fr) minmax(420px, 1fr); gap:24px; align-items:start; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .item-row { display:grid; grid-template-columns:30px 1fr auto; gap:10px; align-items:start; padding:12px 0; border-bottom:1px solid #e5e7eb; }
+    .drag-handle { cursor:grab; color:#98a2b3; font-size:20px; padding-top:34px; }
+    .preview-stack { display:grid; gap:12px; }
+    .preview-faq { background:#fff; border:1px solid #dbe4ef; border-radius:12px; padding:16px 18px; }
+    .preview-faq h4 { margin:0; color:#0a2c66; display:flex; justify-content:space-between; gap:12px; align-items:center; }
+    .preview-faq h4 span { color:#d63c2c; font-size:1.4rem; }
+    .preview-faq .answer { color:#475467; margin-top:10px; line-height:1.6; }
+    @media (max-width:950px) { body{padding:75px 14px 20px!important;} #admin-header-container{margin:0 -14px 20px!important;} .layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <div id="admin-header-container"></div>
+  <main class="container">
+    <section id="list-view" class="panel">
+      <div class="toolbar">
+        <div>
+          <h2>Frequently Asked Questions</h2>
+          <p class="hint">Manage FAQ content for public pages. Existing page HTML stays as fallback until a managed section is enabled.</p>
+        </div>
+        <div class="toolbar-controls">
+          <select id="page-filter" onchange="renderSections()"></select>
+          <button class="btn-accent" onclick="seedFaqs()">Seed Current FAQs</button>
+        </div>
+      </div>
+      <div id="status" class="status"></div>
+      <table>
+        <thead><tr><th>Section</th><th>Page</th><th>Questions</th><th>Visible</th><th></th></tr></thead>
+        <tbody id="sections-body"></tbody>
+      </table>
+    </section>
+
+    <section id="editor-view" class="layout view-hidden">
+      <div class="panel">
+        <div class="toolbar">
+          <h2 id="form-title">Edit FAQ Section</h2>
+          <button class="btn-outline" onclick="showListView()">Back to FAQs</button>
+        </div>
+        <label>Section key</label>
+        <input id="section_key" readonly>
+        <label>Page key</label>
+        <input id="page_key" readonly>
+        <label>Section title</label>
+        <input id="title" placeholder="Frequently Asked Questions">
+        <label style="display:flex; gap:8px; align-items:center;"><input id="is_active" type="checkbox" checked onchange="updatePreview()"> Use managed FAQ section on website</label>
+        <div class="actions">
+          <button class="btn-primary" onclick="saveSection()">Save FAQ Section</button>
+          <button class="btn-outline" onclick="showListView()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <h3>Questions & Answers</h3>
+          <button class="btn-outline" onclick="addItem()">Add Question</button>
+        </div>
+        <p class="hint">Answers allow HTML such as <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;br&gt;</code> and links.</p>
+        <div id="items-editor"></div>
+        <div class="actions">
+          <button class="btn-primary" onclick="saveSection()">Save Questions</button>
+        </div>
+      </div>
+
+      <aside class="panel" style="grid-column:1 / -1;">
+        <h3>Preview</h3>
+        <div id="preview-stack" class="preview-stack"></div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM';
+    const SECTION_TABLE = 'site_faq_sections';
+    const ITEM_TABLE = 'site_faq_items';
+    const DEPLOYED_PAGES = [
+      { key:'boiler-installation', title:'Boiler Installations', url:'../services/boiler-installation.html' },
+      { key:'kitchens-bathrooms', title:'Kitchens & Bathrooms', url:'../services/kitchens-bathrooms.html' }
+    ];
+    let currentSession = null;
+    let sections = [];
+    let items = [];
+    let editingKey = null;
+    const pageParams = new URLSearchParams(window.location.search);
+
+    async function checkSecurity() {
+      const lib = window.supabase || window.Supabase;
+      if (!lib) { setTimeout(checkSecurity, 50); return; }
+      window.db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data: { session } } = await window.db.auth.getSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      currentSession = session;
+      await window.loadAdminHeader(session);
+      document.body.style.visibility = 'visible';
+      setupPageFilter();
+      await loadFaqs();
+      applyInitialState();
+    }
+
+    function setupPageFilter() {
+      document.getElementById('page-filter').innerHTML = `<option value="">All managed pages</option>${DEPLOYED_PAGES.map(page => `<option value="${page.key}">${escapeHtml(page.title)}</option>`).join('')}`;
+    }
+
+    function applyInitialState() {
+      const requestedPage = pageParams.get('page');
+      const requestedSectionKey = pageParams.get('sectionKey');
+      if (requestedPage && DEPLOYED_PAGES.some(page => page.key === requestedPage)) {
+        document.getElementById('page-filter').value = requestedPage;
+        renderSections();
+      }
+      if (requestedSectionKey) {
+        editSection(requestedSectionKey);
+        return;
+      }
+      showListView();
+    }
+
+    async function loadFaqs() {
+      const [{ data: sectionData, error: sectionError }, { data: itemData, error: itemError }] = await Promise.all([
+        window.db.from(SECTION_TABLE).select('*').order('page_key').order('sort_order'),
+        window.db.from(ITEM_TABLE).select('*').order('sort_order')
+      ]);
+      if (sectionError || itemError) return setStatus(sectionError?.message || itemError?.message);
+      sections = sectionData || [];
+      items = itemData || [];
+      renderSections();
+    }
+
+    function renderSections() {
+      const filter = document.getElementById('page-filter').value;
+      const rows = filter ? sections.filter(section => section.page_key === filter) : sections;
+      document.getElementById('sections-body').innerHTML = rows.map(section => `
+        <tr>
+          <td><strong>${escapeHtml(section.title || section.section_key)}</strong><br><small>${escapeHtml(section.section_key)}</small></td>
+          <td>${escapeHtml(pageTitle(section.page_key))}<br><small>${escapeHtml(section.page_key)}</small></td>
+          <td>${items.filter(item => item.section_key === section.section_key).length}</td>
+          <td>${section.is_active ? 'Yes' : 'No'}</td>
+          <td><button class="btn-outline" onclick="editSection('${escapeAttr(section.section_key)}')">Edit</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="5">No FAQ sections found. Use Seed Current FAQs.</td></tr>';
+    }
+
+    function editSection(key) {
+      const section = sections.find(item => item.section_key === key);
+      if (!section) return;
+      editingKey = key;
+      document.getElementById('form-title').textContent = `Editing: ${section.title || key}`;
+      document.getElementById('section_key').value = section.section_key;
+      document.getElementById('page_key').value = section.page_key;
+      document.getElementById('title').value = section.title || '';
+      document.getElementById('is_active').checked = section.is_active !== false;
+      renderItemsEditor();
+      updatePreview();
+      document.getElementById('list-view').classList.add('view-hidden');
+      document.getElementById('editor-view').classList.remove('view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showListView() {
+      document.getElementById('editor-view').classList.add('view-hidden');
+      document.getElementById('list-view').classList.remove('view-hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function currentItems() {
+      return items
+        .filter(item => item.section_key === editingKey)
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    }
+
+    function renderItemsEditor() {
+      document.getElementById('items-editor').innerHTML = currentItems().map((item, index) => itemEditorHtml(item, index)).join('');
+      initSortable();
+    }
+
+    function itemEditorHtml(item, index) {
+      return `
+        <div class="item-row" data-id="${escapeAttr(item.id || '')}">
+          <div class="drag-handle">☰</div>
+          <div>
+            <label>Question</label>
+            <input data-field="question" value="${escapeHtml(item.question || '')}" oninput="updatePreview()">
+            <label>Answer</label>
+            <textarea data-field="answer_html" oninput="updatePreview()">${escapeHtml(item.answer_html || '')}</textarea>
+            <label style="display:flex; gap:8px; align-items:center; margin-top:10px;"><input type="checkbox" data-field="is_active" ${item.is_active !== false ? 'checked' : ''} onchange="updatePreview()"> Visible</label>
+          </div>
+          <button class="btn-danger" type="button" onclick="removeItem(${index})">Delete</button>
+        </div>
+      `;
+    }
+
+    function initSortable() {
+      const el = document.getElementById('items-editor');
+      if (!window.Sortable || !el) return;
+      if (el._sortable) el._sortable.destroy();
+      el._sortable = Sortable.create(el, { handle: '.drag-handle', animation: 150, onEnd: syncEditorItems });
+    }
+
+    function syncEditorItems() {
+      const rows = Array.from(document.querySelectorAll('#items-editor .item-row'));
+      const existing = currentItems();
+      items = items.filter(item => item.section_key !== editingKey);
+      rows.forEach((row, index) => {
+        const original = existing.find(item => String(item.id || '') === row.dataset.id) || {};
+        items.push({
+          ...original,
+          id: row.dataset.id || original.id || `new-${Date.now()}-${index}`,
+          section_key: editingKey,
+          question: row.querySelector('[data-field="question"]').value.trim(),
+          answer_html: row.querySelector('[data-field="answer_html"]').value,
+          is_active: row.querySelector('[data-field="is_active"]').checked,
+          sort_order: index
+        });
+      });
+    }
+
+    function addItem() {
+      syncEditorItems();
+      items.push({ id:`new-${Date.now()}`, section_key: editingKey, question:'New question', answer_html:'New answer', is_active:true, sort_order: currentItems().length });
+      renderItemsEditor();
+      updatePreview();
+    }
+
+    function removeItem(index) {
+      syncEditorItems();
+      const row = currentItems()[index];
+      if (!row) return;
+      items = items.filter(item => item.id !== row.id);
+      renderItemsEditor();
+      updatePreview();
+    }
+
+    function updatePreview() {
+      syncEditorItems();
+      document.getElementById('preview-stack').innerHTML = currentItems()
+        .filter(item => item.is_active !== false)
+        .map(item => `
+          <div class="preview-faq">
+            <h4>${escapeHtml(item.question || 'Untitled question')}<span>+</span></h4>
+            <div class="answer">${item.answer_html || ''}</div>
+          </div>
+        `).join('') || '<div class="hint">No visible FAQ items yet.</div>';
+    }
+
+    async function saveSection() {
+      syncEditorItems();
+      const sectionKey = document.getElementById('section_key').value;
+      const payload = {
+        section_key: sectionKey,
+        page_key: document.getElementById('page_key').value,
+        title: document.getElementById('title').value.trim(),
+        is_active: document.getElementById('is_active').checked,
+        updated_at: new Date().toISOString()
+      };
+      const { error: sectionError } = await window.db.from(SECTION_TABLE).upsert(payload, { onConflict:'section_key' });
+      if (sectionError) return alert(sectionError.message);
+
+      const sectionItems = currentItems().map((item, index) => ({
+        section_key: sectionKey,
+        question: item.question,
+        answer_html: item.answer_html,
+        is_active: item.is_active !== false,
+        sort_order: index
+      }));
+      const { error: deleteError } = await window.db.from(ITEM_TABLE).delete().eq('section_key', sectionKey);
+      if (deleteError) return alert(deleteError.message);
+      if (sectionItems.length) {
+        const { error: itemError } = await window.db.from(ITEM_TABLE).insert(sectionItems);
+        if (itemError) return alert(itemError.message);
+      }
+      await loadFaqs();
+      setStatus('FAQ section saved.');
+      showListView();
+    }
+
+    async function seedFaqs() {
+      setStatus('Scanning deployed pages for FAQ sections...');
+      const seed = [];
+      for (const page of DEPLOYED_PAGES) {
+        try {
+          const response = await fetch(page.url, { cache:'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+          Array.from(doc.querySelectorAll('[data-faq-section], section')).filter(section => section.querySelector('.faq')).forEach((section, index) => {
+            const sectionKey = section.dataset.faqSection || `${page.key}:faq-${index + 1}`;
+            seed.push({
+              section: { section_key:sectionKey, page_key:page.key, title:findHeading(section) || `${page.title} FAQs`, sort_order:index, is_active:false },
+              items: Array.from(section.querySelectorAll('.faq')).map((faq, itemIndex) => ({
+                section_key:sectionKey,
+                question: faq.querySelector('h3')?.textContent?.trim() || `Question ${itemIndex + 1}`,
+                answer_html: sanitizeHtml(faq.querySelector('.faq-answer, p')?.innerHTML || ''),
+                sort_order:itemIndex,
+                is_active:true
+              }))
+            });
+          });
+        } catch (err) {
+          console.warn(`Could not scan ${page.url}`, err);
+        }
+      }
+      const existingKeys = new Set(sections.map(section => section.section_key));
+      const missing = seed.filter(row => !existingKeys.has(row.section.section_key));
+      if (!missing.length) {
+        setStatus('All detected FAQ sections are already seeded.');
+        return;
+      }
+      const { error: sectionError } = await window.db.from(SECTION_TABLE).insert(missing.map(row => row.section));
+      if (sectionError) return alert(sectionError.message);
+      const { error: itemError } = await window.db.from(ITEM_TABLE).insert(missing.flatMap(row => row.items));
+      if (itemError) return alert(itemError.message);
+      await loadFaqs();
+      setStatus(`${missing.length} FAQ section${missing.length === 1 ? '' : 's'} seeded. They are inactive until you enable them.`);
+    }
+
+    function findHeading(section) {
+      return section.querySelector('h1, h2, h3')?.textContent?.replace(/\s+/g, ' ').trim() || '';
+    }
+
+    function sanitizeHtml(html) {
+      const template = document.createElement('template');
+      template.innerHTML = html || '';
+      template.content.querySelectorAll('script,style,iframe,object').forEach(el => el.remove());
+      template.content.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+          if (/^on/i.test(attr.name) || attr.name === 'style') el.removeAttribute(attr.name);
+        });
+      });
+      return template.innerHTML.trim();
+    }
+
+    function pageTitle(key) { return DEPLOYED_PAGES.find(page => page.key === key)?.title || key; }
+    function setStatus(message) { document.getElementById('status').textContent = message || ''; }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }
+    function escapeAttr(value) { return escapeHtml(value); }
+
+    checkSecurity();
+  </script>
+</body>
+</html>

@@ -186,6 +186,7 @@ const adminSectionNavDefinitions = [
             { file: 'appearance-admin.html', label: 'Appearance & Navigation' },
             { file: 'contact-options-admin.html', label: 'Contact Options' },
             { file: 'privacy-admin.html', label: 'Privacy Policy' },
+            { file: 'terms-admin.html', label: 'Terms & Conditions' },
             { file: 'coverage-admin.html', label: 'Coverage Map' },
             { file: 'website-file-explorer.html', label: 'File Explorer' }
         ]
@@ -212,6 +213,7 @@ const adminSectionNavDefinitions = [
             { file: 'offers-admin.html', label: 'Manage Offers' },
             { file: 'coverage-admin.html', label: 'Coverage Map' },
             { file: 'privacy-admin.html', label: 'Privacy Policy' },
+            { file: 'terms-admin.html', label: 'Terms & Conditions' },
             { file: 'opening-hours.html', label: 'Opening Hours' }
         ]
     },
@@ -280,14 +282,16 @@ window.requireRole = async function(allowedRoles, options = {}) {
     const userRole = await window.getCurrentUserRole();
     if (!userRole) {
         console.error("No role mapping was found for the current user.");
-        window.location.replace(getAdminUrl('login.html'));
+        await db.auth.signOut().catch(() => {});
+        window.location.replace(`${getAdminUrl('login.html')}?reason=no-role`);
         return false;
     }
 
     if (!allowedRoles.includes(userRole)) {
         console.warn(`Access denied. User role '${userRole}' not in allowed list:`, allowedRoles);
         if (!options.silentRedirect) alert("You do not have permission to view this page.");
-        window.location.replace(getAdminUrl('admin-landed.html'));
+        await db.auth.signOut().catch(() => {});
+        window.location.replace(`${getAdminUrl('login.html')}?reason=forbidden`);
         return false;
     }
 
