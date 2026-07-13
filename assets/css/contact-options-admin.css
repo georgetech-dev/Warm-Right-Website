@@ -24,6 +24,8 @@
 .contact-option-preview img { width: 100%; height: 100%; object-fit: cover; object-position: var(--preview-x, 50%) var(--preview-y, 50%); transform: scale(var(--preview-zoom, 1)); }
 .contact-option-preview h4 { margin: 14px 14px 7px; color: #062940; }
 .contact-option-preview p { margin: 0; padding: 0 14px 18px; color: #526174; line-height: 1.45; }
+.contact-option-preview-detail { margin: 0 18px 18px; padding-top: 14px; border-top: 1px solid #dbe4ef; color: #506072; font-weight: 800; line-height: 1.35; }
+.contact-option-preview-detail.hidden { display: none; }
 
 @media (max-width: 850px) {
   .contact-preview-layout, .contact-previews, .mobile-button-style-grid { grid-template-columns: 1fr; }

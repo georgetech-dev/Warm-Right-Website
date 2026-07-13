@@ -2,6 +2,15 @@
   const SUPABASE_URL = 'https://axampuprcnauxbbijmmt.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_NFuFkO0tybTuMvYOQekQmA_62araOjM';
   const PUBLIC_SITE_URL_KEY = 'public_site_base_url';
+  const THEME_GROUPS = [
+    ['global', 'Page & Background', ['page_background', 'surface', 'text_primary', 'text_secondary', 'primary', 'accent', 'highlight', 'background_image', 'use_background_image']],
+    ['navigation', 'Navigation', ['nav_background', 'nav_text', 'nav_hover_text', 'nav_dropdown_background', 'nav_dropdown_text', 'nav_dropdown_hover_background', 'nav_dropdown_hover_text']],
+    ['footer', 'Footer', ['footer_background', 'footer_text']],
+    ['rates', 'Schedule of Rates', ['rates_card_background', 'rates_card_text', 'rates_card_muted', 'rates_card_divider', 'rates_button_background', 'rates_button_text', 'rates_modal_background', 'rates_modal_text', 'rates_modal_muted', 'rates_modal_close_background', 'rates_modal_close_text']],
+    ['offers', 'Offers', ['offers_card_background', 'offers_card_text', 'offers_card_muted', 'offers_button_background', 'offers_button_text', 'offers_modal_background', 'offers_modal_text', 'offers_modal_close_background', 'offers_modal_close_text']],
+    ['testimonials', 'Testimonials', ['testimonials_card_background', 'testimonials_card_text', 'testimonials_card_muted', 'testimonials_accent']],
+    ['privacy', 'Privacy Policy', ['privacy_surface', 'privacy_text', 'privacy_heading', 'privacy_subheading', 'privacy_link', 'privacy_divider']],
+  ];
 
   const DEFAULT_PAGES = [
     ['home', 'Home', '/index.html', 'main'], ['about', 'About Us', '/about.html', 'main'],
@@ -14,7 +23,7 @@
     ['landlords-certificates', "Landlord's Certificates (CP12)", '/services/landlords-certificates.html', 'services'],
     ['boiler-installation', 'Boiler Installations', '/services/boiler-installation.html', 'services'],
     ['general-maintenance', 'Plumbing', '/services/general-maintenance.html', 'services'],
-    ['homebuyers-reports', "Homebuyer's Reports", '/services/homebuyers-reports.html', 'services'],
+    ['homebuyers-reports', "Homebuyer's Reports", '/support/homebuyers-reports.html', 'services'],
     ['kitchens-bathrooms', 'Kitchens & Bathrooms', '/services/kitchens-bathrooms.html', 'services'],
     ['powerflushing-descaling', 'Powerflushing and Descaling', '/services/powerflushing-descaling.html', 'services'],
     ['second-opinion', 'Second Opinions', '/services/second-opinion.html', 'services'],
@@ -92,6 +101,7 @@
   let pages = [];
   let draggedPageId = null;
   let draggedPageGroup = null;
+  let modalSource = null;
 
   async function initialise() {
     const lib = window.supabase || window.Supabase;
@@ -104,14 +114,17 @@
     window.currentSession = session;
     await window.loadAdminHeader(session);
     renderThemeEditors();
+    bindModal();
     document.body.style.visibility = 'visible';
     await Promise.all([loadPublicSiteUrl(), loadTheme(), loadPages()]);
+    renderAppearanceExamples();
   }
 
   async function loadPublicSiteUrl() {
     const { data, error } = await db.from('site_settings').select('setting_value').eq('setting_key', PUBLIC_SITE_URL_KEY).maybeSingle();
     if (error) return setStatus('public-site-url-status', error.message, true);
     document.getElementById('public-site-base-url').value = data?.setting_value || 'https://warmright.uk';
+    renderAppearanceExamples();
   }
 
   async function savePublicSiteUrl() {
@@ -124,6 +137,7 @@
     if (error) return setStatus('public-site-url-status', error.message, true);
     input.value = value;
     setStatus('public-site-url-status', 'Website address saved. New public links and emails will use it.');
+    renderAppearanceExamples();
   }
 
   function normalisePublicSiteUrl(value) {
@@ -139,18 +153,32 @@
     document.getElementById('theme-editors').innerHTML = ['light', 'dark'].map(mode => `
       <section class="theme-editor" data-theme-editor="${mode}">
         <h3>${mode === 'light' ? 'Light Mode' : 'Dark Mode'}</h3>
-        <div class="theme-field-grid">
-          ${THEME_FIELDS.map(([key, label]) => `<label class="theme-field">${label}<input type="color" data-theme-mode="${mode}" data-theme-key="${key}" value="${THEME_DEFAULTS[mode][key]}"></label>`).join('')}
-          <label class="theme-field theme-image-field">Background image
-            <span class="image-input-row"><input type="text" data-theme-mode="${mode}" data-theme-key="background_image" placeholder="assets/images/background.jpg"><button class="site-btn secondary" type="button" data-choose-theme-image="${mode}">Choose Image</button></span>
-          </label>
-        </div>
-        <label class="theme-check"><input type="checkbox" data-theme-mode="${mode}" data-theme-key="use_background_image"> Use the background image</label>
+        ${THEME_GROUPS.map(([groupKey, groupLabel, fields]) => `
+          <section class="theme-group" data-theme-mode-group="${mode}" data-theme-group="${groupKey}">
+            <h4>${groupLabel}</h4>
+            <div class="theme-field-grid">
+              ${fields.map(key => renderThemeField(mode, key)).join('')}
+            </div>
+          </section>
+        `).join('')}
         <div class="theme-preview" data-theme-preview="${mode}"><div class="theme-preview-nav"><span>Home</span><span>Services</span><span>Contact</span></div><div class="theme-preview-body"><div class="theme-preview-card"><strong>Preview heading</strong><span>Example website text and card background.</span><div class="theme-preview-accent"></div></div></div><div class="theme-preview-footer">Warm Right Ltd</div></div>
       </section>`).join('');
     document.querySelectorAll('[data-theme-mode]').forEach(input => input.addEventListener('input', () => updateThemePreview(input.dataset.themeMode)));
     document.querySelectorAll('[data-choose-theme-image]').forEach(button => button.addEventListener('click', () => chooseThemeImage(button.dataset.chooseThemeImage)));
     updateThemePreview('light'); updateThemePreview('dark');
+  }
+
+  function renderThemeField(mode, key) {
+    const label = THEME_FIELDS.find(field => field[0] === key)?.[1] || key;
+    if (key === 'background_image') {
+      return `<label class="theme-field theme-image-field">${label}
+        <span class="image-input-row"><input type="text" data-theme-mode="${mode}" data-theme-key="background_image" placeholder="assets/images/background.jpg"><button class="site-btn secondary" type="button" data-choose-theme-image="${mode}">Choose Image</button></span>
+      </label>`;
+    }
+    if (key === 'use_background_image') {
+      return `<label class="theme-check"><input type="checkbox" data-theme-mode="${mode}" data-theme-key="use_background_image"> Use the background image</label>`;
+    }
+    return `<label class="theme-field">${label}<input type="color" data-theme-mode="${mode}" data-theme-key="${key}" value="${THEME_DEFAULTS[mode][key]}"></label>`;
   }
 
   async function loadTheme() {
@@ -165,6 +193,7 @@
       }
       updateThemePreview(mode);
     }
+    renderAppearanceExamples();
   }
 
   async function saveTheme() {
@@ -179,6 +208,7 @@
     setStatus('theme-status', 'Saving appearance...');
     const { error } = await db.from('site_settings').upsert(rows);
     setStatus('theme-status', error ? error.message : 'Appearance saved. Public pages will use the new palette on refresh.', Boolean(error));
+    renderAppearanceExamples();
   }
 
   function themeInput(mode, key) { return document.querySelector(`[data-theme-mode="${mode}"][data-theme-key="${key}"]`); }
@@ -211,7 +241,7 @@
   async function loadPages() {
     const { data, error } = await db.from('site_pages').select('*').order('sort_order');
     if (error) return setStatus('page-status', error.message, true);
-    pages = data || []; renderPages();
+    pages = data || []; renderPages(); renderAppearanceExamples();
   }
 
   function renderPages() {
@@ -265,6 +295,281 @@
       if (deleteError) return setStatus('page-status', deleteError.message, true);
     }
     setStatus('page-status', 'Current pages saved.'); await loadPages();
+  }
+
+  function renderAppearanceExamples() {
+    const host = document.getElementById('appearance-examples');
+    if (!host) return;
+    host.innerHTML = [
+      renderExampleCard({
+        key: 'site-url',
+        title: 'Public Website Address',
+        description: 'Used in emails, public links and image references.',
+        body: `<div class="appearance-mini-page-list"><span>${escapeHtml(document.getElementById('public-site-base-url')?.value || 'https://warmright.uk')}<small>Live address</small></span></div>`,
+      }),
+      renderExampleCard({
+        key: 'pages',
+        title: 'Visible Pages & Menus',
+        description: 'Main navigation, Services and Support order.',
+        body: renderVisiblePagesPreview(),
+      }),
+      renderExampleCard({
+        key: 'light-global',
+        title: 'Light Mode',
+        description: 'Page background, surfaces, text and accent colours.',
+        body: renderMiniSitePreview('light'),
+      }),
+      renderExampleCard({
+        key: 'dark-global',
+        title: 'Dark Mode',
+        description: 'Dark palette for the public site and accessibility mode.',
+        body: renderMiniSitePreview('dark'),
+      }),
+      renderExampleCard({
+        key: 'navigation',
+        title: 'Navigation Colours',
+        description: 'Desktop nav, hover text and dropdown colours.',
+        body: renderMiniNavigationPreview(),
+      }),
+      renderExampleCard({
+        key: 'footer',
+        title: 'Footer',
+        description: 'Footer colours and contrast.',
+        body: renderMiniFooterPreview(),
+      }),
+      renderExampleCard({
+        key: 'rates',
+        title: 'Schedule of Rates',
+        description: 'Rates cards, buttons and modal colours.',
+        body: renderMiniRatesPreview(),
+      }),
+      renderExampleCard({
+        key: 'offers',
+        title: 'Offers Cards',
+        description: 'Offer tile colours, text and modal styling.',
+        body: renderMiniOffersPreview(),
+      }),
+      renderExampleCard({
+        key: 'testimonials',
+        title: 'Testimonials',
+        description: 'Testimonial card colours and accent styling.',
+        body: renderMiniTestimonialsPreview(),
+      }),
+      renderExampleCard({
+        key: 'privacy',
+        title: 'Privacy Policy',
+        description: 'Privacy notice page colours, links and dividers.',
+        body: renderMiniPrivacyPreview(),
+      }),
+    ].join('');
+
+    host.querySelectorAll('[data-open-appearance]').forEach(card => {
+      card.addEventListener('click', () => openAppearanceEditor(card.dataset.openAppearance));
+    });
+  }
+
+  function renderExampleCard({ key, title, description, body }) {
+    return `
+      <article class="appearance-example-card" data-open-appearance="${escapeHtml(key)}">
+        <div class="appearance-example-visual">${body}</div>
+        <div class="appearance-example-copy">
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(description)}</p>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderVisiblePagesPreview() {
+    const previewPages = pages
+      .filter(page => ['home', 'about', 'services', 'support', 'rates', 'offers'].includes(page.page_key))
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+      .slice(0, 6);
+    return `<div class="appearance-mini-page-list">${previewPages.map(page => `
+      <span>${escapeHtml(page.title)}<small>${page.is_active === false ? 'Hidden' : page.nav_group}</small></span>
+    `).join('')}</div>`;
+  }
+
+  function renderMiniSitePreview(mode) {
+    const value = key => themeInput(mode, key)?.value || THEME_DEFAULTS[mode][key];
+    const useImage = themeInput(mode, 'use_background_image')?.checked;
+    const image = value('background_image');
+    const backgroundStyle = [
+      `background:${escapeHtml(value('page_background'))}`,
+      useImage && image ? `background-image:url('${escapeHtml(adminImageSource(image))}')` : '',
+      useImage && image ? 'background-size:cover;background-position:center' : ''
+    ].filter(Boolean).join(';');
+    return `
+      <div class="appearance-mini-site" style="${backgroundStyle}">
+        <div class="appearance-mini-nav" style="background:${escapeHtml(value('nav_background'))};color:${escapeHtml(value('nav_text'))}">
+          <span class="appearance-mini-brand">Warm Right</span>
+          <span>Home</span>
+          <span style="color:${escapeHtml(value('nav_hover_text'))}">Services</span>
+          <span>Contact</span>
+          <span class="appearance-mini-emergency">Emergency</span>
+        </div>
+        <div class="appearance-mini-body">
+          <div class="appearance-mini-card" style="background:${escapeHtml(value('surface'))};color:${escapeHtml(value('text_primary'))}">
+            <strong style="color:${escapeHtml(value('primary'))}">${mode === 'light' ? 'Light Mode Preview' : 'Dark Mode Preview'}</strong>
+            <span style="color:${escapeHtml(value('text_secondary'))}">Hero, content cards and page surfaces use these colours.</span>
+            <div class="appearance-mini-accent" style="background:${escapeHtml(value('highlight'))}"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMiniNavigationPreview() {
+    const value = key => themeInput('light', key)?.value || THEME_DEFAULTS.light[key];
+    return `
+      <div class="appearance-mini-site">
+        <div class="appearance-mini-nav" style="background:${escapeHtml(value('nav_background'))};color:${escapeHtml(value('nav_text'))}">
+          <span class="appearance-mini-brand">Brand</span>
+          <span>Home</span>
+          <span style="color:${escapeHtml(value('nav_hover_text'))}">Support</span>
+          <span>Offers</span>
+          <span class="appearance-mini-emergency">Emergency</span>
+        </div>
+        <div class="appearance-mini-body">
+          <div class="appearance-mini-card" style="background:${escapeHtml(value('nav_dropdown_background'))};color:${escapeHtml(value('nav_dropdown_text'))}">
+            <strong>Dropdown Preview</strong>
+            <span style="display:inline-block;margin-top:10px;padding:8px 10px;border-radius:8px;background:${escapeHtml(value('nav_dropdown_hover_background'))};color:${escapeHtml(value('nav_dropdown_hover_text'))}">Hovered menu item</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMiniFooterPreview() {
+    const bg = themeInput('light', 'footer_background')?.value || THEME_DEFAULTS.light.footer_background;
+    const text = themeInput('light', 'footer_text')?.value || THEME_DEFAULTS.light.footer_text;
+    return `<div class="appearance-mini-footer" style="background:${escapeHtml(bg)};color:${escapeHtml(text)}">Warm Right footer links and contact details</div>`;
+  }
+
+  function renderMiniRatesPreview() {
+    const value = key => themeInput('light', key)?.value || THEME_DEFAULTS.light[key];
+    return `
+      <div class="appearance-mini-card" style="background:${escapeHtml(value('rates_card_background'))};color:${escapeHtml(value('rates_card_text'))}">
+        <strong>Out of Hours</strong>
+        <div class="appearance-mini-rates">
+          <div class="appearance-mini-rate-col" style="border-color:${escapeHtml(value('rates_card_divider'))}">
+            <strong>5pm - 12am</strong>
+            <span style="color:${escapeHtml(value('rates_card_text'))}">£144.00 INC VAT</span>
+            <span style="color:${escapeHtml(value('rates_card_muted'))}">(£120.00 ex VAT)</span>
+            <span class="appearance-mini-button" style="background:${escapeHtml(value('rates_button_background'))};color:${escapeHtml(value('rates_button_text'))}">Read More</span>
+          </div>
+          <div class="appearance-mini-rate-col" style="border-color:${escapeHtml(value('rates_card_divider'))}">
+            <strong>12am - 9am</strong>
+            <span style="color:${escapeHtml(value('rates_card_text'))}">£204.00 INC VAT</span>
+            <span style="color:${escapeHtml(value('rates_card_muted'))}">(£170.00 ex VAT)</span>
+            <span class="appearance-mini-button" style="background:${escapeHtml(value('rates_button_background'))};color:${escapeHtml(value('rates_button_text'))}">Read More</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMiniOffersPreview() {
+    const value = key => themeInput('light', key)?.value || THEME_DEFAULTS.light[key];
+    return `
+      <div class="appearance-mini-card" style="background:${escapeHtml(value('offers_card_background'))};color:${escapeHtml(value('offers_card_text'))}">
+        <strong>Landlord Bundle</strong>
+        <span style="color:${escapeHtml(value('offers_card_muted'))}">An all-in-one landlord package for compliance, servicing and support.</span>
+        <span class="appearance-mini-button" style="background:${escapeHtml(value('offers_button_background'))};color:${escapeHtml(value('offers_button_text'))}">Read More</span>
+      </div>
+    `;
+  }
+
+  function renderMiniTestimonialsPreview() {
+    const value = key => themeInput('light', key)?.value || THEME_DEFAULTS.light[key];
+    return `
+      <div class="appearance-mini-card" style="background:${escapeHtml(value('testimonials_card_background'))};color:${escapeHtml(value('testimonials_card_text'))}">
+        <div class="appearance-mini-quote">
+          <strong>Excellent service</strong>
+          <span class="appearance-mini-stars">★★★★★</span>
+          <span style="color:${escapeHtml(value('testimonials_card_muted'))}">Friendly, clear and professional from start to finish.</span>
+          <div class="appearance-mini-accent" style="background:${escapeHtml(value('testimonials_accent'))}"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMiniPrivacyPreview() {
+    const value = key => themeInput('light', key)?.value || THEME_DEFAULTS.light[key];
+    return `
+      <div class="appearance-mini-card" style="background:${escapeHtml(value('privacy_surface'))};color:${escapeHtml(value('privacy_text'))}">
+        <strong style="color:${escapeHtml(value('privacy_heading'))}">Privacy Policy</strong>
+        <span style="color:${escapeHtml(value('privacy_subheading'))}">How we use customer data</span>
+        <span style="color:${escapeHtml(value('privacy_link'))}">privacy notice link</span>
+        <div class="appearance-mini-accent" style="background:${escapeHtml(value('privacy_divider'))}"></div>
+      </div>
+    `;
+  }
+
+  function bindModal() {
+    document.getElementById('appearance-modal-close').addEventListener('click', closeAppearanceModal);
+    document.getElementById('appearance-modal-backdrop').addEventListener('click', closeAppearanceModal);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !document.getElementById('appearance-modal').classList.contains('hidden')) {
+        closeAppearanceModal();
+      }
+    });
+  }
+
+  function openAppearanceEditor(key) {
+    const config = {
+      'site-url': { title: 'Public Website Address', description: 'Set the public domain used in emails, links and image references.', sourceId: 'appearance-site-url-editor' },
+      'pages': { title: 'Visible Pages & Navigation', description: 'Drag pages into order and switch them on or off for desktop and mobile menus.', sourceId: 'appearance-pages-editor' },
+      'light-global': { title: 'Light Mode Appearance', description: 'Edit the light-mode page, surface and accent colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'global' },
+      'dark-global': { title: 'Dark Mode Appearance', description: 'Edit the dark-mode page, surface and accent colours.', sourceId: 'appearance-theme-editor-panel', mode: 'dark', group: 'global' },
+      'navigation': { title: 'Navigation Colours', description: 'Desktop nav, hover text and dropdown colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'navigation' },
+      'footer': { title: 'Footer Colours', description: 'Footer background and text colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'footer' },
+      'rates': { title: 'Schedule of Rates Colours', description: 'Card, button and modal colours for the rates page.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'rates' },
+      'offers': { title: 'Offers Colours', description: 'Offer cards, buttons and modal colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'offers' },
+      'testimonials': { title: 'Testimonials Colours', description: 'Testimonial cards and accent colours.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'testimonials' },
+      'privacy': { title: 'Privacy Policy Colours', description: 'Privacy page surfaces, headings, links and dividers.', sourceId: 'appearance-theme-editor-panel', mode: 'light', group: 'privacy' },
+    }[key];
+    if (!config) return;
+    const modal = document.getElementById('appearance-modal');
+    const body = document.getElementById('appearance-modal-body');
+    const title = document.getElementById('appearance-modal-title');
+    const description = document.getElementById('appearance-modal-description');
+    const source = document.getElementById(config.sourceId);
+    if (!source) return;
+    closeAppearanceModal();
+    modalSource = { parent: source.parentNode, source };
+    title.textContent = config.title;
+    description.textContent = config.description;
+    body.appendChild(source);
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    highlightThemeGroup(config.mode, config.group);
+  }
+
+  function closeAppearanceModal() {
+    const modal = document.getElementById('appearance-modal');
+    const body = document.getElementById('appearance-modal-body');
+    if (modalSource?.parent && modalSource?.source) {
+      modalSource.parent.appendChild(modalSource.source);
+    }
+    body.innerHTML = '';
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    clearThemeGroupHighlights();
+    modalSource = null;
+  }
+
+  function clearThemeGroupHighlights() {
+    document.querySelectorAll('.theme-group').forEach(group => group.classList.remove('is-focus'));
+  }
+
+  function highlightThemeGroup(mode, groupKey) {
+    clearThemeGroupHighlights();
+    if (!mode || !groupKey) return;
+    const group = document.querySelector(`.theme-group[data-theme-mode-group="${mode}"][data-theme-group="${groupKey}"]`);
+    if (!group) return;
+    group.classList.add('is-focus');
+    group.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   function setStatus(id, message, error = false) { const element = document.getElementById(id); element.textContent = message || ''; element.classList.toggle('error', error); }

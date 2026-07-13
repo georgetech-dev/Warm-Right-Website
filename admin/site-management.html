@@ -3,53 +3,91 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pages & Appearance | Warm Right Admin</title>
+  <title>Page Studio | Warm Right Admin</title>
   <link rel="icon" href="../assets/images/favicon.png">
   <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
   <link rel="stylesheet" href="../assets/css/site-admin.css?v=1">
+  <link rel="stylesheet" href="../assets/css/page-studio-admin.css?v=1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>window.adminPageTitle = 'Pages & Appearance';</script>
-  <script src="../assets/js/admin-include.js?v=20260705theme"></script>
+  <script>window.adminPageTitle = 'Page Studio';</script>
+  <script src="../assets/js/admin-include.js?v=20260712pagestudio"></script>
 </head>
 <body>
   <div id="admin-header-container"></div>
-  <main class="site-admin-shell">
-    <section class="site-admin-panel">
-      <div class="site-admin-heading">
-        <div><h1>Public Website Address</h1><p>Used for email images, public links and other externally accessible website references.</p></div>
-      </div>
-      <div class="site-url-grid">
-        <label>Website root URL<input id="public-site-base-url" type="url" inputmode="url" placeholder="https://warmright.uk"></label>
-        <button class="site-btn primary" id="save-public-site-url" type="button">Save Website Address</button>
-      </div>
-      <p class="site-status" id="public-site-url-status" role="status"></p>
-    </section>
+  <main class="page-studio-shell">
+    <aside class="page-studio-rail">
+      <section class="page-studio-rail-panel">
+        <div class="page-studio-rail-head">
+          <h1>Website Pages</h1>
+          <p>Pick a page, preview it, then edit its sections.</p>
+        </div>
+        <div id="page-studio-page-list" class="page-studio-rail-list"></div>
+      </section>
 
-    <section class="site-admin-panel">
-      <div class="site-admin-heading">
-        <div><h2>Website Appearance</h2><p>Set separate light and dark palettes. A background image is optional and can be positioned over the background colour.</p></div>
-        <button class="site-btn primary" id="save-theme" type="button">Save Appearance</button>
-      </div>
-      <div id="theme-editors" class="theme-editors"></div>
-      <p class="site-status" id="theme-status" role="status"></p>
-    </section>
+      <section class="page-studio-rail-panel">
+        <div class="page-studio-rail-head">
+          <h2>Site-wide</h2>
+          <p>Global tools that affect more than one page.</p>
+        </div>
+        <div id="page-studio-global-list" class="page-studio-rail-list"></div>
+      </section>
+    </aside>
 
-    <section class="site-admin-panel">
-      <div class="site-admin-heading">
-        <div><h2>Visible Pages</h2><p>Drag pages within their parent group and switch them on or off in desktop and mobile navigation.</p></div>
-        <button class="site-btn accent" id="seed-pages" type="button">Seed Current Pages</button>
-      </div>
-      <p class="site-status" id="page-status" role="status"></p>
-      <div class="site-table-wrap">
-        <table class="site-table">
-          <thead><tr><th></th><th>Visible</th><th>Page</th><th>URL</th><th>Group</th><th></th></tr></thead>
-          <tbody id="pages-body"><tr><td colspan="6">Loading pages...</td></tr></tbody>
-        </table>
+    <section class="page-studio-main">
+      <header class="page-studio-header site-admin-panel">
+        <div class="page-studio-header-copy">
+          <div class="page-studio-kicker" id="page-studio-kicker">Page Studio</div>
+          <h2 id="page-studio-title">Loading...</h2>
+          <p id="page-studio-description">Preparing the selected page.</p>
+        </div>
+        <div class="site-heading-actions">
+          <button id="page-studio-reload" class="site-btn secondary" type="button">Reload Preview</button>
+          <a id="page-studio-open-live" class="site-btn primary" href="#" target="_blank" rel="noopener">Open Page</a>
+        </div>
+      </header>
+
+      <div class="page-studio-content">
+        <section class="page-studio-sections">
+          <div id="page-studio-notice" class="page-studio-notice hidden"></div>
+          <div id="page-studio-sections-list"></div>
+        </section>
+
+        <aside class="page-studio-preview site-admin-panel">
+          <div class="page-studio-preview-head">
+            <div>
+              <h3>Live Preview</h3>
+            </div>
+            <span id="page-studio-preview-label" class="page-studio-preview-label">No preview</span>
+          </div>
+          <div id="page-studio-preview-wrap" class="page-studio-preview-wrap is-empty">
+            <div id="page-studio-preview-empty" class="page-studio-preview-empty">This page is a navigation group, so there is no standalone public preview.</div>
+            <iframe id="page-studio-preview-frame" title="Public page preview" loading="lazy"></iframe>
+          </div>
+        </aside>
       </div>
     </section>
   </main>
 
-  <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
-  <script src="../assets/js/pages-admin.js?v=3"></script>
+  <div id="page-studio-editor-modal" class="page-studio-editor-modal hidden" aria-hidden="true">
+    <div id="page-studio-editor-backdrop" class="page-studio-editor-backdrop"></div>
+    <section class="page-studio-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="page-studio-editor-title">
+      <header class="page-studio-editor-head">
+        <div>
+          <div class="page-studio-kicker">Section Editor</div>
+          <h2 id="page-studio-editor-title">Edit Section</h2>
+        </div>
+        <div class="page-studio-section-actions">
+          <a id="page-studio-editor-open-full" class="site-btn secondary" href="#" target="_blank" rel="noopener">Open Full Page</a>
+          <button id="page-studio-editor-refresh" class="site-btn accent" type="button">Done & Refresh</button>
+          <button id="page-studio-editor-close" class="site-btn secondary" type="button">Close</button>
+        </div>
+      </header>
+      <div class="page-studio-editor-frame-wrap">
+        <iframe id="page-studio-editor-frame" title="Embedded section editor" loading="lazy"></iframe>
+      </div>
+    </section>
+  </div>
+
+  <script src="../assets/js/page-studio-admin.js?v=1"></script>
 </body>
 </html>

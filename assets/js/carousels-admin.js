@@ -17,13 +17,21 @@
   ].map((item, index, all) => ({ carousel_key:item[0], tile_key:item[1], title:item[2], description:item[3], image_url:item[4], link_url:item[5], sort_order:(all.slice(0,index).filter(row => row[0] === item[0]).length + 1) * 10, is_active:true }));
 
   let db; let session; let tiles = []; let editingId = null; let draggedId = null;
+  const pageParams = new URLSearchParams(window.location.search);
 
   async function initialise() {
     const lib = window.supabase || window.Supabase; if (!lib) return setTimeout(initialise, 50);
     db = lib.createClient(SUPABASE_URL, SUPABASE_KEY); window.db = db;
     const result = await db.auth.getSession(); session = result.data.session;
     if (!session) return window.location.href = 'login.html';
-    window.currentSession = session; await window.loadAdminHeader(session); document.body.style.visibility = 'visible'; await loadTiles();
+    window.currentSession = session; await window.loadAdminHeader(session); document.body.style.visibility = 'visible'; applyInitialFilter(); await loadTiles(); applyInitialState();
+  }
+
+  function applyInitialFilter() {
+    const carousel = pageParams.get('carousel');
+    if (carousel && document.getElementById('carousel-filter').querySelector(`option[value="${carousel}"]`)) {
+      document.getElementById('carousel-filter').value = carousel;
+    }
   }
 
   async function loadTiles() { const { data, error } = await db.from('site_carousel_tiles').select('*').order('sort_order'); if (error) return setStatus('tile-status', error.message, true); tiles = data || []; renderTiles(); }
@@ -32,6 +40,15 @@
     const rows = tiles.filter(tile => tile.carousel_key === key).sort((a,b) => a.sort_order - b.sort_order);
     document.getElementById('tiles-body').innerHTML = rows.length ? rows.map(tile => `<tr draggable="true" data-tile-id="${tile.id}"><td class="drag-handle" title="Drag to reorder">&#9776;</td><td><input type="checkbox" data-toggle-tile="${tile.id}" ${tile.is_active ? 'checked' : ''}></td><td><img src="${escapeAttr(window.adminImageLibrary.imageSrcForAdmin(tile.image_url))}" alt=""></td><td><strong>${escapeHtml(tile.title)}</strong><br><small>${escapeHtml(tile.link_url)}</small></td><td>${escapeHtml(tile.description)}</td><td><div class="row-actions"><button class="site-btn secondary" type="button" data-edit-tile="${tile.id}">Edit</button><button class="site-btn danger" type="button" data-remove-tile="${tile.id}">Delete</button></div></td></tr>`).join('') : '<tr><td colspan="6">No tiles are configured for this carousel.</td></tr>';
     bindRows();
+  }
+
+  function applyInitialState() {
+    const tileId = pageParams.get('tileId') || pageParams.get('id');
+    if (tileId) {
+      openEditor(tileId);
+      return;
+    }
+    if (pageParams.get('new') === '1') openEditor();
   }
 
   function bindRows() {

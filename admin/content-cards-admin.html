@@ -275,6 +275,7 @@
     let currentSession = null;
     let editingId = null;
     let cards = [];
+    const pageParams = new URLSearchParams(window.location.search);
 
     async function checkSecurity() {
       const lib = window.supabase || window.Supabase;
@@ -288,7 +289,7 @@
       setupPageControls();
       await loadCards();
       updatePreview();
-      showListView();
+      applyInitialState();
     }
 
     function showListView() {
@@ -306,6 +307,10 @@
 
     function showEditorForNew() {
       resetForm();
+      const requestedPage = pageParams.get('page');
+      if (requestedPage && DEPLOYED_PAGES.some(page => page.key === requestedPage)) {
+        document.getElementById('page_key').value = requestedPage;
+      }
       showEditorView();
     }
 
@@ -313,6 +318,25 @@
       const options = DEPLOYED_PAGES.map(page => `<option value="${escapeHtml(page.key)}">${escapeHtml(page.group ? `${page.group}: ${page.title}` : page.title)}</option>`).join('');
       document.getElementById('page-key-options').innerHTML = options;
       document.getElementById('page-filter').innerHTML = `<option value="">All deployed pages</option>${options}`;
+    }
+
+    function applyInitialState() {
+      const requestedPage = pageParams.get('page');
+      const requestedCardId = pageParams.get('cardId') || pageParams.get('id');
+      if (requestedPage && DEPLOYED_PAGES.some(page => page.key === requestedPage)) {
+        document.getElementById('page-filter').value = requestedPage;
+        renderCards();
+      }
+      if (requestedCardId) {
+        editCard(requestedCardId);
+        return;
+      }
+      if (pageParams.get('new') === '1') {
+        showEditorForNew();
+        updatePreview();
+        return;
+      }
+      showListView();
     }
 
     async function loadCards() {

@@ -6,6 +6,7 @@
   let options = [];
   let editingId = null;
   let draggedId = null;
+  const pageParams = new URLSearchParams(window.location.search);
 
   async function initialise() {
     const lib = window.supabase || window.Supabase;
@@ -19,6 +20,7 @@
     await window.loadAdminHeader(session);
     document.body.style.visibility = 'visible';
     await Promise.all([loadOptions(), loadSettings()]);
+    applyInitialState();
     updatePreview();
   }
 
@@ -31,11 +33,17 @@
 
   function renderOptions() {
     const body = document.getElementById('contact-options-body');
-    if (!options.length) {
+    const scope = pageParams.get('page');
+    const filteredOptions = options.filter(row => {
+      if (scope === 'contact') return row.show_on_contact;
+      if (scope === 'booking') return row.show_on_booking;
+      return true;
+    });
+    if (!filteredOptions.length) {
       body.innerHTML = '<tr><td colspan="7">No contact options are configured. Run the supplied SQL or add one here.</td></tr>';
       return;
     }
-    body.innerHTML = options.map(row => `
+    body.innerHTML = filteredOptions.map(row => `
       <tr draggable="true" data-option-id="${row.id}">
         <td class="drag-handle" title="Drag to reorder">&#9776;</td>
         <td><img src="${escapeAttr(imageSrc(row.image_url))}" alt=""></td>
@@ -47,6 +55,19 @@
       </tr>
     `).join('');
     bindDragRows();
+  }
+
+  function applyInitialState() {
+    const requestedOptionId = pageParams.get('optionId') || pageParams.get('id');
+    if (pageParams.get('new') === '1') {
+      openEditor();
+      if (pageParams.get('page') === 'booking') setChecked('show-on-booking', true);
+      if (pageParams.get('page') === 'contact') setChecked('show-on-contact', true);
+      return;
+    }
+    if (requestedOptionId) {
+      openEditor(requestedOptionId);
+    }
   }
 
   async function loadSettings() {
@@ -122,6 +143,8 @@
     setValue('contact-image-url', row.image_url || '');
     setValue('contact-title', row.contact_title || '');
     setValue('booking-title', row.booking_title || '');
+    setValue('contact-display-value', row.contact_display_value || '');
+    setValue('booking-display-value', row.booking_display_value || '');
     setValue('contact-menu-label', row.menu_label || '');
     setValue('option-mobile-button-background', validColour(row.mobile_button_background, value('mobile-button-background') || '#28a745'));
     setValue('option-mobile-button-text', validColour(row.mobile_button_text, value('mobile-button-text') || '#ffffff'));
@@ -149,8 +172,10 @@
       option_key: key,
       contact_title: title,
       contact_body_html: cleanEditorHtml('contact-body-editor'),
+      contact_display_value: value('contact-display-value'),
       booking_title: value('booking-title'),
       booking_body_html: cleanEditorHtml('booking-body-editor'),
+      booking_display_value: value('booking-display-value'),
       menu_label: value('contact-menu-label'),
       mobile_button_background: validColour(value('option-mobile-button-background'), '#28a745'),
       mobile_button_text: validColour(value('option-mobile-button-text'), '#ffffff'),
@@ -204,13 +229,14 @@
     const image = value('contact-image-url');
     const title = value('contact-title') || 'Option title';
     const body = cleanEditorHtml('contact-body-editor') || 'Option wording';
+    const detail = value('contact-display-value');
     updateCropLabels();
-    updatePreviewCard('contact-desktop-preview', image, title, body, 'desktop');
-    updatePreviewCard('contact-mobile-preview', image, title, body, 'mobile');
+    updatePreviewCard('contact-desktop-preview', image, title, body, detail, 'desktop');
+    updatePreviewCard('contact-mobile-preview', image, title, body, detail, 'mobile');
     updateOptionMobileButtonPreview();
   }
 
-  function updatePreviewCard(id, image, title, body, mode) {
+  function updatePreviewCard(id, image, title, body, detail, mode) {
     const card = document.getElementById(id);
     const prefix = mode === 'mobile' ? 'mobile' : 'desktop';
     card.style.setProperty('--preview-x', `${value(`${prefix}-image-x`)}%`);
@@ -219,6 +245,11 @@
     card.querySelector('img').src = imageSrc(image || 'assets/images/no-image.jpg');
     card.querySelector('h4').textContent = title;
     card.querySelector('p').innerHTML = body;
+    const detailEl = card.querySelector('.contact-option-preview-detail');
+    if (detailEl) {
+      detailEl.textContent = detail || '';
+      detailEl.classList.toggle('hidden', !detail);
+    }
   }
 
   function updateCropLabels() {

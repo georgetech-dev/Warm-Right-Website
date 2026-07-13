@@ -5,13 +5,13 @@
   const OPTIONS_TABLE = 'site_contact_options';
   const SETTINGS_TABLE = 'site_contact_settings';
   const DEFAULT_OPTIONS = [
-    option('general', 'General Enquiries', '<strong>0800 756 6748</strong>', 'Call to Book', 'Contact us to arrange your visit.<br><strong>0800 756 6748</strong>', 'Call Us', 'general', 'tel:08007566748', 'assets/images/phone.jpg', true, true, true, 10),
-    option('text', 'Text Us', 'Text anytime. Our usual response is during office hours.<br><strong>07985 292527</strong>', '', '', 'Text Us', 'direct', 'sms:07985292527', 'assets/images/text-message.png', true, false, false, 20),
-    option('whatsapp', 'WhatsApp Us', 'Send us a WhatsApp message at any time.<br><strong>0800 756 6748</strong>', '', '', 'WhatsApp Us', 'direct', 'https://wa.me/448007566748', 'assets/images/WhatsApp Logos.svg', true, false, false, 30),
-    option('emergency', 'Emergencies (24/7)', 'Call us at any time for urgent assistance.<br><strong>0800 756 6748</strong>', 'Emergencies (24/7)', 'Call us at any time for urgent assistance.', 'Emergency Call', 'direct', 'tel:08007566748,0', 'assets/images/water-damage.jpg', true, true, false, 40),
-    option('email', 'Email Us', 'Send an email and we will reply by the next working day.<br><strong>info@warmright.uk</strong>', 'Book via Email', 'Email us at any time to request an appointment.', 'Email Us', 'direct', 'mailto:info@warmright.uk', 'assets/images/email-2.png', true, true, false, 50),
-    option('callback', 'Request a Callback', 'Leave your details and we will call you back at a convenient time.', 'Request a Callback', 'Leave your details and we will call you back at a convenient time.', 'Request a Callback', 'callback', '', 'assets/images/contact.jpg', true, true, false, 60),
-    option('fax', 'Fax', 'Send documents by fax.<br><strong>0870 705 24 32</strong>', '', '', 'Fax', 'direct', '', 'assets/images/fax.png', true, false, false, 70),
+    option('general', 'General Enquiries', 'For general enquiries and bookings.', '0800 756 6748', 'Call to Book', 'Contact us to arrange your visit.', '0800 756 6748', 'Call Us', 'general', 'tel:08007566748', 'assets/images/phone.jpg', true, true, true, 10),
+    option('text', 'Text Us', 'Text anytime. Our usual response is during office hours.', '07985 292527', '', '', '', 'Text Us', 'direct', 'sms:07985292527', 'assets/images/text-message.png', true, false, false, 20),
+    option('whatsapp', 'WhatsApp Us', 'Send us a WhatsApp message at any time.', '0800 756 6748', '', '', '', 'WhatsApp Us', 'direct', 'https://wa.me/448007566748', 'assets/images/WhatsApp Logos.svg', true, false, false, 30),
+    option('emergency', 'Emergencies (24/7)', 'Call us at any time for urgent assistance.', '0800 756 6748', 'Emergencies (24/7)', 'Call us at any time for urgent assistance.', '0800 756 6748', 'Emergency Call', 'direct', 'tel:08007566748,0', 'assets/images/water-damage.jpg', true, true, false, 40),
+    option('email', 'Email Us', 'Send an email and we will reply by the next working day.', 'info@warmright.uk', 'Book via Email', 'Email us at any time to request an appointment.', 'info@warmright.uk', 'Email Us', 'direct', 'mailto:info@warmright.uk', 'assets/images/email-2.png', true, true, false, 50),
+    option('callback', 'Request a Callback', 'Leave your details and we will call you back at a convenient time.', '', 'Request a Callback', 'Leave your details and we will call you back at a convenient time.', '', 'Request a Callback', 'callback', '', 'assets/images/contact.jpg', true, true, false, 60),
+    option('fax', 'Fax', 'Send documents by fax.', '0870 705 24 32', '', '', '', 'Fax', 'direct', '', 'assets/images/fax.png', true, false, false, 70),
   ];
   const DEFAULT_SETTINGS = {
     closed_title: 'Sorry our office is currently closed',
@@ -24,10 +24,11 @@
     mobile_button_hover: '#218838',
   };
 
-  function option(key, contactTitle, contactBody, bookingTitle, bookingBody, menuLabel, actionType, actionUrl, imageUrl, contact, booking, menu, order) {
+  function option(key, contactTitle, contactBody, contactDisplay, bookingTitle, bookingBody, bookingDisplay, menuLabel, actionType, actionUrl, imageUrl, contact, booking, menu, order) {
     return {
       option_key: key, contact_title: contactTitle, contact_body_html: contactBody,
-      booking_title: bookingTitle, booking_body_html: bookingBody, menu_label: menuLabel,
+      contact_display_value: contactDisplay,
+      booking_title: bookingTitle, booking_body_html: bookingBody, booking_display_value: bookingDisplay, menu_label: menuLabel,
       action_type: actionType, action_url: actionUrl, image_url: imageUrl,
       image_position_x: 50, image_position_y: 50, image_zoom: 100,
       mobile_image_position_x: 50, mobile_image_position_y: 50, mobile_image_zoom: 100,
@@ -77,6 +78,9 @@
 
     const titleText = page === 'booking' ? row.booking_title || row.contact_title : row.contact_title;
     const bodyHtml = page === 'booking' ? row.booking_body_html || row.contact_body_html : row.contact_body_html;
+    const displayValue = page === 'booking'
+      ? (row.booking_display_value ?? row.contact_display_value ?? '')
+      : (row.contact_display_value ?? '');
     const frame = document.createElement('span');
     frame.className = 'contact-option-image-frame';
     const image = document.createElement('img');
@@ -88,6 +92,12 @@
     const body = document.createElement('p');
     body.innerHTML = sanitizeHtml(bodyHtml);
     tile.append(frame, title, body);
+    if (displayValue) {
+      const detail = document.createElement('div');
+      detail.className = 'contact-option-detail';
+      detail.textContent = String(displayValue || '').trim();
+      tile.appendChild(detail);
+    }
     return tile;
   }
 

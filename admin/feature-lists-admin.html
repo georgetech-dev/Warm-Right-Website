@@ -129,6 +129,7 @@
     let lists = [];
     let items = [];
     let editingKey = null;
+    const pageParams = new URLSearchParams(window.location.search);
 
     async function checkSecurity() {
       const lib = window.supabase || window.Supabase;
@@ -141,10 +142,25 @@
       document.body.style.visibility = 'visible';
       setupPageFilter();
       await loadLists();
+      applyInitialState();
     }
 
     function setupPageFilter() {
       document.getElementById('page-filter').innerHTML = `<option value="">All managed pages</option>${DEPLOYED_PAGES.map(page => `<option value="${page.key}">${escapeHtml(page.title)}</option>`).join('')}`;
+    }
+
+    function applyInitialState() {
+      const requestedPage = pageParams.get('page');
+      const requestedListKey = pageParams.get('listKey');
+      if (requestedPage && DEPLOYED_PAGES.some(page => page.key === requestedPage)) {
+        document.getElementById('page-filter').value = requestedPage;
+        renderLists();
+      }
+      if (requestedListKey) {
+        editList(requestedListKey);
+        return;
+      }
+      showListView();
     }
 
     async function loadLists() {

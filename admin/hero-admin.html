@@ -210,6 +210,7 @@
     let currentSession = null;
     let editingId = null;
     let heroes = [];
+    const pageParams = new URLSearchParams(window.location.search);
 
     async function checkSecurity() {
       const lib = window.supabase || window.Supabase;
@@ -222,8 +223,7 @@
       setupPageControls();
       document.body.style.visibility = 'visible';
       await loadHeroes();
-      newHero(document.getElementById('page_key').value);
-      showListView();
+      applyInitialState();
     }
 
     function showListView() {
@@ -248,6 +248,27 @@
       const options = DEPLOYED_PAGES.map(page => `<option value="${escapeHtml(page.key)}">${escapeHtml(page.group ? `${page.group}: ${page.title}` : page.title)}</option>`).join('');
       document.getElementById('page_key').innerHTML = options;
       document.getElementById('page-filter').innerHTML = `<option value="">All deployed pages</option>${options}`;
+    }
+
+    function applyInitialState() {
+      const requestedPage = pageParams.get('page');
+      const requestedHeroId = pageParams.get('heroId') || pageParams.get('id');
+      if (requestedPage && DEPLOYED_PAGES.some(page => page.key === requestedPage)) {
+        document.getElementById('page_key').value = requestedPage;
+        document.getElementById('page-filter').value = requestedPage;
+        renderHeroes();
+      }
+      if (requestedHeroId) {
+        editHero(requestedHeroId);
+        return;
+      }
+      if (pageParams.get('new') === '1') {
+        newHero(requestedPage || document.getElementById('page_key').value);
+        showEditorView();
+        return;
+      }
+      newHero(requestedPage || document.getElementById('page_key').value);
+      showListView();
     }
 
     async function loadHeroes() {

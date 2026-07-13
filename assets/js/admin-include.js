@@ -182,12 +182,11 @@ const adminSectionNavDefinitions = [
         overviewHash: 'tab-website',
         ariaLabel: 'Website management tools',
         pages: [
-            { file: 'content-cards-admin.html', label: 'Content Cards' },
-            { file: 'feature-lists-admin.html', label: 'Feature Lists' },
-            { file: 'hero-admin.html', label: 'Hero Pictures' },
+            { file: 'site-management.html', label: 'Page Studio' },
+            { file: 'appearance-admin.html', label: 'Appearance & Navigation' },
             { file: 'contact-options-admin.html', label: 'Contact Options' },
-            { file: 'site-management.html', label: 'Pages & Appearance' },
-            { file: 'carousels-admin.html', label: 'Carousels' },
+            { file: 'privacy-admin.html', label: 'Privacy Policy' },
+            { file: 'coverage-admin.html', label: 'Coverage Map' },
             { file: 'website-file-explorer.html', label: 'File Explorer' }
         ]
     },

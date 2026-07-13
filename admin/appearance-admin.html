@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Appearance & Navigation | Warm Right Admin</title>
+  <link rel="icon" href="../assets/images/favicon.png">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
+  <link rel="stylesheet" href="../assets/css/site-admin.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>window.adminPageTitle = 'Appearance & Navigation';</script>
+  <script src="../assets/js/admin-include.js?v=20260705theme"></script>
+</head>
+<body>
+  <div id="admin-header-container"></div>
+  <main class="site-admin-shell">
+    <section class="site-admin-panel">
+      <div class="site-admin-heading">
+        <div><h1>Appearance & Navigation</h1><p>Click a live example to open the relevant settings in a focused editor.</p></div>
+      </div>
+      <div id="appearance-examples" class="appearance-examples"></div>
+    </section>
+
+    <div id="appearance-edit-sources" class="hidden">
+    <section class="site-admin-panel" id="appearance-site-url-editor">
+      <div class="site-admin-heading">
+        <div><h2>Public Website Address</h2><p>Used for email images, public links and other externally accessible website references.</p></div>
+      </div>
+      <div class="site-url-grid">
+        <label>Website root URL<input id="public-site-base-url" type="url" inputmode="url" placeholder="https://warmright.uk"></label>
+        <button class="site-btn primary" id="save-public-site-url" type="button">Save Website Address</button>
+      </div>
+      <p class="site-status" id="public-site-url-status" role="status"></p>
+    </section>
+
+    <section class="site-admin-panel" id="appearance-theme-editor-panel">
+      <div class="site-admin-heading">
+        <div><h2>Website Appearance</h2><p>Set separate light and dark palettes. A background image is optional and can be positioned over the background colour.</p></div>
+        <button class="site-btn primary" id="save-theme" type="button">Save Appearance</button>
+      </div>
+      <div id="theme-editors" class="theme-editors"></div>
+      <p class="site-status" id="theme-status" role="status"></p>
+    </section>
+
+    <section class="site-admin-panel" id="appearance-pages-editor">
+      <div class="site-admin-heading">
+        <div><h2>Visible Pages</h2><p>Drag pages within their parent group and switch them on or off in desktop and mobile navigation.</p></div>
+        <button class="site-btn accent" id="seed-pages" type="button">Seed Current Pages</button>
+      </div>
+      <p class="site-status" id="page-status" role="status"></p>
+      <div class="site-table-wrap">
+        <table class="site-table">
+          <thead><tr><th></th><th>Visible</th><th>Page</th><th>URL</th><th>Group</th><th></th></tr></thead>
+          <tbody id="pages-body"><tr><td colspan="6">Loading pages...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <div id="appearance-modal" class="appearance-modal hidden" aria-hidden="true">
+    <div id="appearance-modal-backdrop" class="appearance-modal-backdrop"></div>
+    <section class="appearance-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="appearance-modal-title">
+      <header class="appearance-modal-head">
+        <div>
+          <div class="page-studio-kicker">Focused Editor</div>
+          <h2 id="appearance-modal-title">Edit Settings</h2>
+          <p id="appearance-modal-description"></p>
+        </div>
+        <div class="site-heading-actions">
+          <button class="site-btn secondary" id="appearance-modal-close" type="button">Close</button>
+        </div>
+      </header>
+      <div id="appearance-modal-body" class="appearance-modal-body"></div>
+    </section>
+  </div>
+
+  <script src="../assets/js/admin-image-library.js?v=20260706image"></script>
+  <script src="../assets/js/pages-admin.js?v=4"></script>
+</body>
+</html>
