@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>404 | Page Not Found | Warm Right Ltd</title>
+  <link rel="icon" href="/assets/images/favicon.png">
+  <link rel="stylesheet" href="/assets/css/variables.css">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <style>
+    body {
+      min-height: 100vh;
+      color: var(--text-primary);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--background-main) 88%, #fff), var(--background-alt)),
+        var(--site-background-image);
+      background-attachment: fixed;
+    }
+
+    .error-page {
+      width: min(1180px, calc(100% - 32px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 24px 0 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .error-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--nav-background);
+      box-shadow: 0 12px 30px rgba(6, 41, 64, 0.14);
+    }
+
+    .error-brand,
+    .error-home-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .error-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .error-brand img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+
+    .error-brand-title {
+      display: block;
+      color: var(--primary-blue);
+      font-weight: 700;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+
+    .error-brand-sub {
+      display: block;
+      color: var(--primary-blue);
+      font-size: 0.85rem;
+      line-height: 1.15;
+    }
+
+    .error-home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      color: var(--nav-text);
+      font-weight: 700;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .error-home-link:hover,
+    .error-home-link:focus-visible {
+      color: var(--nav-hover-text);
+      transform: translateX(-2px);
+    }
+
+    .error-card {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(390px, 1fr);
+      gap: clamp(24px, 4vw, 48px);
+      align-items: center;
+      padding: clamp(22px, 4vw, 52px);
+      border: 1px solid color-mix(in srgb, var(--frame-neutral) 80%, transparent);
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--highlight-amber) 18%, transparent), transparent 34%),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent-teal) 18%, transparent), transparent 36%),
+        var(--tile-background);
+      box-shadow: 0 18px 44px rgba(6, 41, 64, 0.13);
+    }
+
+    .error-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--accent-orange);
+      background: color-mix(in srgb, var(--highlight-amber) 14%, var(--tile-background));
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .error-title {
+      margin: 0;
+      color: var(--primary-blue);
+      font-size: clamp(4.6rem, 12vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: 0;
+    }
+
+    .error-title span {
+      color: var(--accent-teal);
+    }
+
+    .error-heading {
+      margin: 22px 0 14px;
+      color: var(--primary-blue);
+      font-size: clamp(1.9rem, 4vw, 3.2rem);
+      line-height: 1.08;
+    }
+
+    .error-copy {
+      max-width: 620px;
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      line-height: 1.75;
+    }
+
+    .error-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .error-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .error-button:hover,
+    .error-button:focus-visible {
+      transform: translateY(-2px);
+    }
+
+    .error-button-primary {
+      color: #fff;
+      background: var(--primary-blue);
+      box-shadow: 0 12px 24px rgba(10, 44, 102, 0.2);
+    }
+
+    .error-button-primary:hover,
+    .error-button-primary:focus-visible {
+      background: color-mix(in srgb, var(--primary-blue) 88%, #000);
+    }
+
+    .error-button-secondary {
+      color: var(--primary-blue);
+      background: color-mix(in srgb, var(--accent-teal) 12%, var(--tile-background));
+    }
+
+    .error-note {
+      margin-top: 20px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+    }
+
+    .game-panel {
+      position: relative;
+      min-height: 520px;
+      overflow: hidden;
+      padding: 22px;
+      border-radius: 14px;
+      color: #fff;
+      background:
+        linear-gradient(rgba(6, 41, 64, 0.9), rgba(6, 41, 64, 0.95)),
+        linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 18px 38px rgba(6, 41, 64, 0.22);
+    }
+
+    .game-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .game-header h2 {
+      margin: 0 0 5px;
+      color: #fff;
+      font-size: 1.25rem;
+    }
+
+    .game-header h2::after {
+      display: none;
+    }
+
+    .game-header p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stat {
+      min-width: 70px;
+      padding: 9px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 8px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .stat strong,
+    .stat span {
+      display: block;
+    }
+
+    .stat strong {
+      font-size: 1.2rem;
+    }
+
+    .stat span {
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .boiler-room {
+      position: relative;
+      z-index: 2;
+      min-height: 345px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, #18344f, #10253f);
+      background-size: 28px 28px, 28px 28px, 100% 100%;
+    }
+
+    .boiler {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: 190px;
+      height: 210px;
+      transform: translate(-50%, -50%);
+      border-radius: 18px;
+      background: linear-gradient(145deg, #f8fbfd, #dce7ef);
+      box-shadow: 0 22px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    .boiler-logo {
+      position: absolute;
+      left: 16px;
+      top: 14px;
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
+
+    .boiler-brand {
+      position: absolute;
+      left: 58px;
+      top: 23px;
+      color: var(--primary-blue);
+      font-size: 0.66rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .display {
+      position: absolute;
+      left: 50%;
+      top: 62px;
+      width: 92px;
+      height: 46px;
+      transform: translateX(-50%);
+      display: grid;
+      place-items: center;
+      border: 5px solid #c4d0d8;
+      border-radius: 8px;
+      color: #93f2c4;
+      background: #142b3c;
+      font: 800 1.2rem/1 monospace;
+      box-shadow: inset 0 0 12px rgba(95, 255, 183, 0.1);
+    }
+
+    .dial {
+      position: absolute;
+      top: 134px;
+      width: 34px;
+      height: 34px;
+      border: 7px solid #b9c7d1;
+      border-radius: 50%;
+      background: #f7fafc;
+    }
+
+    .dial.left {
+      left: 44px;
+    }
+
+    .dial.right {
+      right: 44px;
+    }
+
+    .dial::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 2px;
+      width: 3px;
+      height: 10px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: var(--accent-teal);
+    }
+
+    .pipe {
+      position: absolute;
+      background: #a7bac7;
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.14);
+    }
+
+    .pipe.vertical {
+      bottom: 0;
+      width: 18px;
+      height: 120px;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .pipe.horizontal {
+      width: 145px;
+      height: 18px;
+      border-radius: 10px;
+    }
+
+    .pipe.p1 { left: 20%; }
+    .pipe.p2 { left: 38%; height: 90px; }
+    .pipe.p3 { right: 38%; height: 82px; }
+    .pipe.p4 { right: 20%; }
+    .pipe.p5 { left: 4%; top: 24%; width: 140px; }
+    .pipe.p6 { right: 5%; top: 28%; width: 135px; }
+
+    .pipe-joint {
+      position: absolute;
+      width: 29px;
+      height: 29px;
+      border: 5px solid #c7d5de;
+      border-radius: 50%;
+      background: #718a9a;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
+    }
+
+    .leak {
+      position: absolute;
+      z-index: 10;
+      width: 34px;
+      height: 48px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      filter: drop-shadow(0 6px 7px rgba(0, 0, 0, 0.25));
+      animation: bob 0.9s ease-in-out infinite alternate;
+    }
+
+    .leak::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      width: 24px;
+      height: 34px;
+      transform: translateX(-50%) rotate(45deg);
+      border-radius: 65% 35% 65% 35%;
+      background: linear-gradient(145deg, #7ad9ff, #1495dc);
+      box-shadow: inset 3px 3px 7px rgba(255, 255, 255, 0.35);
+    }
+
+    .leak::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      bottom: 13px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .leak.hit {
+      pointer-events: none;
+      animation: pop 0.35s forwards;
+    }
+
+    .game-message {
+      position: relative;
+      z-index: 2;
+      min-height: 26px;
+      margin: 14px 0 0;
+      color: #dff4ff;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .game-footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .pressure-wrap {
+      flex: 1;
+    }
+
+    .pressure-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.75rem;
+    }
+
+    .pressure-track {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .pressure-bar {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #c62828, var(--highlight-amber), #50d18a);
+      transition: width 0.25s linear;
+    }
+
+    .start-button {
+      flex: 0 0 auto;
+      color: var(--primary-blue);
+      background: #fff;
+      white-space: nowrap;
+    }
+
+    .start-button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+    }
+
+    .steam {
+      position: absolute;
+      left: calc(50% - 9px);
+      top: 12px;
+      width: 18px;
+      height: 70px;
+      opacity: 0.5;
+      filter: blur(2px);
+    }
+
+    .steam span {
+      position: absolute;
+      width: 14px;
+      height: 38px;
+      border: 3px solid rgba(255, 255, 255, 0.7);
+      border-color: rgba(255, 255, 255, 0.7) transparent transparent transparent;
+      border-radius: 50%;
+      animation: steam 2.2s linear infinite;
+    }
+
+    .steam span:nth-child(2) {
+      left: 10px;
+      animation-delay: 0.8s;
+    }
+
+    .error-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px 16px;
+      color: var(--text-secondary);
+      text-align: center;
+      font-size: 0.88rem;
+    }
+
+    .error-footer a {
+      color: var(--primary-blue);
+      font-weight: 700;
+    }
+
+    @keyframes bob {
+      from { transform: translateY(-2px); }
+      to { transform: translateY(4px); }
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    @keyframes steam {
+      from {
+        transform: translateY(35px) scale(0.7) rotate(10deg);
+        opacity: 0;
+      }
+      30% { opacity: 0.7; }
+      to {
+        transform: translateY(-25px) scale(1.3) rotate(-10deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 920px) {
+      .error-card {
+        grid-template-columns: 1fr;
+      }
+
+      .game-panel {
+        min-height: 500px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .error-page {
+        width: min(100% - 20px, 1180px);
+        padding-top: 12px;
+      }
+
+      .error-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .error-home-link {
+        justify-content: center;
+        min-height: 38px;
+      }
+
+      .error-card {
+        padding: 20px;
+        border-radius: 12px;
+      }
+
+      .error-title {
+        font-size: 5.4rem;
+      }
+
+      .error-actions,
+      .error-button {
+        width: 100%;
+      }
+
+      .game-panel {
+        min-height: 530px;
+        padding: 16px;
+      }
+
+      .game-header {
+        flex-direction: column;
+      }
+
+      .scoreboard {
+        width: 100%;
+      }
+
+      .stat {
+        flex: 1;
+      }
+
+      .boiler-room {
+        min-height: 330px;
+      }
+
+      .boiler {
+        transform: translate(-50%, -50%) scale(0.86);
+      }
+
+      .pipe.p5,
+      .pipe.p6 {
+        width: 92px;
+      }
+
+      .game-footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .start-button {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="error-page">
+    <header class="error-header">
+      <a class="error-brand" href="/index.html" aria-label="Warm Right Ltd homepage">
+        <img src="/assets/images/logo.png" alt="Warm Right Logo">
+        <span>
+          <span class="error-brand-title">Warm Right Ltd</span>
+          <span class="error-brand-sub">Gas &bull; LPG &bull; Oil</span>
+        </span>
+      </a>
+
+      <a class="error-home-link" href="/index.html" aria-label="Back to Warm Right homepage">
+        <span aria-hidden="true">&larr;</span>
+        <span>Back to homepage</span>
+      </a>
+    </header>
+
+    <section class="error-card" aria-labelledby="error-heading">
+      <div class="copy-panel">
+        <p class="error-eyebrow">System fault detected</p>
+
+        <h1 class="error-title">4<span>0</span>4</h1>
+
+        <h2 class="error-heading" id="error-heading">This page has lost pressure.</h2>
+
+        <p class="error-copy">
+          The page you were looking for may have moved, been removed, or disappeared
+          down a particularly awkward pipe. Head back home, or test your reflexes by
+          helping us stop the leaks.
+        </p>
+
+        <div class="error-actions">
+          <a class="error-button error-button-primary" href="/index.html">Return to homepage</a>
+          <button class="error-button error-button-secondary" type="button" id="scrollToGame">
+            Play the leak game
+          </button>
+        </div>
+
+        <p class="error-note">No boilers were harmed in the making of this error page.</p>
+      </div>
+
+      <div class="game-panel" id="gamePanel">
+        <div class="game-header">
+          <div>
+            <h2>Stop the leaks</h2>
+            <p>Tap each water drop before the pressure reaches zero.</p>
+          </div>
+
+          <div class="scoreboard" aria-label="Game score">
+            <div class="stat">
+              <strong id="score">0</strong>
+              <span>Leaks fixed</span>
+            </div>
+            <div class="stat">
+              <strong id="time">20</strong>
+              <span>Seconds</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="boiler-room" id="boilerRoom" aria-label="Interactive boiler leak game">
+          <div class="steam" aria-hidden="true">
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="pipe vertical p1"></div>
+          <div class="pipe vertical p2"></div>
+          <div class="pipe vertical p3"></div>
+          <div class="pipe vertical p4"></div>
+          <div class="pipe horizontal p5"></div>
+          <div class="pipe horizontal p6"></div>
+
+          <div class="pipe-joint" style="left:18%; bottom:86px;"></div>
+          <div class="pipe-joint" style="left:36%; bottom:58px;"></div>
+          <div class="pipe-joint" style="right:36%; bottom:50px;"></div>
+          <div class="pipe-joint" style="right:18%; bottom:86px;"></div>
+
+          <div class="boiler" aria-hidden="true">
+            <img class="boiler-logo" src="/assets/images/logo.png" alt="">
+            <span class="boiler-brand">WARM RIGHT</span>
+            <div class="display" id="boilerDisplay">E404</div>
+            <div class="dial left"></div>
+            <div class="dial right"></div>
+          </div>
+        </div>
+
+        <p class="game-message" id="gameMessage" aria-live="polite">Press start when you are ready.</p>
+
+        <div class="game-footer">
+          <div class="pressure-wrap">
+            <div class="pressure-label">
+              <span>System pressure</span>
+              <span id="pressureText">100%</span>
+            </div>
+            <div class="pressure-track">
+              <div class="pressure-bar" id="pressureBar"></div>
+            </div>
+          </div>
+
+          <button class="error-button start-button" type="button" id="startGame">
+            Start game
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="error-footer">
+      <span>&copy; <span id="year"></span> Warm Right Ltd</span>
+      <a href="tel:08007566748">0800 756 6748</a>
+      <a href="mailto:info@warmright.uk">info@warmright.uk</a>
+    </footer>
+  </main>
+
+  <script>
+    const boilerRoom = document.getElementById("boilerRoom");
+    const startButton = document.getElementById("startGame");
+    const scoreElement = document.getElementById("score");
+    const timeElement = document.getElementById("time");
+    const pressureBar = document.getElementById("pressureBar");
+    const pressureText = document.getElementById("pressureText");
+    const gameMessage = document.getElementById("gameMessage");
+    const boilerDisplay = document.getElementById("boilerDisplay");
+    const scrollToGame = document.getElementById("scrollToGame");
+
+    let score = 0;
+    let timeLeft = 20;
+    let pressure = 100;
+    let gameRunning = false;
+    let countdownTimer;
+    let leakTimer;
+    let pressureTimer;
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    scrollToGame.addEventListener("click", () => {
+      document.getElementById("gamePanel").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    });
+
+    function updateHud() {
+      scoreElement.textContent = score;
+      timeElement.textContent = timeLeft;
+      pressureBar.style.width = `${Math.max(0, pressure)}%`;
+      pressureText.textContent = `${Math.max(0, Math.round(pressure))}%`;
+    }
+
+    function clearLeaks() {
+      boilerRoom.querySelectorAll(".leak").forEach((leak) => leak.remove());
+    }
+
+    function createLeak() {
+      if (!gameRunning) return;
+
+      const leak = document.createElement("button");
+      leak.type = "button";
+      leak.className = "leak";
+      leak.setAttribute("aria-label", "Fix this leak");
+
+      const roomWidth = boilerRoom.clientWidth;
+      const roomHeight = boilerRoom.clientHeight;
+      const safeWidth = Math.max(40, roomWidth - 58);
+      const safeHeight = Math.max(40, roomHeight - 70);
+
+      leak.style.left = `${12 + Math.random() * safeWidth}px`;
+      leak.style.top = `${12 + Math.random() * safeHeight}px`;
+
+      leak.addEventListener("click", () => {
+        if (!gameRunning || leak.classList.contains("hit")) return;
+
+        leak.classList.add("hit");
+        score += 1;
+        pressure = Math.min(100, pressure + 7);
+        boilerDisplay.textContent = "OK";
+        updateHud();
+
+        setTimeout(() => {
+          leak.remove();
+          if (gameRunning) boilerDisplay.textContent = "E404";
+        }, 300);
+      });
+
+      boilerRoom.appendChild(leak);
+
+      setTimeout(() => {
+        if (leak.isConnected && gameRunning) {
+          leak.remove();
+          pressure -= 9;
+          updateHud();
+
+          if (pressure <= 0) {
+            endGame(false);
+          }
+        }
+      }, 1700);
+    }
+
+    function startGame() {
+      clearInterval(countdownTimer);
+      clearInterval(leakTimer);
+      clearInterval(pressureTimer);
+      clearLeaks();
+
+      score = 0;
+      timeLeft = 20;
+      pressure = 100;
+      gameRunning = true;
+
+      startButton.disabled = true;
+      startButton.textContent = "Game running...";
+      gameMessage.textContent = "Find the leaks and tap them quickly.";
+      boilerDisplay.textContent = "E404";
+      updateHud();
+
+      createLeak();
+
+      leakTimer = setInterval(() => {
+        createLeak();
+
+        if (score > 7 && Math.random() > 0.55) {
+          setTimeout(createLeak, 260);
+        }
+      }, 780);
+
+      pressureTimer = setInterval(() => {
+        pressure -= 1.8;
+        updateHud();
+
+        if (pressure <= 0) {
+          endGame(false);
+        }
+      }, 500);
+
+      countdownTimer = setInterval(() => {
+        timeLeft -= 1;
+        updateHud();
+
+        if (timeLeft <= 0) {
+          endGame(true);
+        }
+      }, 1000);
+    }
+
+    function endGame(survived) {
+      if (!gameRunning) return;
+
+      gameRunning = false;
+      clearInterval(countdownTimer);
+      clearInterval(leakTimer);
+      clearInterval(pressureTimer);
+      clearLeaks();
+
+      startButton.disabled = false;
+      startButton.textContent = "Play again";
+
+      if (!survived || pressure <= 0) {
+        boilerDisplay.textContent = "LOW";
+        gameMessage.textContent =
+          `Pressure lost! You fixed ${score} leak${score === 1 ? "" : "s"}. Try again?`;
+      } else if (score >= 15) {
+        boilerDisplay.textContent = "PRO";
+        gameMessage.textContent =
+          `Excellent work - ${score} leaks fixed. You may have missed your calling.`;
+      } else if (score >= 9) {
+        boilerDisplay.textContent = "GOOD";
+        gameMessage.textContent =
+          `Nice job - ${score} leaks fixed and the system survived.`;
+      } else {
+        boilerDisplay.textContent = "OK";
+        gameMessage.textContent =
+          `System stabilised. You fixed ${score} leak${score === 1 ? "" : "s"}.`;
+      }
+    }
+
+    startButton.addEventListener("click", startGame);
+  </script>
+</body>
+</html>
