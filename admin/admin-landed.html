@@ -474,27 +474,21 @@
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
       );
 
-      const { data: { session }, error } = await window.db.auth.getSession();
+      const session = await window.requireAdminSession({ silentRedirect: false });
+      if (!session) return;
 
-      if (error || !session) {
-        window.location.href = 'login.html';
-      } else {
-        console.log("Session active:", session.user.email);
+      console.log("Session active:", session.user.email);
 
-        const isAdmin = await window.requireRole(['admin']);
-        if (!isAdmin) return;
+      // --- TRIGGER THE HEADER LOAD ---
+      await window.loadAdminHeader(session);
+      openInitialTabFromHash();
 
-        // --- TRIGGER THE HEADER LOAD ---
-        await window.loadAdminHeader(session); 
-        openInitialTabFromHash();
-
-        if (!window.location.hash && window.setAdminSectionNav) {
-          window.setAdminSectionNav('importer');
-        }
-        
-        // Final reveal of the page content
-        document.body.style.visibility = 'visible'; 
+      if (!window.location.hash && window.setAdminSectionNav) {
+        window.setAdminSectionNav('importer');
       }
+
+      // Final reveal of the page content
+      document.body.style.visibility = 'visible';
     }
 
     // Define Logout for use outside the header if needed

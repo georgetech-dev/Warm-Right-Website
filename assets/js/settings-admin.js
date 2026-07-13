@@ -32,9 +32,10 @@ async function loadUserManagement() {
 
 // 3. The Function that saves the change
 async function updateUserRole(userId, newRole) {
-    const { error } = await window.db
-        .from('user_roles')
-        .upsert({ user_id: userId, role: newRole });
+    const { error } = await window.db.rpc('admin_set_user_role', {
+        target_user_id: userId,
+        target_role: newRole,
+    });
 
     if (error) {
         alert("Failed to update: " + error.message);

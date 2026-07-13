@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /feedback.html
+Disallow: /testimonial-submit.html
+Disallow: /testimonals.html
+Disallow: /404.html
+
+Sitemap: https://warmright.uk/sitemap.xml

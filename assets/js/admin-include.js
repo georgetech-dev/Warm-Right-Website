@@ -297,3 +297,30 @@ window.requireRole = async function(allowedRoles, options = {}) {
 
     return true;
 };
+
+window.requireAdminSession = async function(options = {}) {
+    const db = await waitForAdminDb();
+    if (!db) {
+        console.error("Admin database client was not ready for admin session check.");
+        window.location.replace(getAdminUrl('login.html'));
+        return null;
+    }
+
+    const { data: { session }, error } = await db.auth.getSession();
+    if (error) {
+        console.error("Unable to resolve session during admin check.", error);
+    }
+
+    if (!session) {
+        window.location.replace(getAdminUrl('login.html'));
+        return null;
+    }
+
+    const allowedRoles = options.allowedRoles || ['admin'];
+    const isAllowed = await window.requireRole(allowedRoles, {
+        silentRedirect: options.silentRedirect !== false,
+    });
+    if (!isAllowed) return null;
+
+    return session;
+};

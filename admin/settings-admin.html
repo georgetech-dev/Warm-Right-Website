@@ -231,10 +231,8 @@
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
       );
       
-      const { data: { session } } = await window.db.auth.getSession();
-      if (!session) { window.location.href = 'login.html'; return; } 
-
-      if (!(await window.requireRole(['admin']))) return;
+      const session = await window.requireAdminSession();
+      if (!session) return;
 
       // TRIGGER MODULAR HEADER
       await window.loadAdminHeader(session);

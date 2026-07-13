@@ -47,8 +47,8 @@ async function checkSecurity() {
   const lib = window.supabase || window.Supabase;
   if (!lib) return setTimeout(checkSecurity, 50);
   window.db = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const { data: { session } } = await window.db.auth.getSession();
-  if (!session) return window.location.href = 'login.html';
+  const session = await window.requireAdminSession();
+  if (!session) return;
   currentSession = session;
   await window.loadAdminHeader(session);
   document.body.style.visibility = 'visible';

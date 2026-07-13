@@ -105,11 +105,8 @@
       if (!lib) { setTimeout(checkSecurity, 50); return; }
 
       window.db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const { data: { session } } = await window.db.auth.getSession();
-      if (!session) {
-        window.location.href = 'login.html';
-        return;
-      }
+      const session = await window.requireAdminSession();
+      if (!session) return;
 
       currentSession = session;
       await window.loadAdminHeader(session);

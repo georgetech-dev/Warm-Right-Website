@@ -131,8 +131,8 @@
       const lib = window.supabase || window.Supabase;
       if (!lib) { setTimeout(checkSecurity, 50); return; }
       window.db = lib.createClient('https://axampuprcnauxbbijmmt.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ');
-      const { data: { session } } = await window.db.auth.getSession();
-      if (!session) { window.location.href = 'login.html'; return; }
+      const session = await window.requireAdminSession();
+      if (!session) return;
       currentSession = session;
       await window.loadAdminHeader(session);
       document.body.style.visibility = 'visible';

@@ -110,8 +110,8 @@
       const lib = window.supabase || window.Supabase;
       if (!lib || !window.L?.Control?.Draw) { setTimeout(checkSecurity, 75); return; }
       window.db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const { data: { session } } = await window.db.auth.getSession();
-      if (!session) { window.location.href = 'login.html'; return; }
+      const session = await window.requireAdminSession();
+      if (!session) return;
       await window.loadAdminHeader(session);
       document.body.style.visibility = 'visible';
       initMap();

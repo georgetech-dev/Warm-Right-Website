@@ -180,11 +180,10 @@
                 'https://axampuprcnauxbbijmmt.supabase.co',
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YW1wdXByY25hdXhiYmlqbW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDgyNjUsImV4cCI6MjA5MzMyNDI2NX0.Er1hMQbaXnR4hzHfR2my0SmtwUcUs49HaCVqYwMBHuQ'
             );
-            window.db.auth.getSession()
-                .then(({ data }) => window.loadAdminHeader(data?.session || null))
-                .finally(() => {
-                    document.body.style.visibility = 'visible';
-                });
+            const session = await window.requireAdminSession();
+            if (!session) return;
+            await window.loadAdminHeader(session);
+            document.body.style.visibility = 'visible';
         })();
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';

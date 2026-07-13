@@ -6,8 +6,8 @@
   async function initialise() {
     const lib = window.supabase || window.Supabase; if (!lib) return setTimeout(initialise, 50);
     db = lib.createClient(SUPABASE_URL, SUPABASE_KEY); window.db = db;
-    const result = await db.auth.getSession(); session = result.data.session;
-    if (!session) return window.location.href = 'login.html';
+    session = await window.requireAdminSession();
+    if (!session) return;
     await window.loadAdminHeader(session); document.body.style.visibility = 'visible';
     await Promise.all([loadSettings(), loadCallbacks()]);
   }

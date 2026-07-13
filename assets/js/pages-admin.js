@@ -127,9 +127,8 @@
     if (!lib) return setTimeout(initialise, 50);
     db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.db = db;
-    const result = await db.auth.getSession();
-    session = result.data.session;
-    if (!session) return window.location.href = 'login.html';
+    session = await window.requireAdminSession();
+    if (!session) return;
     window.currentSession = session;
     await window.loadAdminHeader(session);
     renderThemeEditors();

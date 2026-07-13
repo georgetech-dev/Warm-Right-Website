@@ -20,11 +20,8 @@
 
     db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.db = db;
-    const { data: { session } } = await db.auth.getSession();
-    if (!session) {
-      window.location.href = 'login.html';
-      return;
-    }
+    const session = await window.requireAdminSession();
+    if (!session) return;
 
     await window.loadAdminHeader(session);
     document.body.style.visibility = 'visible';

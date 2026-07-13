@@ -14,8 +14,8 @@
     if (!lib) return setTimeout(initialise, 50);
     db = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.db = db;
-    const { data: { session } } = await db.auth.getSession();
-    if (!session) return window.location.href = 'login.html';
+    const session = await window.requireAdminSession();
+    if (!session) return;
     await window.loadAdminHeader(session);
     document.body.style.visibility = 'visible';
     await Promise.all([loadSettings(), loadFeedback()]);
