@@ -1,5 +1,27 @@
 // assets/js/admin-include.js
 
+(function ensureAdminPwaAssets() {
+    const currentFile = window.location.pathname.split('/').pop();
+    if (!window.location.pathname.includes('/admin/')) return;
+    if (['login.html', 'reset-password.html'].includes(currentFile)) return;
+
+    if (!document.querySelector('link[rel="manifest"]')) {
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = `${getAdminUrl('admin-manifest.webmanifest')}?v=20260717adminapp`;
+        manifestLink.setAttribute('data-admin-manifest', 'true');
+        document.head.appendChild(manifestLink);
+    }
+
+    if (!document.querySelector('script[data-admin-pwa-script]')) {
+        const script = document.createElement('script');
+        script.src = `${getAdminSiteRoot()}assets/js/admin-pwa.js?v=20260717adminapp`;
+        script.defer = true;
+        script.setAttribute('data-admin-pwa-script', 'true');
+        document.head.appendChild(script);
+    }
+})();
+
 window.loadAdminHeader = async function(session) {
     const container = document.getElementById('admin-header-container');
     if (!container) return;

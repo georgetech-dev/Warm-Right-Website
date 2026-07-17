@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Warm Right Ltd</title>
   <link rel="icon" href="../assets/images/favicon.png">
-  <link rel="manifest" href="../manifest.json">
+  <link rel="manifest" href="admin-manifest.webmanifest" data-admin-manifest="true">
   <link rel="stylesheet" href="../assets/css/admin.css?v=20260702georgetech">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
@@ -30,6 +30,62 @@
 
     .tabs-wrapper {
       margin: -30px -40px 30px -40px;
+    }
+
+    .admin-app-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 0 0 24px;
+      padding: 18px 22px;
+      border: 1px solid #dbe7ff;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .admin-app-banner[hidden] {
+      display: none !important;
+    }
+
+    .admin-app-banner-copy {
+      min-width: 0;
+    }
+
+    .admin-app-banner-copy h2 {
+      margin: 0 0 6px;
+      color: #004a99;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .admin-app-banner-copy p {
+      margin: 0;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .admin-app-banner-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .admin-app-banner-status {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .card.card-button {
+      appearance: none;
+      width: 100%;
+      border: 1px solid #ddd;
     }
 
     .tab-btn {
@@ -154,6 +210,19 @@
         font-size: 14px;
       }
 
+      .admin-app-banner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .admin-app-banner-actions {
+        align-items: stretch;
+      }
+
+      .admin-app-banner-status {
+        text-align: left;
+      }
+
       /* 3. Card Layout (2 columns for phone) */
       .menu-grid { 
         grid-template-columns: repeat(2, 1fr) !important; 
@@ -186,6 +255,17 @@
 <body>
 
   <div id="admin-header-container"></div>
+
+  <section class="admin-app-banner" id="admin-app-banner" hidden>
+    <div class="admin-app-banner-copy">
+      <h2>Install the Admin App</h2>
+      <p>Save the admin area as a Chrome desktop app so it opens in its own window and stays separate from the public website.</p>
+    </div>
+    <div class="admin-app-banner-actions">
+      <button class="btn-primary" id="admin-install-trigger" type="button">Install Admin App</button>
+      <span class="admin-app-banner-status" id="admin-install-status">Checking browser support…</span>
+    </div>
+  </section>
 
   <div class="tabs-wrapper">
     <div class="tab-buttons">
@@ -409,6 +489,11 @@
         <h3>Account Settings</h3>
         <p>Change your admin password & update your security preferences</p>
       </a>
+      <button type="button" class="card card-button" id="admin-install-card" hidden>
+        <div style="font-size: 40px; margin-bottom: 10px;">APP</div>
+        <h3>Install Admin App</h3>
+        <p>Open the admin area in its own Chrome app window</p>
+      </button>
     </div>
   </div>
 
