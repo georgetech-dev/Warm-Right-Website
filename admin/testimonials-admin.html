@@ -412,14 +412,14 @@
       const status = document.getElementById('retention-status');
       status.style.color = 'var(--primary-blue)';
       status.textContent = 'Applying retention policy...';
-      const { data, error } = await window.db.rpc('purge_testimonials_by_retention');
+      const { data, error } = await window.db.functions.invoke('testimonial-retention-run', { body: {} });
       if (error) {
         status.style.color = '#ef4444';
-        status.textContent = error.message;
+        status.textContent = await getFunctionErrorMessage(error);
         return;
       }
       status.style.color = '#166534';
-      const result = Array.isArray(data) ? data[0] : data;
+      const result = data?.result || {};
       status.textContent = `Retention applied. Pending deleted: ${result?.pending_deleted || 0}. Published deleted: ${result?.published_deleted || 0}. Rejected deleted: ${result?.rejected_deleted || 0}.`;
       loadPendingTestimonials();
       loadRejectedTestimonials();

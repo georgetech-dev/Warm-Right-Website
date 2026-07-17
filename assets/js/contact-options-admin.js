@@ -75,7 +75,7 @@
     const settings = data || {};
     document.getElementById('closed-title').value = settings.closed_title || 'Sorry our office is currently closed';
     document.getElementById('closed-body-editor').innerHTML = settings.closed_body_html || 'You can still request a callback or contact our emergency line.';
-    document.getElementById('closed-emergency-label').value = settings.emergency_label || 'Emergency Call Out';
+    document.getElementById('closed-emergency-label').value = settings.emergency_label || 'Emergency';
     document.getElementById('closed-emergency-url').value = settings.emergency_url || 'tel:08007566748,0';
     document.getElementById('closed-callback-label').value = settings.callback_label || 'Request a Callback';
     document.getElementById('mobile-button-background').value = validColour(settings.mobile_button_background, '#28a745');

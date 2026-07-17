@@ -16,7 +16,7 @@
   const DEFAULT_SETTINGS = {
     closed_title: 'Sorry our office is currently closed',
     closed_body_html: 'You can still request a callback, or contact our emergency line for urgent assistance.',
-    emergency_label: 'Emergency Call Out',
+    emergency_label: 'Emergency',
     emergency_url: 'tel:08007566748,0',
     callback_label: 'Request a Callback',
     mobile_button_background: '#28a745',
@@ -166,6 +166,29 @@
       icon.alt = '';
       icon.setAttribute('aria-hidden', 'true');
       link.appendChild(icon);
+      link.addEventListener('click', event => {
+        const contactState = window.warmRightContactState;
+        const behavior = row.action_type || 'direct';
+        if (behavior === 'callback' && contactState?.openModal) {
+          event.preventDefault();
+          startClose();
+          contactState.openModal(true);
+          document.removeEventListener('click', closeTray);
+          document.removeEventListener('touchstart', closeTray);
+          return;
+        }
+        if (behavior === 'general' && contactState?.openModal && contactState.status && !contactState.status.isOpen) {
+          event.preventDefault();
+          startClose();
+          contactState.openModal(false);
+          document.removeEventListener('click', closeTray);
+          document.removeEventListener('touchstart', closeTray);
+          return;
+        }
+        startClose();
+        document.removeEventListener('click', closeTray);
+        document.removeEventListener('touchstart', closeTray);
+      });
       return link;
     });
 
@@ -224,13 +247,6 @@
       } else {
         startClose();
       }
-    });
-
-    tray.addEventListener('click', event => {
-      event.stopPropagation();
-      startClose();
-      document.removeEventListener('click', closeTray);
-      document.removeEventListener('touchstart', closeTray);
     });
 
     container.hidden = false;

@@ -141,7 +141,7 @@
     </div>
 
     <script>
-        (function initAdminImporterNav() {
+        (async function initAdminImporterNav() {
             const lib = window.supabase || window.Supabase;
             if (!lib || !window.loadAdminHeader) {
                 setTimeout(initAdminImporterNav, 50);

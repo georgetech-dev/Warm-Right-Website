@@ -1194,7 +1194,10 @@
         job: lastSubmittedTestimonial?.job_number || document.getElementById('job_number').value.trim(),
         address: lastSubmittedTestimonial?.customer_address || document.getElementById('customer_address').value.trim(),
       });
-      window.location.href = `https://feedback.warmright.uk/?${params.toString()}`;
+      const feedbackUrl = new URL('https://feedback.warmright.uk/');
+      feedbackUrl.searchParams.set('survey', '1');
+      params.forEach((value, key) => feedbackUrl.searchParams.set(key, value));
+      window.location.href = feedbackUrl.toString();
     }
   </script>
   <script src="assets/js/include.js"></script>
