@@ -16,12 +16,6 @@
       "sizes": "500x500",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "../assets/images/logo-georgetech.png",
-      "sizes": "500x500",
-      "type": "image/png",
-      "purpose": "any"
     }
   ],
   "shortcuts": [

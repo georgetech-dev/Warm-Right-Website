@@ -10,48 +10,42 @@
   }
 
   function updateUi(mode) {
-    const banner = document.getElementById('admin-app-banner');
-    const button = document.getElementById('admin-install-trigger');
-    const card = document.getElementById('admin-install-card');
-    const status = document.getElementById('admin-install-status');
+    const button = document.getElementById('nav-install-app-link');
+    const divider = document.getElementById('nav-install-divider');
     const supported = Boolean(state.deferredPrompt);
     const installed = isStandalone();
 
     if (installed) {
-      if (banner) banner.hidden = false;
       if (button) {
-        button.textContent = 'Admin App Installed';
+        button.hidden = false;
         button.disabled = true;
+        button.querySelector('span')?.replaceChildren(document.createTextNode('Admin App Installed'));
       }
-      if (card) card.hidden = true;
-      if (status) status.textContent = 'The admin area is already running as an installed app.';
+      if (divider) divider.hidden = false;
       return;
     }
 
     if (supported) {
-      if (banner) banner.hidden = false;
       if (button) {
         button.hidden = false;
         button.disabled = false;
-        button.textContent = 'Install Admin App';
+        button.querySelector('span')?.replaceChildren(document.createTextNode('Install Admin App'));
       }
-      if (card) card.hidden = false;
-      if (status) status.textContent = mode === 'ready' ? 'Ready to install in Chrome.' : 'Install the admin area for a cleaner desktop experience.';
+      if (divider) divider.hidden = false;
       return;
     }
 
-    if (banner) banner.hidden = false;
     if (button) {
-      button.disabled = true;
-      button.textContent = 'Install via Chrome';
+      button.hidden = false;
+      button.disabled = false;
+      button.querySelector('span')?.replaceChildren(document.createTextNode('Install Admin App'));
     }
-    if (card) card.hidden = false;
-    if (status) status.textContent = 'If Chrome does not show the install prompt automatically, use the browser menu and choose Install app.';
+    if (divider) divider.hidden = false;
   }
 
   async function triggerInstall() {
     if (!state.deferredPrompt) {
-      updateUi('fallback');
+      window.alert('Use Chrome menu > Install app to add the admin area to your desktop.');
       return;
     }
 
@@ -63,15 +57,10 @@
   }
 
   function bindInstallTriggers() {
-    const button = document.getElementById('admin-install-trigger');
-    const card = document.getElementById('admin-install-card');
+    const button = document.getElementById('nav-install-app-link');
     if (button && !button.dataset.boundInstall) {
       button.dataset.boundInstall = 'true';
       button.addEventListener('click', triggerInstall);
-    }
-    if (card && !card.dataset.boundInstall) {
-      card.dataset.boundInstall = 'true';
-      card.addEventListener('click', triggerInstall);
     }
   }
 
@@ -93,6 +82,11 @@
   window.addEventListener('appinstalled', () => {
     state.deferredPrompt = null;
     updateUi('installed');
+  });
+
+  document.addEventListener('admin-header-ready', () => {
+    bindInstallTriggers();
+    updateUi(state.deferredPrompt ? 'ready' : 'fallback');
   });
 
   registerServiceWorker();

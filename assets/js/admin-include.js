@@ -106,6 +106,8 @@ window.loadAdminHeader = async function(session) {
                 }
             };
         }
+
+        document.dispatchEvent(new CustomEvent('admin-header-ready'));
     } catch (err) {
         console.error("Critical Nav Error:", err);
     }
